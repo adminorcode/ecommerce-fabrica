@@ -1,0 +1,24 @@
+{
+  "name": "petshop-ecommerce",
+  "version": "0.1.0",
+  "private": true,
+  "description": "E-commerce do petshop baseado em WordPress e WooCommerce.",
+  "scripts": {
+    "env:start": "wp-env start --runtime=docker",
+    "env:start:xdebug": "wp-env start --runtime=docker --xdebug",
+    "env:update": "wp-env start --runtime=docker --update",
+    "env:stop": "wp-env stop",
+    "env:status": "wp-env status",
+    "env:logs": "wp-env logs",
+    "env:reset": "wp-env reset all",
+    "env:destroy": "wp-env destroy --force",
+    "wp": "wp-env run cli wp",
+    "composer:plugin": "wp-env run cli --env-cwd=wp-content/plugins/petshop-core composer"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.0.0"
+  }
+}

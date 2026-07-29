@@ -1,0 +1,12 @@
+node_modules/
+**/vendor/
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+*.sql
+*.sqlite
+*.sqlite3
+*.log
+.env
+.env.*
+auth.json

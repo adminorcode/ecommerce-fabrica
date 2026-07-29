@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+**/vendor/
+
+# WordPress runtime and generated data
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backups/
+wp-content/backup*/
+wp-content/ai1wm-backups/
+
+# WordPress local files
+wp-config.php
+.htaccess
+*.sql
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+debug.log
+
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+.wp-env.override.json
+auth.json
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Test and coverage artifacts
+coverage/
+.phpunit.result.cache

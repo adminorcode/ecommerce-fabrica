@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/wp-env.json",
+  "core": "https://wordpress.org/wordpress-7.0.2.zip",
+  "phpVersion": "8.3",
+  "plugins": [
+    "https://downloads.wordpress.org/plugin/woocommerce.10.9.4.zip",
+    "./wp-content/plugins/petshop-core"
+  ],
+  "themes": [
+    "./wp-content/themes/petshop-theme"
+  ],
+  "port": 8888,
+  "phpmyadminPort": 8890,
+  "config": {
+    "WP_DEBUG": true,
+    "WP_DEBUG_LOG": true,
+    "WP_DEBUG_DISPLAY": false,
+    "SCRIPT_DEBUG": true,
+    "WP_ENVIRONMENT_TYPE": "local",
+    "WP_DEVELOPMENT_MODE": "all",
+    "DISALLOW_FILE_EDIT": true
+  }
+}

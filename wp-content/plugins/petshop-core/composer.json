@@ -1,0 +1,18 @@
+{
+  "name": "petshop/petshop-core",
+  "description": "Regras de negócio e integrações específicas do petshop.",
+  "type": "wordpress-plugin",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Petshop\\Core\\": "includes/"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {}
+  }
+}

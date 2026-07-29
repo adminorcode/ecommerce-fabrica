@@ -1,0 +1,61 @@
+---
+description: Regras globais do projeto WooCommerce do petshop
+alwaysApply: true
+---
+
+# Contexto
+
+Este repositório contém um e-commerce baseado em WordPress e WooCommerce.
+
+Antes de implementar uma funcionalidade:
+
+1. leia o plano correspondente em `Plans/`;
+2. identifique o escopo, os critérios de aceite e o que está fora do escopo;
+3. altere somente os arquivos necessários;
+4. execute as validações previstas;
+5. atualize os checkboxes do plano quando a tarefa realmente estiver concluída.
+
+# Arquitetura
+
+- Regras de negócio pertencem a `wp-content/plugins/petshop-core`.
+- Apresentação pertence a `wp-content/themes/petshop-theme`.
+- Não editar WordPress Core.
+- Não editar WooCommerce ou plugins de terceiros.
+- Não implementar regras de negócio no `functions.php` do tema.
+- Não adicionar plugins sem registrar a decisão em um plano.
+- Não armazenar segredos, tokens, credenciais ou dados pessoais no repositório.
+
+# WordPress e WooCommerce
+
+- Utilizar APIs públicas do WordPress e WooCommerce.
+- Preferir hooks, filtros, Store API e extensibilidade dos blocos.
+- Não copiar arquivos internos do WooCommerce sem necessidade comprovada.
+- Toda integração com pedidos deve ser compatível com HPOS.
+- Toda alteração no checkout deve considerar o Checkout Block.
+- Sanitizar entradas.
+- Escapar saídas.
+- Verificar nonces em operações mutáveis.
+- Verificar capabilities em operações administrativas.
+- Usar consultas preparadas quando acesso SQL direto for inevitável.
+- Evitar SQL direto quando uma API oficial estiver disponível.
+
+# Código
+
+- PHP mínimo: 8.3.
+- Usar `declare(strict_types=1)` em novos arquivos PHP próprios.
+- Usar PSR-4 dentro do plugin.
+- Preferir classes pequenas e responsabilidades claras.
+- Evitar funções globais.
+- Não silenciar exceções ou erros sem justificativa.
+- Não fazer alterações massivas fora do plano atual.
+- Preservar compatibilidade com atualizações de WordPress e WooCommerce.
+
+# Validação
+
+Antes de declarar uma implementação concluída:
+
+- verificar se o ambiente inicia;
+- verificar se não existem erros fatais no log;
+- verificar o fluxo funcional afetado;
+- listar arquivos alterados;
+- registrar limitações ou decisões pendentes no plano.
