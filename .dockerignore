@@ -1,0 +1,14 @@
+.git
+.local
+node_modules
+**/vendor
+.env
+.wp-env.override.json
+wp-content/uploads
+wp-content/cache
+wp-content/upgrade
+wp-content/backups
+wp-content/backup*
+*.log
+Plans
+README.md

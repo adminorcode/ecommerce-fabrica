@@ -9,12 +9,25 @@ E-commerce baseado em WordPress e WooCommerce.
 - npm
 - Git
 
-## Iniciar ambiente
+## Bootstrap em um computador novo
 
 ```bash
-npm ci
-npm run env:start
+npm run bootstrap
 ```
+
+Esse comando único:
+
+- valida Node.js 24 e Docker;
+- instala as dependências Node;
+- baixa e valida WordPress 7.0.2 e WooCommerce 10.9.4;
+- sobe o `wp-env`;
+- instala o WordPress quando necessário;
+- configura idioma, timezone, formatos e permalinks;
+- ativa WooCommerce, o plugin local e o tema;
+- valida a instalação, os plugins e o tema pelo WP-CLI.
+
+Os downloads e o runtime ficam em `.local/`, fora do Git. O comando é
+idempotente e pode ser executado novamente.
 
 Loja:
 
@@ -37,6 +50,7 @@ admin / password
 ## Comandos
 
 ```bash
+npm run bootstrap
 npm run env:start
 npm run env:stop
 npm run env:status

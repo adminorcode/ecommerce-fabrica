@@ -4,6 +4,7 @@
   "private": true,
   "description": "E-commerce do petshop baseado em WordPress e WooCommerce.",
   "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
     "env:start": "wp-env start --runtime=docker",
     "env:start:xdebug": "wp-env start --runtime=docker --xdebug",
     "env:update": "wp-env start --runtime=docker --update",
@@ -19,6 +20,7 @@
     "node": ">=24 <25"
   },
   "devDependencies": {
-    "@wordpress/env": "^10.0.0"
+    "@wordpress/env": "^10.0.0",
+    "extract-zip": "1.7.0"
   }
 }
