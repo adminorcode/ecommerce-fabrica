@@ -25,6 +25,16 @@ Antes de implementar uma funcionalidade:
 - Não adicionar plugins sem registrar a decisão em um plano.
 - Não armazenar segredos, tokens, credenciais ou dados pessoais no repositório.
 
+# Tema e interface
+
+- Blocksy é o tema pai e não pode ser alterado diretamente.
+- `petshop-theme` é o child theme versionado.
+- O projeto utiliza Gutenberg.
+- Não instalar ou utilizar Elementor.
+- Não sobrescrever templates do Blocksy sem necessidade comprovada.
+- Preferir hooks e CSS localizado no child theme.
+- Não remover Stackable antes de verificar dependências dos blocos importados.
+
 # WordPress e WooCommerce
 
 - Utilizar APIs públicas do WordPress e WooCommerce.

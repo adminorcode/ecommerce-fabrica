@@ -4,9 +4,13 @@
   "phpVersion": "8.3",
   "plugins": [
     "https://downloads.wordpress.org/plugin/woocommerce.10.9.4.zip",
+    "https://downloads.wordpress.org/plugin/blocksy-companion.2.1.50.zip",
+    "https://downloads.wordpress.org/plugin/stackable-ultimate-gutenberg-blocks.3.19.10.zip",
+    "https://downloads.wordpress.org/plugin/fluentform.6.2.9.zip",
     "./wp-content/plugins/petshop-core"
   ],
   "themes": [
+    "https://downloads.wordpress.org/theme/blocksy.2.1.50.zip",
     "./wp-content/themes/petshop-theme"
   ],
   "port": 8888,

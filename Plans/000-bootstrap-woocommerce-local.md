@@ -1,6 +1,6 @@
 # Plano 000 — Bootstrap do repositório WooCommerce local
 
-**Status:** Em andamento  
+**Status:** Concluído
 **Responsável:** A definir  
 **Última revisão:** 2026-07-19  
 **Objetivo:** Criar um repositório WooCommerce local, reproduzível e preparado para desenvolvimento assistido pelo Cursor.
@@ -1080,16 +1080,16 @@ Evitar solicitar ao Cursor que implemente toda a loja em uma única instrução.
 - [x] O plano atual está salvo como `Plans/000-bootstrap-woocommerce-local.md`.
 - [x] O Node.js utilizado é da linha 24 LTS.
 - [x] `npm ci` funciona após um clone limpo.
-- [ ] `npm run env:start` inicia o ambiente.
-- [ ] A loja abre em `http://localhost:8888`.
-- [ ] O painel abre em `http://localhost:8888/wp-admin`.
-- [ ] WordPress está na versão 7.0.2.
-- [ ] WooCommerce está na versão 10.9.4.
-- [ ] PHP está na linha 8.3.
-- [ ] `petshop-core` está ativo.
-- [ ] `petshop-theme` está ativo.
+- [x] `npm run env:start` inicia o ambiente.
+- [x] A loja abre em `http://localhost:8888`.
+- [x] O painel abre em `http://localhost:8888/wp-admin`.
+- [x] WordPress está na versão 7.0.2.
+- [x] WooCommerce está na versão 10.9.4.
+- [x] PHP está na linha 8.3.
+- [x] `petshop-core` está ativo.
+- [x] `petshop-theme` está ativo.
 - [x] O plugin declara compatibilidade com HPOS.
-- [ ] Não existem erros fatais no log.
+- [x] Não existem erros fatais no log.
 - [x] Uploads, banco, logs, dependências e segredos não aparecem no Git.
 - [x] O Cursor reconhece a regra em `.cursor/rules/project.mdc`.
 - [x] `git status` mostra somente arquivos de código e configuração esperados.
@@ -1210,28 +1210,15 @@ Atualizações devem ter plano, backup e validação.
 - Estrutura de diretórios, plugin `petshop-core`, tema `petshop-theme`, configuração `wp-env`, scripts npm, regras Cursor, `.gitignore`, `.cursorignore`, `.editorconfig`, `README.md`.
 - `npm install` e `npm ci` executados com sucesso (Node v24.18.0, `@wordpress/env` instalado).
 
-### Validação pendente (bloqueio de ambiente)
+### Validação runtime concluída
 
-A validação runtime (`npm run env:start` e comandos WP-CLI) não pôde ser concluída nesta sessão porque o daemon Docker não ficou acessível de forma estável pelo shell do agente (`open //./pipe/docker_engine: The system cannot find the file specified`).
+**Data:** 2026-07-29
 
-**Recuperação local:**
-
-1. Iniciar o Docker Desktop e aguardar ficar pronto (`docker ps` sem erro).
-2. Se `wp-env` reportar indisponibilidade de rede/DNS, popular o cache em `~/.wp-env/<hash>/wp-env-cache.json` com `"latestWordPressVersion": "7.0.2"` ou garantir resolução DNS para `WordPress.org`.
-3. Executar:
-
-```bash
-npm run env:start
-npm run composer:plugin -- install
-npm run wp -- language core install pt_BR
-npm run wp -- site switch-language pt_BR
-npm run wp -- option update blogname "Petshop"
-npm run wp -- plugin activate woocommerce petshop-core
-npm run wp -- theme activate petshop-theme
-npm run wp -- rewrite flush
-```
-
-4. Validar versões e marcar os critérios de aceite restantes.
+- Docker e `wp-env` iniciaram o ambiente de desenvolvimento e de testes.
+- Loja e painel administrativo responderam localmente.
+- WordPress 7.0.2, WooCommerce 10.9.4 e PHP 8.3.32 foram confirmados.
+- `petshop-core` e `petshop-theme` foram confirmados ativos.
+- O log de depuração não apresentou erros fatais.
 
 ---
 

@@ -5,8 +5,13 @@ declare(strict_types=1);
 defined('ABSPATH') || exit;
 
 add_action(
-    'after_setup_theme',
+    'wp_enqueue_scripts',
     static function (): void {
-        add_theme_support('woocommerce');
+        wp_enqueue_style(
+            'petshop-theme',
+            get_stylesheet_uri(),
+            [],
+            wp_get_theme()->get('Version')
+        );
     }
 );
