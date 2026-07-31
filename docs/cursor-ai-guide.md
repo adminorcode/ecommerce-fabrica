@@ -98,10 +98,13 @@ docker compose up --watch
 # WP-CLI
 docker compose --profile tools run --rm --no-deps cli wp plugin list
 
-# Validação PHP (exemplo 005)
+# Smoke PHP (provisiona + validators)
+npm run validate
+
+# Validação individual
 docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/validate-005-session-01.php
 
-# Validação browser
+# Validação browser (host, até Plano 008)
 node scripts/validate-005-session-01-browser.mjs
 ```
 

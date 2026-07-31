@@ -23,3 +23,14 @@ Um plano de interface deve:
 ## Critério transversal de aceite
 
 O plano não pode ser marcado como concluído enquanto algum texto ou imagem de conteúdo próprio da interface depender de edição de código para ser atualizado.
+
+## Roadmap pós-005 (engenharia)
+
+| Plano | Foco |
+|-------|------|
+| [006](./006-infraestrutura-ci-e-documentacao.md) | Infra, CI, documentação, reconciliação do 003 |
+| [008](./008-suite-de-testes-automatizados.md) | PHPUnit, Playwright containerizado |
+| [007](./007-refatoracao-petshop-core.md) | Refatoração arquitetural do plugin |
+| [009](./009-design-system-acessibilidade-e-checkout.md) | Design tokens, a11y técnica, cart/checkout |
+
+Consulte [STATUS.md](./STATUS.md) para ordem de execução e dependências.

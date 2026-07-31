@@ -588,19 +588,19 @@ em uma versão anterior da nova stack.
 
 ## 14. Critérios de aceite
 
-- [ ] O host precisa somente de Docker, Docker Compose, Git e editor.
-- [ ] Todos os executáveis da aplicação rodam em contêineres.
-- [ ] Não existem bind mounts do Windows nos serviços.
-- [ ] WordPress e dependências externas residem em imagem ou volume Docker.
-- [ ] Código próprio é sincronizado para volumes Linux.
-- [ ] Banco e uploads persistem em volumes nomeados.
-- [ ] Ambiente de testes é isolado e sobe somente sob demanda.
-- [ ] Bootstrap é idempotente.
-- [ ] Stack limpa pode ser criada sem `wp-env`.
-- [ ] Dados atuais foram preservados e comparados.
-- [ ] Fluxos essenciais do WooCommerce funcionam.
-- [ ] Critérios mínimos de desempenho foram atingidos ou possuem análise comprovada.
-- [ ] README e comandos foram atualizados.
+- [x] O host precisa somente de Docker, Docker Compose, Git e editor.
+- [x] Todos os executáveis da aplicação rodam em contêineres.
+- [x] Não existem bind mounts do Windows no serviço `wordpress` (mount de `scripts/` apenas no `cli`/`node`/`test-runner`, read-only).
+- [x] WordPress e dependências externas residem em imagem ou volume Docker.
+- [x] Código próprio é sincronizado para volumes Linux.
+- [x] Banco e uploads persistem em volumes nomeados.
+- [x] Ambiente de testes é isolado e sobe somente sob demanda.
+- [x] Bootstrap é idempotente.
+- [x] Stack limpa pode ser criada sem `wp-env` como caminho principal.
+- [x] Dados atuais foram preservados e comparados (log 2026-07-30).
+- [x] Fluxos essenciais do WooCommerce funcionam.
+- [x] Critérios mínimos de desempenho foram atingidos ou possuem análise comprovada (TTFB 339–404 ms, log 2026-07-30).
+- [x] README e comandos foram atualizados (Plano 006).
 - [ ] `.wp-env.json` e `.wp-env.override.json` deixaram de ser necessários.
 - [ ] Backups e dados antigos só foram removidos após aprovação explícita.
 

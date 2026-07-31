@@ -90,7 +90,7 @@ Todo texto comercial/institucional e toda imagem de conteúdo exibida em página
 1. Confirmar escopo, critérios de aceite e o que está **fora** do escopo
 2. Identificar sessão ativa (planos grandes, ex.: 005, têm sessões com gates)
 3. Listar arquivos que serão alterados
-4. Para plano novo: branch `codex/<nome-do-arquivo-sem-.md>` a partir de `master` (worktree limpo)
+4. Para plano novo: branch `<numero>-<nome-do-arquivo-sem-.md>` a partir de `master` (worktree limpo)
 
 ### Durante
 

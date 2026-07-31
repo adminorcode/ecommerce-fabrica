@@ -4,23 +4,15 @@
   "private": true,
   "description": "E-commerce do petshop baseado em WordPress e WooCommerce.",
   "scripts": {
-    "bootstrap": "node scripts/bootstrap.mjs",
-    "env:start": "wp-env start --runtime=docker",
-    "env:start:xdebug": "wp-env start --runtime=docker --xdebug",
-    "env:update": "wp-env start --runtime=docker --update",
-    "env:stop": "wp-env stop",
-    "env:status": "wp-env status",
-    "env:logs": "wp-env logs",
-    "env:reset": "wp-env reset all",
-    "env:destroy": "wp-env destroy --force",
-    "wp": "wp-env run cli wp",
-    "composer:plugin": "wp-env run cli --env-cwd=wp-content/plugins/petshop-core composer"
+    "bootstrap": "docker compose up -d --build --wait",
+    "up": "docker compose up --watch",
+    "down": "docker compose down",
+    "validate": "node scripts/run-gates.mjs",
+    "test": "docker compose --profile test run --rm test-runner",
+    "wp": "docker compose --profile tools run --rm --no-deps cli wp",
+    "bootstrap:legacy": "node scripts/bootstrap-wp-env.mjs"
   },
   "engines": {
-    "node": ">=24 <25"
-  },
-  "devDependencies": {
-    "@wordpress/env": "^10.0.0",
-    "extract-zip": "1.7.0"
+    "node": ">=20"
   }
 }

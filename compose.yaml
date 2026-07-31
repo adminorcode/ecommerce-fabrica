@@ -91,6 +91,7 @@ services:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
       - composer_cache:/tmp/composer-cache
+      - ./scripts:/var/www/html/scripts:ro
     networks: [internal]
     entrypoint: []
     working_dir: /var/www/html
@@ -101,9 +102,12 @@ services:
     build:
       context: .
       dockerfile: docker/node/Dockerfile
+    environment:
+      PETSHOP_BASE_URL: ${WORDPRESS_URL:-http://host.docker.internal:8888}
     volumes:
       - node_modules:/workspace/node_modules
       - npm_cache:/root/.npm
+      - ./scripts:/workspace/scripts:ro
     networks: [internal]
 
   phpmyadmin:
@@ -172,6 +176,9 @@ services:
         condition: service_completed_successfully
     volumes:
       - test_wordpress_runtime:/var/www/html
+      - ./wp-content/plugins/petshop-core:/var/www/html/wp-content/plugins/petshop-core:ro
+      - ./wp-content/themes/petshop-theme:/var/www/html/wp-content/themes/petshop-theme:ro
+      - ./scripts:/var/www/html/scripts:ro
     networks: [internal]
     entrypoint: []
 

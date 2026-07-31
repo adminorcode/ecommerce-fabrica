@@ -131,14 +131,14 @@ suite aprovada.
 1. Leia este arquivo, qualquer `AGENTS.md`, [Plans/STATUS.md](Plans/STATUS.md) e o
    arquivo do plano solicitado por inteiro.
 2. Para **um plano novo**, confirme que o worktree está limpo; então atualize
-   `master` com fast-forward e crie `codex/<nome-do-arquivo-sem-.md>` a partir dele:
+   `master` com fast-forward e crie `<numero>-<nome-do-arquivo-sem-.md>` a partir dele:
 
    ```powershell
    git status --short
    git switch master
    git fetch origin master
    git pull --ff-only origin master
-   git switch -c codex/<nome-do-plano>
+   git switch -c <numero>-<nome-do-plano>
    ```
 
    Se houver alterações locais, a branch já existir ou o pull não puder ser

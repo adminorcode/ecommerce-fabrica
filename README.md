@@ -2,86 +2,81 @@
 
 E-commerce baseado em WordPress e WooCommerce.
 
-## Requisitos
+## Requisitos no host
 
-- Docker
-- Node.js 24 LTS
-- npm
-- Git
+- [Docker Desktop](https://docs.docker.com/desktop/) com Docker Compose **2.32.2+**
+- [Git](https://git-scm.com/downloads)
+- editor e navegador
 
-## Bootstrap em um computador novo
+Node.js, PHP, Composer, MariaDB e WP-CLI **não** são pré-requisitos do host — rodam nos contêineres.
 
-```bash
+Guia completo: [AI_BOOTSTRAP.md](./AI_BOOTSTRAP.md)
+
+## Bootstrap rápido
+
+```powershell
+git clone <url-do-repositorio>
+cd ecommerce-petshop
+Copy-Item .env.example .env
 npm run bootstrap
 ```
 
-Esse comando único:
+Ou manualmente:
 
-- valida Node.js 24 e Docker;
-- instala as dependências Node;
-- baixa e valida WordPress 7.0.2 e WooCommerce 10.9.4;
-- sobe o `wp-env`;
-- instala o WordPress quando necessário;
-- configura idioma, timezone, formatos e permalinks;
-- ativa WooCommerce, o plugin local e o tema;
-- valida a instalação, os plugins e o tema pelo WP-CLI.
-
-Os downloads e o runtime ficam em `.local/`, fora do Git. O comando é
-idempotente e pode ser executado novamente.
-
-Loja:
-
-```text
-http://localhost:8888
+```powershell
+docker compose up -d --build --wait
 ```
 
-Admin:
+URLs locais:
 
-```text
-http://localhost:8888/wp-admin
-```
+- Loja: <http://localhost:8888>
+- Admin: <http://localhost:8888/wp-admin>
 
-Credenciais locais:
+Credenciais: ver `.env.example` (somente ambiente local).
 
-```text
-admin / password
-```
+## Desenvolvimento
 
-## Comandos
+```powershell
+# Sync contínuo do plugin e tema
+docker compose up --watch
 
-```bash
-npm run bootstrap
-npm run env:start
-npm run env:stop
-npm run env:status
-npm run env:logs
-npm run env:start:xdebug
+# WP-CLI
 npm run wp -- plugin list
+
+# Validators PHP (provisiona + smoke)
+npm run validate
+
+# Testes (PHPUnit quando configurado — Plano 008)
+npm run test
 ```
+
+## Comandos npm
+
+| Script | Ação |
+|--------|------|
+| `bootstrap` | `docker compose up -d --build --wait` |
+| `up` | `docker compose up --watch` |
+| `down` | `docker compose down` |
+| `validate` | `scripts/run-gates.sh` (bash) ou `scripts/run-gates.ps1` |
+| `test` | profile `test` / PHPUnit |
+| `wp` | WP-CLI via serviço `cli` |
+
+Scripts legados `env:*` (`wp-env`) estão deprecados — use Docker Compose.
 
 ## Organização
 
-- `Plans/`: planos de implementação;
-- `wp-content/plugins/petshop-core/`: regras de negócio;
-- `wp-content/themes/petshop-theme/`: tema da loja.
+- `Plans/`: planos de implementação e [STATUS](./Plans/STATUS.md)
+- `wp-content/plugins/petshop-core/`: regras de negócio
+- `wp-content/themes/petshop-theme/`: child theme Blocksy
+- `scripts/`: validação, seed e automação ([README](./scripts/README.md))
+- `docs/cursor-ai-guide.md`: rules/skills para agentes Cursor
 
 Não altere WordPress Core, WooCommerce ou plugins de terceiros diretamente.
 
 ## Tema
 
-O projeto utiliza:
+- Blocksy (pai, não editar)
+- `petshop-theme` (child versionado)
+- Gutenberg + Stackable
 
-- Blocksy como tema pai;
-- `petshop-theme` como child theme;
-- Petsy como starter site;
-- Gutenberg como editor.
-
-Não editar o tema Blocksy diretamente.
-
-Customizações visuais versionadas:
-
-`wp-content/themes/petshop-theme/`
-
-Regras de negócio:
-
-`wp-content/plugins/petshop-core/`
+Regras de negócio ficam em `petshop-core`; apresentação em `petshop-theme`.

@@ -4,9 +4,29 @@
 |---|---|---|
 | [000-bootstrap-woocommerce-local.md](./000-bootstrap-woocommerce-local.md) | Concluído | Ambiente, versões, plugins, tema, loja e painel validados em runtime |
 | [001-instalacao-blocksy-petsy.md](./001-instalacao-blocksy-petsy.md) | Concluído | Blocksy/Petsy com Gutenberg importado; child theme e fluxos essenciais validados |
-| [003-ambiente-totalmente-docker.md](./003-ambiente-totalmente-docker.md) | Em andamento | Stack Compose criada; validação bloqueada até atualizar e iniciar Docker Desktop |
-| [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md) | Em andamento | Implementação e correção 004b validadas; aguarda teste manual com leitor de tela ou aceite explícito da transferência |
+| [003-ambiente-totalmente-docker.md](./003-ambiente-totalmente-docker.md) | Em andamento | Stack validada; docs/CI unificados no 006; wp-env legado pendente remoção |
+| [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md) | Em andamento | Implementação e 004b validados; a11y manual pendente (Plano 009 Etapa 5) |
 | [004b-correcao-vitrine-e-catalogo.md](./004b-correcao-vitrine-e-catalogo.md) | Concluído | Catálogo demonstrável, hero full-bleed editável, densidade comercial e persistência validados |
-| [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Bloqueado | Sessões 01–02 concluídas e filtro lateral do catálogo validado; Sessão 03 aguarda fotografias reais autorizadas |
+| [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Bloqueado | Sessões 01–02 concluídas; Sessão 03 aguarda fotografias reais; Sessões 04–08 pendentes |
+| [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Em andamento | Docker/docs unificados, scripts no cli, CI smoke, reconciliação do 003 |
+| [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
+| [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Pendente | PHPUnit, Playwright no contêiner, gates PDP/carrinho; depende do 006 |
+| [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Pendente | Tokens, a11y técnica, CSS cleanup, cart/checkout blocks; paralelo ao 007 |
+
+## Ordem recomendada de execução
+
+```
+006 (infra/CI/docs)
+  ├── 008 (testes automatizados)
+  │     └── 007 (refatoração plugin — com rede de segurança)
+  └── 009 (design system / a11y / checkout CSS)
+
+005 (storefront comercial — sessões 03–08, conteúdo e produto)
+  └── Sessão 03 bloqueada por fotos reais; 04–08 após ou em paralelo com 009
+```
+
+## Origem
+
+Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
 **Última atualização:** 2026-07-31

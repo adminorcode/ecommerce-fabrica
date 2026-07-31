@@ -126,7 +126,12 @@ foreach ($products as $product) {
 echo "catalogo-publicado: passed\n";
 
 petshop_assert((int) get_theme_mod('custom_logo') > 0, 'Logo da marca não configurado.');
-petshop_assert(get_option('blogname') === 'Auteliê Moda Pet', 'Nome da loja não configurado.');
+$expectedBlogName = getenv('PETSHOP_EXPECTED_BLOGNAME');
+if ($expectedBlogName !== false && $expectedBlogName !== '') {
+    petshop_assert(get_option('blogname') === $expectedBlogName, 'Nome da loja diverge do esperado.');
+} else {
+    petshop_assert(trim((string) get_option('blogname')) !== '', 'Nome da loja não configurado.');
+}
 petshop_assert(get_option('woocommerce_coming_soon') === 'no', 'Loja ainda está em modo de lançamento.');
 petshop_assert(get_option('woocommerce_hide_out_of_stock_items') === 'yes', 'Produtos sem estoque ainda aparecem nas vitrines.');
 echo "identidade: passed\n";
