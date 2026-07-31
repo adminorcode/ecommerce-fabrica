@@ -35,6 +35,17 @@ Antes de implementar uma funcionalidade:
 - Preferir hooks e CSS localizado no child theme.
 - Não remover Stackable antes de verificar dependências dos blocos importados.
 
+# Conteúdo administrável
+
+- Todo texto editorial, comercial ou institucional criado pelo projeto e toda foto ou imagem de conteúdo exibida nas páginas deve ser editável pelo cliente no painel do WordPress.
+- Usar Gutenberg para conteúdo de páginas, Biblioteca de mídia para imagens, WooCommerce para conteúdo de produtos e categorias, menus para navegação e Customizer/configuração administrativa para conteúdo global.
+- O código pode fornecer valores iniciais na primeira instalação, mas deve salvá-los em uma origem administrável e nunca sobrescrever alterações posteriores do cliente.
+- Não gravar textos comerciais ou caminhos de imagens diretamente em templates, PHP, CSS ou JavaScript quando eles precisarem de edição de código para serem alterados.
+- Textos funcionais pertencentes ao WordPress, WooCommerce ou plugins devem usar as APIs de tradução/extensibilidade oficiais. Textos funcionais próprios também devem ser traduzíveis e, quando tiverem caráter comercial, administráveis.
+- Toda imagem administrável deve permitir seleção/substituição pela Biblioteca de mídia e texto alternativo.
+- Todo plano que criar ou alterar interface deve inventariar cada texto e imagem por rota, indicar onde o cliente os editará e incluir testes de persistência editorial nos critérios de aceite.
+- Um plano de interface não pode ser concluído se algum texto ou imagem de conteúdo próprio depender de alteração no código para ser atualizado.
+
 # WordPress e WooCommerce
 
 - Utilizar APIs públicas do WordPress e WooCommerce.

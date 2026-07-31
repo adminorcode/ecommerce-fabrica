@@ -149,6 +149,12 @@ suite aprovada.
 4. Preserve mudanças alheias e não faça commit, push ou pull request sem solicitação
    explícita.
 
+Todo plano que afete páginas ou componentes visuais deve cumprir a regra de conteúdo
+administrável de `.cursor/rules/project.mdc`: textos editoriais/comerciais e fotos
+ou imagens de conteúdo precisam ser editáveis pelo cliente no WordPress. O plano
+deve identificar a origem administrativa de cada item e comprovar que uma atualização
+de código não sobrescreve as alterações salvas pelo cliente.
+
 O Plano 003 está em andamento: a nova stack Compose já funciona, mas o `wp-env`
 legado e seus backups devem ser preservados até a aceitação final da migração.
 
@@ -158,4 +164,5 @@ legado e seus backups devem ser preservados até a aceitação final da migraç�
 - [.env.example](.env.example): variáveis locais documentadas;
 - [docker/](docker/): imagens e scripts de inicialização;
 - [Plans/](Plans/): escopo e critérios de aceite;
+- [Plans/README.md](Plans/README.md): convenções obrigatórias para novos planos;
 - [.gitignore](.gitignore): dados e segredos que não devem ser versionados.

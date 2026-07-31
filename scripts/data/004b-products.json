@@ -1,0 +1,391 @@
+{
+  "sourceWorkbook": "products (12).xlsx",
+  "license": "Pexels License",
+  "images": {
+    "bandana-pink": {
+      "source": "https://www.pexels.com/photo/dog-wearing-a-bandana-16652372/",
+      "url": "https://images.pexels.com/photos/16652372/pexels-photo-16652372.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Matheus Bertelli",
+      "alt": "Cachorro usando bandana rosa"
+    },
+    "bandana-colorful": {
+      "source": "https://www.pexels.com/photo/adorable-poodle-wearing-a-colorful-dog-bandana-34268266/",
+      "url": "https://images.pexels.com/photos/34268266/pexels-photo-34268266.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Gorkemography",
+      "alt": "Poodle usando bandana colorida"
+    },
+    "bow-white": {
+      "source": "https://www.pexels.com/photo/cute-dog-with-elegant-bow-tie-5733401/",
+      "url": "https://images.pexels.com/photos/5733401/pexels-photo-5733401.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Sam Lion",
+      "alt": "Cachorro usando gravata borboleta"
+    },
+    "bow-closeup": {
+      "source": "https://www.pexels.com/photo/close-up-of-a-dog-with-a-bow-tie-10984836/",
+      "url": "https://images.pexels.com/photos/10984836/pexels-photo-10984836.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Юлия",
+      "alt": "Finalização pet com gravata borboleta"
+    },
+    "bandana-dark": {
+      "source": "https://www.pexels.com/photo/adorable-animal-animal-photography-beagle-347683/",
+      "url": "https://images.pexels.com/photos/347683/pexels-photo-347683.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Torsten Dettlaff",
+      "alt": "Beagle usando lenço vermelho"
+    },
+    "winter-scarf": {
+      "source": "https://www.pexels.com/photo/dog-wearing-cute-beret-and-checkered-scarf-35356504/",
+      "url": "https://images.pexels.com/photos/35356504/pexels-photo-35356504.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "yuan yuan",
+      "alt": "Cachorro usando cachecol xadrez"
+    },
+    "grooming-salon": {
+      "source": "https://www.pexels.com/photo/small-dog-in-grooming-salon-6816837/",
+      "url": "https://images.pexels.com/photos/6816837/pexels-photo-6816837.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Gustavo Fring",
+      "alt": "Cachorro em atendimento de banho e tosa"
+    },
+    "grooming-detail": {
+      "source": "https://www.pexels.com/photo/cute-dog-getting-hairstyle-in-grooming-salon-6816870/",
+      "url": "https://images.pexels.com/photos/6816870/pexels-photo-6816870.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "author": "Gustavo Fring",
+      "alt": "Finalização profissional do penteado de um cachorro"
+    },
+    "hero-wide": {
+      "source": "https://www.pexels.com/photo/dog-wearing-a-bandana-16652372/",
+      "url": "https://images.pexels.com/photos/16652372/pexels-photo-16652372.jpeg?auto=compress&cs=tinysrgb&w=2000",
+      "author": "Matheus Bertelli",
+      "alt": "Cachorro usando bandana rosa em um parque"
+    }
+  },
+  "categoryDescriptions": {
+    "promocoes": "<p>Explore a seleção de promoções do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "adesivos": "<p>Explore a seleção de adesivos do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "babador": "<p>Explore a seleção de babadores do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "bandanas": "<p>Explore a seleção de bandanas do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "colarinhos": "<p>Explore a seleção de colarinhos do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "conjuntos": "<p>Explore a seleção de conjuntos do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "copa": "<p>Explore a seleção de copa do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "dia-dos-pais": "<p>Explore a seleção de dia dos pais do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "festa-junina": "<p>Explore a seleção de festa junina do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "gargantilhas": "<p>Explore a seleção de gargantilhas do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "gravatas": "<p>Explore a seleção de gravatas do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "inverno": "<p>Explore a seleção de inverno do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "lacos": "<p>Explore a seleção de laços do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>",
+    "penteados": "<p>Explore a seleção de penteados do Auteliê Moda Pet para valorizar a finalização de cada atendimento.</p>"
+  },
+  "products": [
+    {
+      "sku": "C1100033",
+      "name": "Adesivo Cascão",
+      "category": "adesivos",
+      "categories": [
+        "adesivos"
+      ],
+      "image": "grooming-detail",
+      "price": 13.9,
+      "stock": 3,
+      "description": "<p>Adesivos pet em EVA, modelo Cascão, desenvolvidos para finalização profissional de banho e tosa. Produzidos com recortes sobrepostos e montagem em camadas, possuem acabamento detalhado e bem definido.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Modelo:</strong> Cascão<br/><strong>Material:</strong> EVA<br/><strong>Composição do pacote:</strong> todos os adesivos são iguais<br/><strong>Acabamento:</strong> montagem em camadas, com base preta e detalhes em cores coordenadas<br/><strong>Aplicação:</strong> diretamente sobre a pelagem do pet</p><p><strong>Fixação e remoção:</strong> fita dupla face de altíssima fixação, que normalmente permanece fixada por 7 a 15 dias, conforme a pelagem e a rotina do pet. Para remover, umedeça com água morna e retire delicadamente, sem puxar os pelos.</p><p><strong>Observação:</strong> as cores e tonalidades podem apresentar pequenas variações conforme o material utilizado e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100040",
+      "name": "Adesivo Cebolinha",
+      "category": "adesivos",
+      "categories": [
+        "adesivos"
+      ],
+      "image": "bandana-pink",
+      "price": 12.9,
+      "stock": 3,
+      "description": "<p>Adesivos pet em EVA, modelo Cebolinha, desenvolvidos para finalização profissional de banho e tosa. Produzidos com recortes sobrepostos e montagem em camadas, possuem acabamento detalhado e bem definido.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Modelo:</strong> Cebolinha<br/><strong>Material:</strong> EVA<br/><strong>Cores:</strong> bege e preto<br/><strong>Composição do pacote:</strong> todos os adesivos são iguais<br/><strong>Acabamento:</strong> montagem em camadas<br/><strong>Aplicação:</strong> diretamente sobre a pelagem do pet</p><p><strong>Fixação e remoção:</strong> fita dupla face de altíssima fixação, que normalmente permanece fixada por 7 a 15 dias, conforme a pelagem e a rotina do pet. Para remover, umedeça com água morna e retire delicadamente, sem puxar os pelos.</p><p><strong>Observação:</strong> as cores e tonalidades podem apresentar pequenas variações conforme o material utilizado e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100025",
+      "name": "Babador Feltro",
+      "category": "babador",
+      "categories": [
+        "babador"
+      ],
+      "image": "bandana-colorful",
+      "price": 19.9,
+      "stock": 5,
+      "description": "<p>Babadores pet em feltro, desenvolvidos para finalização profissional de banho e tosa e para fotografias. São utilizados ao redor do pescoço do pet e proporcionam uma apresentação delicada e diferenciada.</p><p><strong>Conteúdo:</strong> 4 unidades<br/><strong>Tamanho:</strong> único<br/><strong>Material:</strong> feltro<br/><strong>Aplicação:</strong> ao redor do pescoço do pet<br/><strong>Fechamento:</strong> por amarração<br/><strong>Cores:</strong> iguais dentro do mesmo pacote, conforme disponibilidade<br/><strong>Apliques:</strong> modelos variados</p><p><strong>Observação:</strong> a cor do pacote pode variar conforme a disponibilidade de estoque. Os apliques decorativos também podem variar entre as unidades. As cores e tonalidades podem apresentar pequenas diferenças conforme o material e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100132",
+      "name": "Babador Ratinha c/ 4",
+      "category": "babador",
+      "categories": [
+        "babador"
+      ],
+      "image": "bandana-pink",
+      "price": 19.9,
+      "stock": 3,
+      "description": "<p>Babadores pet em feltro, modelo ratinha, desenvolvidos para finalização profissional de banho e tosa e para fotografias. São utilizados ao redor do pescoço do pet e possuem aplique decorativo em EVA, proporcionando um acabamento delicado e diferenciado.</p><p><strong>Conteúdo:</strong> 4 unidades<br/><strong>Tamanho:</strong> único<br/><strong>Material:</strong> feltro<br/><strong>Aplique:</strong> modelo ratinha em EVA<br/><strong>Aplicação:</strong> ao redor do pescoço do pet<br/><strong>Fechamento:</strong> por amarração<br/><strong>Cores:</strong> iguais dentro do mesmo pacote, conforme disponibilidade</p><p><strong>Observação:</strong> a cor do pacote pode variar conforme a disponibilidade de estoque. As cores e tonalidades podem apresentar pequenas diferenças conforme o material e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100046",
+      "name": "Conjunto Babador + Laço em Feltro",
+      "category": "babador",
+      "categories": [
+        "babador",
+        "conjuntos"
+      ],
+      "image": "bandana-colorful",
+      "price": 25.9,
+      "stock": 2,
+      "description": "Kit pet composto por babadores em feltro e laços combinando, desenvolvido para proporcionar um visual delicado, divertido e encantador aos pets.  Produzido com acabamento cuidadoso e excelente apresentação, é ideal para pet shops, centros de estética animal e profissionais de banho e tosa que desejam oferecer uma finalização diferenciada, bonita e prática para seus atendimentos.  ✅ Babadores confeccionados em feltro ✅ Acompanha laços combinando ✅ Visual delicado, charmoso e encantador ✅ Leve, confortável e de fácil aplicação ✅ Ideal para fotos, entregas e finalização de banho e tosa ✅ Excelente opção para valorizar o atendimento e encantar os tutores   Conteúdo da embalagem: 4 babadores em feltro + 4 laços .  Cores Modelos: Os modelos são enviados de acordo com a disponibilidade em estoque no momento da separação do pedido.  Produto desenvolvido pela Autelie Moda Pet, especialista em acessórios para banho e tosa, reconhecida pela qualidade, acabamento e exclusividade de seus produtos."
+    },
+    {
+      "sku": "C1100036",
+      "name": "Bandana M -Macho (Vies)",
+      "category": "bandanas",
+      "categories": [
+        "bandanas"
+      ],
+      "image": "bandana-dark",
+      "price": 21.9,
+      "stock": 57,
+      "description": "<p>Bandanas pet masculino tamanho M, confeccionadas em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento com viés de TNT e estampas selecionadas dentro do padrão do produto.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> M<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Modelo:</strong> masculino<br/><strong>Tema:</strong> conforme disponibilidade ou solicitação do cliente<br/><strong>Composição do pacote:</strong> 5 estampas diferentes, com 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100034",
+      "name": "Bandana M - Femea (Vies)",
+      "category": "bandanas",
+      "categories": [
+        "bandanas"
+      ],
+      "image": "bandana-colorful",
+      "price": 21.9,
+      "stock": 39,
+      "description": "<p>Bandanas pet feminino tamanho M, confeccionadas em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento com viés de TNT e estampas selecionadas dentro do padrão do produto.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> M<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Modelo:</strong> feminino<br/><strong>Tema:</strong> conforme disponibilidade ou solicitação do cliente<br/><strong>Composição do pacote:</strong> 5 estampas diferentes, com 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100129",
+      "name": "Colarinho com botão - M1",
+      "category": "colarinhos",
+      "categories": [
+        "colarinhos"
+      ],
+      "image": "bow-white",
+      "price": 20.9,
+      "stock": 32,
+      "description": "<p>Colarinhos pet tamanho M1, confeccionados em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento em viés de TNT e fechamento por botão de pressão.</p><p><strong>Conteúdo:</strong> 5 unidades<br/><strong>Tamanho:</strong> M1<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Fechamento:</strong> botão de pressão<br/><strong>Estampas:</strong> 5 estampas diferentes, sem repetição</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100041",
+      "name": "Colarinho com botão - M2",
+      "category": "colarinhos",
+      "categories": [
+        "colarinhos"
+      ],
+      "image": "bow-closeup",
+      "price": 22.9,
+      "stock": 22,
+      "description": "<p>Colarinhos pet tamanho M2, confeccionados em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento em viés de TNT e fechamento por botão de pressão.</p><p><strong>Conteúdo:</strong> 5 unidades<br/><strong>Tamanho:</strong> M2<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Fechamento:</strong> botão de pressão<br/><strong>Estampas:</strong> 5 estampas diferentes, sem repetição</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100155",
+      "name": "Conjunto Lonita Luxo",
+      "category": "conjuntos",
+      "categories": [
+        "conjuntos"
+      ],
+      "image": "bow-closeup",
+      "price": 34.9,
+      "stock": 11,
+      "description": "<p>Conjunto Lonita Luxo — item demonstrativo da categoria conjuntos. Complete a descrição comercial antes da publicação definitiva.</p>"
+    },
+    {
+      "sku": "C1100124",
+      "name": "Bandana P - Copa",
+      "category": "copa",
+      "categories": [
+        "copa"
+      ],
+      "image": "bandana-dark",
+      "price": 18.9,
+      "stock": 14,
+      "description": "<p>Bandanas pet com temática Copa tamanho P, confeccionadas em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento com viés de TNT e estampas selecionadas dentro do padrão do produto.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> P<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Tema:</strong> Copa<br/><strong>Composição do pacote:</strong> 5 estampas diferentes, com 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100123",
+      "name": "Bandana G - Copa",
+      "category": "copa",
+      "categories": [
+        "copa"
+      ],
+      "image": "bandana-pink",
+      "price": 29.9,
+      "stock": 7,
+      "description": "<p>Bandanas pet com temática Copa tamanho G, confeccionadas em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento com viés de TNT e estampas selecionadas dentro do padrão do produto.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> G<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Tema:</strong> Copa<br/><strong>Composição do pacote:</strong> 5 estampas diferentes, com 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100157",
+      "name": "Bandana dia  dos pais M - Unissex",
+      "category": "dia-dos-pais",
+      "categories": [
+        "dia-dos-pais"
+      ],
+      "image": "bow-white",
+      "price": 21.9,
+      "stock": 11,
+      "description": "<p>Bandana dia  dos pais M - Unissex — item demonstrativo da categoria dia-dos-pais. Complete a descrição comercial antes da publicação definitiva.</p>"
+    },
+    {
+      "sku": "C1100085",
+      "name": "Bandana São João - P",
+      "category": "festa-junina",
+      "categories": [
+        "festa-junina"
+      ],
+      "image": "bandana-pink",
+      "price": 18.9,
+      "stock": 9,
+      "description": "<p>Bandanas pet com temática São João tamanho P, confeccionadas em tecido de poliéster para finalização profissional de banho e tosa. Possuem acabamento com viés de TNT e estampas selecionadas dentro do padrão do produto.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> P<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Acabamento:</strong> viés de TNT<br/><strong>Tema:</strong> São João<br/><strong>Composição do pacote:</strong> 5 estampas diferentes, com 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades — inclusive a cor do viés — podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100106",
+      "name": "Passa Fitas São João",
+      "category": "festa-junina",
+      "categories": [
+        "festa-junina"
+      ],
+      "image": "bandana-pink",
+      "price": 27.9,
+      "stock": 8,
+      "description": "<p>Passa-fitas pet em lonita, com estampas e acabamentos temáticos de São João, desenvolvidos para finalização profissional de banho e tosa. São utilizados ao redor do pescoço do pet e possuem corte a laser, proporcionando acabamento limpo e bem definido.</p><p><strong>Conteúdo:</strong> 8 unidades<br/><strong>Tamanho:</strong> único<br/><strong>Material:</strong> lonita<br/><strong>Tema:</strong> São João<br/><strong>Modelos:</strong> sortidos<br/><strong>Apliques e laços:</strong> variados dentro da temática<br/><strong>Fechamento:</strong> por amarração com fita de cetim<br/><strong>Acabamento:</strong> corte a laser</p><p><strong>Observação:</strong> as estampas, os modelos, os apliques, as cores e tonalidades podem variar conforme a disponibilidade do material e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100079",
+      "name": "Mini Gargantilha em V",
+      "category": "gargantilhas",
+      "categories": [
+        "gargantilhas"
+      ],
+      "image": "bow-closeup",
+      "price": 22.9,
+      "stock": 14,
+      "description": "Gargantilha pet desenvolvida especialmente para filhotes, gatos e cães de pequeno porte, proporcionando um visual delicado, confortável e encantador.  Produzida com acabamento cuidadoso e excelente apresentação, é ideal para pet shops, centros de estética animal e profissionais de banho e tosa que desejam oferecer um acessório leve e charmoso na finalização dos atendimentos.  ✅ Ideal para filhotes, gatos e cachorros pequenos ✅ Leve, confortável e de fácil aplicação ✅ Visual delicado e encantador ✅ Acabamento cuidadoso e excelente apresentação ✅ Perfeita para fotos, entregas e finalização de banho e tosa ✅ Excelente opção para valorizar o atendimento e encantar os tutores   Conteúdo da embalagem: 10 gargantilhas.   Estampas: Os modelos são enviados em estampas sortidas, conforme disponibilidade em estoque no momento da separação do pedido.  Produto desenvolvido pela Autelie Moda Pet, especialista em acessórios para banho e tosa, reconhecida pela qualidade, acabamento e exclusividade de seus produtos."
+    },
+    {
+      "sku": "C1100127",
+      "name": "Passa Fitas Florido c/8",
+      "category": "gargantilhas",
+      "categories": [
+        "gargantilhas"
+      ],
+      "image": "bandana-colorful",
+      "price": 27.9,
+      "stock": 7,
+      "description": "<p>Passa-fitas pet em EVA colorido, desenvolvidos para finalização profissional de banho e tosa. São utilizados ao redor do pescoço do pet e possuem corte a laser, proporcionando acabamento limpo e bem definido.</p><p><strong>Conteúdo:</strong> 8 unidades<br/><strong>Tamanho:</strong> único<br/><strong>Material:</strong> EVA<br/><strong>Fechamento:</strong> por amarração com fita de cetim<br/><strong>Acabamento:</strong> corte a laser<br/><strong>Cores:</strong> variadas</p><p><strong>Observação:</strong> as cores e tonalidades podem variar conforme a disponibilidade do material e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100061",
+      "name": "Gravatinha Borboleta",
+      "category": "gravatas",
+      "categories": [
+        "gravatas"
+      ],
+      "image": "bow-white",
+      "price": 24.9,
+      "stock": 12,
+      "description": "<p>Gravatas borboleta pet em tecido de poliéster, desenvolvidas para finalização profissional de banho e tosa. Possuem fechamento por amarração com fita de cetim e podem ser produzidas em temas específicos quando solicitado.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Material:</strong> tecido de poliéster<br/><strong>Fechamento:</strong> por amarração com fita de cetim<br/><strong>Estampas:</strong> mistas, conforme disponibilidade<br/><strong>Tema:</strong> conforme disponibilidade ou solicitação do cliente</p><p><strong>Observação:</strong> as estampas, cores e tonalidades podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100063",
+      "name": "Gravatinhas dia a dia - Diversos",
+      "category": "gravatas",
+      "categories": [
+        "gravatas"
+      ],
+      "image": "bow-closeup",
+      "price": 22.9,
+      "stock": 12,
+      "description": "<p>Gravatas pet em tecido de poliéster, confeccionadas sobre base de TNT para finalização profissional de banho e tosa. Possuem estampas variadas para uso no dia a dia e fechamento por amarração com fita de cetim.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Material:</strong> tecido de poliéster com base de TNT<br/><strong>Fechamento:</strong> por amarração com fita de cetim<br/><strong>Tema:</strong> modelos diversos para o dia a dia<br/><strong>Estampas:</strong> 5 estampas diferentes<br/><strong>Composição do pacote:</strong> 2 unidades de cada estampa</p><p><strong>Observação:</strong> as estampas, cores e tonalidades podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100108",
+      "name": "Cachecol PP - Macho",
+      "category": "inverno",
+      "categories": [
+        "inverno"
+      ],
+      "image": "winter-scarf",
+      "price": 24.9,
+      "stock": 21,
+      "description": "<p>Cachecóis pet tamanho PP em feltro, desenvolvidos para finalização profissional de banho e tosa. Possuem fechamento por transpasse, com uma abertura costurada por onde uma ponta passa dentro da outra, facilitando a colocação no pescoço do pet.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> PP<br/><strong>Material:</strong> feltro<br/><strong>Fechamento:</strong> por transpasse<br/><strong>Estampas:</strong> sortidas<br/><strong>Composição do pacote:</strong> no máximo 2 unidades da mesma estampa<br/><strong>Tema:</strong> conforme disponibilidade ou tema escolhido pelo cliente</p><p><strong>Observação:</strong> as estampas, cores e tonalidades podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100084",
+      "name": "Cachecol P - Macho",
+      "category": "inverno",
+      "categories": [
+        "inverno"
+      ],
+      "image": "bandana-dark",
+      "price": 32.9,
+      "stock": 15,
+      "description": "<p>Cachecóis pet tamanho P em feltro, desenvolvidos para finalização profissional de banho e tosa. Possuem fechamento por transpasse, com uma abertura costurada por onde uma ponta passa dentro da outra, facilitando a colocação no pescoço do pet.</p><p><strong>Conteúdo:</strong> 10 unidades<br/><strong>Tamanho:</strong> P<br/><strong>Material:</strong> feltro<br/><strong>Fechamento:</strong> por transpasse<br/><strong>Estampas:</strong> sortidas<br/><strong>Composição do pacote:</strong> no máximo 2 unidades da mesma estampa<br/><strong>Tema:</strong> conforme disponibilidade ou tema escolhido pelo cliente</p><p><strong>Observação:</strong> as estampas, cores e tonalidades podem variar conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100174",
+      "name": "Mini laço Ponta",
+      "category": "lacos",
+      "categories": [
+        "lacos"
+      ],
+      "image": "grooming-detail",
+      "price": 15.9,
+      "stock": 17,
+      "description": "<p><strong>Detalhes do produto</strong><br/><br/>Mini Laços Ponta confeccionados em fita de gorgorão lisa para finalização profissional de banho e tosa. Possuem aplicação central de meia pérola com acabamento em strass, proporcionando um visual delicado, elegante e sofisticado para penteados nas pontas das orelhas.<br/><br/><strong>Conteúdo</strong>: 10 unidades<br/><strong>Modelo</strong>: Mini Laço Ponta<br/><strong>Material</strong>: fita de gorgorão lisa<br/><strong>Aplicação</strong>: meia pérola com acabamento em strass<br/><strong>Fixação</strong>: chuca elástica<br/><strong>Cores</strong>: enviadas conforme disponibilidade de estoque<br/><strong>Composição do pacote</strong>: todos os laços são iguais<br/><br/><strong>Observação</strong>: as cores, tonalidades e detalhes da aplicação podem apresentar pequenas variações conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100080",
+      "name": "Mini Laços",
+      "category": "lacos",
+      "categories": [
+        "lacos"
+      ],
+      "image": "bow-white",
+      "price": 13.9,
+      "stock": 69,
+      "description": "<p>Mini Laços — item demonstrativo da categoria lacos. Complete a descrição comercial antes da publicação definitiva.</p>"
+    },
+    {
+      "sku": "C1100141",
+      "name": "Pompom Penteado",
+      "category": "penteados",
+      "categories": [
+        "penteados"
+      ],
+      "image": "grooming-salon",
+      "price": 14.9,
+      "stock": 6,
+      "description": "<p>Pompom pet com elástico, desenvolvido para penteados e finalização profissional de banho e tosa. O pompom é preso por fio de nylon a um elástico, proporcionando um detalhe colorido semelhante ao efeito de um ponto de luz.</p><p><strong>Conteúdo:</strong> 20 unidades<br/><strong>Tamanho:</strong> único<br/><strong>Cores:</strong> sortidas, conforme disponibilidade<br/><strong>Aplicação:</strong> preso à pelagem com elástico<br/><strong>Indicação:</strong> penteados e finalização profissional de banho e tosa</p><p><strong>Observação:</strong> as cores e tonalidades podem variar conforme a disponibilidade de estoque e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100083",
+      "name": "Ponto de Luz C/ Strass - 20und",
+      "category": "penteados",
+      "categories": [
+        "penteados"
+      ],
+      "image": "grooming-detail",
+      "price": 22.9,
+      "stock": 5,
+      "description": "<p>Pontos de luz pet com strass, desenvolvidos para penteados e finalização profissional de banho e tosa. Cada unidade possui meia pérola com strass e chuca para fixação na pelagem.</p><p><strong>Conteúdo:</strong> 20 unidades<br/><strong>Modelo:</strong> ponto de luz com strass<br/><strong>Composição:</strong> meia pérola com strass<br/><strong>Fixação:</strong> chuca para penteados<br/><strong>Indicação:</strong> penteados e finalização profissional de banho e tosa</p><p><strong>Observação:</strong> as cores e tonalidades podem apresentar pequenas variações conforme o material disponível e o lote de produção.</p>"
+    },
+    {
+      "sku": "C1100065",
+      "name": "Itens Promocionais",
+      "category": "promocoes",
+      "categories": [
+        "promocoes"
+      ],
+      "image": "bandana-pink",
+      "price": 10,
+      "stock": 37,
+      "description": "<p>Itens Promocionais — item demonstrativo da categoria promocoes. Complete a descrição comercial antes da publicação definitiva.</p>"
+    }
+  ]
+}

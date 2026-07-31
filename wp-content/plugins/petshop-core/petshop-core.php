@@ -15,6 +15,12 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
+require_once __DIR__ . '/includes/class-storefront-catalog.php';
+require_once __DIR__ . '/includes/class-storefront-experience.php';
+
+\Petshop\Core\StorefrontCatalog::bootstrap();
+\Petshop\Core\StorefrontExperience::bootstrap();
+
 add_action(
     'before_woocommerce_init',
     static function (): void {

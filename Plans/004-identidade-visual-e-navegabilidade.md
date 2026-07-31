@@ -1,6 +1,6 @@
 # Plano 004 — Identidade visual e navegabilidade da loja
 
-**Status:** Planejado  
+**Status:** Em andamento — implementação concluída; validação humana com leitor de tela pendente
 **Data:** 2026-07-31  
 **Objetivo:** transformar a loja WooCommerce em um catálogo de acessórios pet com a identidade visual e as categorias reais do contratante, navegação comercial clara e experiência mobile-first. A Moda Bicho é referência secundária de merchandising; textos, imagens, marca e interface devem ser originais.
 
@@ -9,8 +9,9 @@
 - Manter WordPress + WooCommerce + Blocksy e o child theme `petshop-theme` como storefront.
 - Não criar agora uma aplicação React/Next separada. Usar os blocos nativos do WooCommerce (que já utilizam JavaScript moderno) e adicionar JavaScript somente para interações pontuais e justificadas.
 - Manter WooCommerce como fonte de verdade para produto, estoque, carrinho, checkout, pedido, pagamento e cupons.
+- Todo texto editorial/comercial e toda foto ou imagem de conteúdo devem ser editáveis pelo cliente no WordPress; o código pode apenas provisionar valores iniciais sem sobrescrever alterações posteriores.
 - Reservar **Personalize** como futura área independente de navegação. Configurador de acessórios, prévia e regras de preço ficam fora deste plano e não podem bloquear o catálogo inicial.
-- Não copiar marca, imagens, textos, avaliações, preços, campanhas ou código da referência.
+- Não copiar marca, imagens, avaliações, preços, campanhas ou código da referência. Exceção: a copy provisória do hero fornecida diretamente pelo usuário pode ser usada como conteúdo inicial editável.
 
 ### Critérios para reavaliar React headless
 
@@ -88,6 +89,7 @@ Fontes secundárias de referência:
 - Página inicial, arquivos de categoria, busca, página de produto, carrinho e checkout usando recursos compatíveis do WooCommerce.
 - Taxonomia e vitrines baseadas primeiro no catálogo atual do contratante; a planilha de importação deve ser normalizada para essa taxonomia antes da carga.
 - Blocos editoriais para mais vendidos, kits econômicos, seleção para groomers, novidades/sazonais, prova social e CTA de atendimento.
+- Hero da Home em banner comercial full-bleed, seguindo a composição da referência (copy à esquerda e fotografia à direita), com imagem, legenda, título, texto, observação, CTA e destino integralmente editáveis no Gutenberg; o link deve aceitar página, coleção/categoria ou produto cadastrado.
 - Acessibilidade, responsividade, SEO técnico básico e validação de desempenho.
 
 ### Excluído nesta fase
@@ -111,9 +113,9 @@ Fontes secundárias de referência:
    - principal: categorias de compra, coleções e futura entrada `Personalize`;
    - rodapé: atendimento, políticas, envio e redes sociais;
    - rotas de apoio: busca, conta, carrinho e checkout.
-6. Produzir um inventário de conteúdo necessário por rota: banner, título, texto, imagem, CTA, produtos e regra de seleção.
+6. Produzir um inventário de conteúdo necessário por rota: banner, título, texto, imagem, CTA, produtos, regra de seleção e origem administrativa de edição.
 
-**Aceite:** a árvore de categorias e o mapa de navegação são aprovados, cada coleção tem uma regra de composição documentada e nenhuma rota depende de conteúdo da referência.
+**Aceite:** a árvore de categorias e o mapa de navegação são aprovados, cada coleção tem uma regra de composição documentada, nenhuma rota depende de conteúdo da referência e todo texto ou imagem de conteúdo possui uma origem de edição no WordPress.
 
 ### Etapa 2 — Sistema visual original
 
@@ -130,7 +132,7 @@ Fontes secundárias de referência:
 
 1. Implementar o cabeçalho e menu responsivo, incluindo busca, conta e minicarrinho conforme a capacidade nativa do tema/WooCommerce.
 2. Configurar breadcrumbs e filtros de catálogo coerentes com a taxonomia aprovada.
-3. Construir a home com blocos independentes e editáveis:
+3. Construir a home com blocos independentes e editáveis, incluindo textos, links e imagens:
    - hero original;
    - principais categorias;
    - kits e economia por quantidade;
@@ -142,7 +144,7 @@ Fontes secundárias de referência:
 5. Personalizar a página de produto para explicar material, conteúdo do pacote, aplicação, variações relevantes, cuidados e produtos complementares.
 6. Manter carrinho e checkout nos blocos oficiais do WooCommerce; validar extensões antes de qualquer customização.
 
-**Aceite:** uma pessoa encontra uma categoria, filtra ou busca um produto, entende o que recebe no pacote e chega ao checkout em desktop e mobile sem rotas quebradas.
+**Aceite:** uma pessoa encontra uma categoria, filtra ou busca um produto, entende o que recebe no pacote e chega ao checkout em desktop e mobile sem rotas quebradas; o cliente altera textos e imagens de conteúdo pelo painel, sem editar código.
 
 ### Etapa 4 — Conteúdo e catálogo preparados para a interface
 
@@ -150,9 +152,9 @@ Fontes secundárias de referência:
 2. Criar as categorias e coleções aprovadas antes de importar produtos.
 3. Garantir imagem principal, texto alternativo e ao menos as informações comerciais mínimas para cada produto publicado.
 4. Criar produtos relacionados por categoria, coleção e regra editorial, sem dependência de IDs fixos.
-5. Configurar páginas de coleção para que um administrador possa trocar produtos e textos sem editar código.
+5. Configurar páginas de coleção para que um administrador possa trocar produtos, textos e imagens, inclusive texto alternativo, sem editar código.
 
-**Aceite:** não há produto publicado sem imagem principal, preço válido, categoria, SKU e descrição comercial mínima; vitrines não mostram produtos ocultos ou sem estoque, salvo regra editorial explicitamente aprovada.
+**Aceite:** não há produto publicado sem imagem principal, preço válido, categoria, SKU e descrição comercial mínima; vitrines não mostram produtos ocultos ou sem estoque, salvo regra editorial explicitamente aprovada; reprovisionamentos preservam todos os textos e imagens salvos pelo cliente.
 
 ### Etapa 5 — Qualidade e lançamento local
 
@@ -191,3 +193,14 @@ Fontes secundárias de referência:
 - resultados de testes de compra e responsividade;
 - medições de desempenho antes/depois;
 - lista de pendências explicitamente transferidas para o plano de personalização.
+
+## 8. Registro de execução
+
+- 2026-07-31: iniciada a fundação técnica no child theme e no `petshop-core`: tokens visuais, estilos acessíveis de WooCommerce, localizações de menu e taxonomia canônica idempotente.
+- 2026-07-31: documentada a operação de menus, categorias sazonais e requisitos de conteúdo em `004-OPERATIONS.md`.
+- 2026-07-31: páginas Gutenberg, menus, taxonomia editável, identidade, busca, minicarrinho, vitrines, avaliações reais, SEO e blocos oficiais de carrinho/checkout implementados.
+- 2026-07-31: runtime WordPress/WooCommerce validado nos volumes persistentes por contêiner de recuperação; rotas e fluxos críticos aprovados em Chromium, Firefox e WebKit. Evidências em `004-TESTING.md`.
+- 2026-07-31: duas rodadas de revisão crítica concluídas; provisionamento movido ao contexto administrativo com capacidade e lock, e customizações do cliente preservadas em upgrades.
+- 2026-07-31: correção 004b concluída na mesma branch: hero full-bleed baseado na referência, 26 produtos demonstrativos de 14 categorias, nove imagens rastreáveis, descrições de categoria e conteúdo integralmente administrável no WordPress.
+- Pendência para encerramento: sessão manual com NVDA ou VoiceOver, ou aceite explícito para transferir essa validação humana. A auditoria automatizada de nome, papel, estado, foco e regiões ao vivo foi aprovada.
+- Dependência externa: o `docker compose up --build -d` padrão ainda encontra CRLF em `docker/scripts/init-wordpress.sh`, pertencente ao Plano 003. A dependência não impediu os testes funcionais deste plano e não foi alterada fora de escopo.
