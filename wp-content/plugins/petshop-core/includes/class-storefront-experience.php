@@ -8,10 +8,12 @@ defined('ABSPATH') || exit;
 
 final class StorefrontExperience
 {
-    private const VERSION = '1.9.3';
+    private const VERSION = '2.1.1';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
+    private const COMMERCIAL_MENU_OPTION = 'petshop_commercial_menu_version';
+    private static bool $catalogLayoutOpen = false;
 
     public static function bootstrap(): void
     {
@@ -23,10 +25,16 @@ final class StorefrontExperience
         add_action('created_product_cat', [self::class, 'saveCategoryFields']);
         add_action('edited_product_cat', [self::class, 'saveCategoryFields']);
         add_filter('wp_nav_menu_objects', [self::class, 'filterSeasonalMenuItems']);
+        add_action('wp_enqueue_scripts', [self::class, 'enqueueCatalogFilterAssets']);
+        add_action('template_redirect', [self::class, 'canonicalizeCatalogCategoryFilter']);
         add_action('woocommerce_before_shop_loop', [self::class, 'renderCategoryIntroduction'], 5);
         add_action('woocommerce_before_shop_loop', [self::class, 'renderCatalogFilter'], 15);
+        add_action('woocommerce_before_shop_loop', [self::class, 'closeCatalogToolbar'], 40);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductAssurance'], 25);
         add_filter('woocommerce_output_related_products_args', [self::class, 'relatedProductArgs']);
+        add_action('pre_get_posts', [self::class, 'resolveExactSkuSearch']);
+        add_action('pre_get_posts', [self::class, 'applyCatalogCategoryFilter'], 20);
+        add_filter('posts_search', [self::class, 'filterExactSkuSearch'], 20, 2);
         add_action('wp_head', [self::class, 'renderMetaDescription'], 1);
         add_action('wp_head', [self::class, 'renderArchiveCanonical'], 2);
         add_shortcode('petshop_categories', [self::class, 'renderCategoryGrid']);
@@ -132,6 +140,13 @@ final class StorefrontExperience
             '<!-- wp:heading --><h2 class="wp-block-heading">Personalização em preparação</h2><!-- /wp:heading -->'
             . '<!-- wp:paragraph --><p>Esta área está reservada para uma futura experiência de personalização. O catálogo atual continua disponível normalmente.</p><!-- /wp:paragraph -->'
         );
+        $collectionsId = self::ensurePage(
+            'colecoes',
+            'Coleções',
+            '<!-- wp:heading --><h2 class="wp-block-heading">Coleções para cada ocasião</h2><!-- /wp:heading -->'
+            . '<!-- wp:paragraph --><p>Conheça as coleções disponíveis e encontre acessórios para diferentes estilos e épocas do ano.</p><!-- /wp:paragraph -->'
+            . '<!-- wp:shortcode -->[petshop_categories limit="8"]<!-- /wp:shortcode -->'
+        );
         $policiesId = self::ensurePage(
             'politicas-da-loja',
             'Políticas da loja',
@@ -142,6 +157,7 @@ final class StorefrontExperience
         if ($heroId <= 0) {
             throw new \RuntimeException('Imagem hero-wide ausente; execute o seed 004b e tente novamente.');
         }
+        $existingHome = get_page_by_path('inicio');
         $homeId = self::ensurePage(
             'inicio',
             'Início',
@@ -151,6 +167,9 @@ final class StorefrontExperience
                 $heroId
             )
         );
+        if (!$existingHome instanceof \WP_Post) {
+            self::stampNewManagedHome($homeId, (string) wc_get_page_permalink('shop'), $heroId);
+        }
 
         self::migrateManagedHome(
             $homeId,
@@ -169,6 +188,8 @@ final class StorefrontExperience
         } else {
             self::addPolicyToManagedFooter($policiesId);
         }
+        self::ensureCommercialMenu($collectionsId, $personalizeId);
+        self::ensureHeaderDefaults();
 
         update_option(self::OPTION, self::VERSION, false);
     }
@@ -258,6 +279,10 @@ final class StorefrontExperience
 
     public static function renderCatalogFilter(): void
     {
+        if (!is_shop() && !is_product_taxonomy()) {
+            return;
+        }
+
         $terms = get_terms([
             'taxonomy' => 'product_cat',
             'hide_empty' => true,
@@ -270,16 +295,136 @@ final class StorefrontExperience
             return;
         }
 
-        echo '<nav class="petshop-catalog-filter" aria-label="' . esc_attr__('Filtrar por categoria', 'petshop-core') . '">';
-        echo '<span class="petshop-catalog-filter__label">' . esc_html__('Comprar por categoria:', 'petshop-core') . '</span>';
-        echo '<ul>';
+        $selectedSlugs = self::selectedCatalogCategorySlugs();
+        if ($selectedSlugs === [] && is_product_category()) {
+            $currentTerm = get_queried_object();
+            if ($currentTerm instanceof \WP_Term) {
+                $selectedSlugs = [$currentTerm->slug];
+            }
+        }
+        self::$catalogLayoutOpen = true;
+
+        echo '<aside class="petshop-catalog-sidebar" aria-labelledby="petshop-catalog-filter-title">';
+        echo '<form class="petshop-catalog-filter" action="' . esc_url(wc_get_page_permalink('shop')) . '" method="get">';
+        echo '<h2 id="petshop-catalog-filter-title" class="petshop-catalog-filter__title">' . esc_html__('Categorias', 'petshop-core') . '</h2>';
+        echo '<div class="petshop-catalog-filter__search">';
+        echo '<label for="petshop-category-search">' . esc_html__('Filtrar categorias', 'petshop-core') . '</label>';
+        echo '<input id="petshop-category-search" type="search" placeholder="' . esc_attr__('Digite uma categoria', 'petshop-core') . '" autocomplete="off" aria-controls="petshop-category-options">';
+        echo '</div>';
+        echo '<p class="screen-reader-text" data-petshop-category-status aria-live="polite"></p>';
+        echo '<ul id="petshop-category-options">';
         foreach ($terms as $term) {
             if (!(bool) get_term_meta($term->term_id, 'petshop_visible_in_menu', true)) {
                 continue;
             }
-            echo '<li><a href="' . esc_url(get_term_link($term)) . '">' . esc_html($term->name) . '</a></li>';
+            $inputId = 'petshop-category-' . (int) $term->term_id;
+            echo '<li>';
+            echo '<label for="' . esc_attr($inputId) . '">';
+            echo '<input id="' . esc_attr($inputId) . '" type="checkbox" name="petshop_categories[]" value="' . esc_attr($term->slug) . '"' . checked(in_array($term->slug, $selectedSlugs, true), true, false) . '>';
+            echo '<span class="petshop-catalog-filter__name">' . esc_html($term->name) . '</span>';
+            echo '<span class="petshop-catalog-filter__count" aria-label="' . esc_attr(sprintf(_n('%d produto', '%d produtos', $term->count, 'petshop-core'), $term->count)) . '">' . esc_html((string) $term->count) . '</span>';
+            echo '</label>';
+            echo '</li>';
         }
-        echo '</ul></nav>';
+        echo '</ul>';
+        echo '<button class="petshop-button petshop-catalog-filter__apply" type="submit">' . esc_html__('Aplicar filtros', 'petshop-core') . '</button>';
+        echo '</form>';
+        echo '</aside>';
+        echo '<div class="petshop-catalog-toolbar">';
+    }
+
+    public static function enqueueCatalogFilterAssets(): void
+    {
+        if (!is_shop() && !is_product_taxonomy()) {
+            return;
+        }
+
+        $assetPath = dirname(__DIR__) . '/assets/js/catalog-filter.js';
+        wp_enqueue_script(
+            'petshop-catalog-filter',
+            plugins_url('assets/js/catalog-filter.js', PETSHOP_CORE_FILE),
+            [],
+            is_file($assetPath) ? (string) filemtime($assetPath) : self::VERSION,
+            true
+        );
+    }
+
+    public static function applyCatalogCategoryFilter(\WP_Query $query): void
+    {
+        if (is_admin() || !$query->is_main_query() || !$query->is_post_type_archive('product')) {
+            return;
+        }
+
+        $selectedSlugs = self::selectedCatalogCategorySlugs();
+        if ($selectedSlugs === []) {
+            return;
+        }
+
+        $taxQuery = (array) $query->get('tax_query');
+        $taxQuery[] = [
+            'taxonomy' => 'product_cat',
+            'field' => 'slug',
+            'terms' => $selectedSlugs,
+            'operator' => 'IN',
+            'include_children' => true,
+        ];
+        $query->set('tax_query', $taxQuery);
+    }
+
+    public static function canonicalizeCatalogCategoryFilter(): void
+    {
+        if (!is_product_taxonomy()) {
+            return;
+        }
+
+        $selectedSlugs = self::selectedCatalogCategorySlugs();
+        if ($selectedSlugs === []) {
+            return;
+        }
+
+        $url = add_query_arg(
+            'petshop_categories',
+            implode(',', $selectedSlugs),
+            wc_get_page_permalink('shop')
+        );
+        if (isset($_GET['orderby']) && is_scalar($_GET['orderby'])) {
+            $url = add_query_arg('orderby', sanitize_key(wp_unslash((string) $_GET['orderby'])), $url);
+        }
+        wp_safe_redirect($url, 302, 'Petshop catalog filter');
+        exit;
+    }
+
+    /** @return list<string> */
+    private static function selectedCatalogCategorySlugs(): array
+    {
+        if (!isset($_GET['petshop_categories'])) {
+            return [];
+        }
+
+        $raw = wp_unslash($_GET['petshop_categories']);
+        $values = is_array($raw) ? $raw : [$raw];
+        $slugs = [];
+        foreach ($values as $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
+            foreach (explode(',', (string) $value) as $candidate) {
+                $slug = sanitize_title($candidate);
+                if ($slug !== '') {
+                    $slugs[] = $slug;
+                }
+            }
+        }
+
+        return array_values(array_unique($slugs));
+    }
+
+    public static function closeCatalogToolbar(): void
+    {
+        if (self::$catalogLayoutOpen) {
+            echo '</div>';
+            self::$catalogLayoutOpen = false;
+        }
     }
 
     public static function renderCategoryIntroduction(): void
@@ -295,6 +440,45 @@ final class StorefrontExperience
         echo '<div class="petshop-category-introduction">';
         echo wp_kses_post(wpautop($term->description));
         echo '</div>';
+    }
+
+    public static function resolveExactSkuSearch(\WP_Query $query): void
+    {
+        if (is_admin() || !$query->is_main_query() || !$query->is_search() || !class_exists('WooCommerce')) {
+            return;
+        }
+        $postType = $query->get('post_type');
+        if ($postType !== 'product' && $postType !== ['product']) {
+            return;
+        }
+        $search = trim((string) $query->get('s'));
+        if ($search === '') {
+            return;
+        }
+        $productId = wc_get_product_id_by_sku($search);
+        if ($productId <= 0) {
+            return;
+        }
+
+        $product = wc_get_product($productId);
+        if ($product && $product->is_type('variation')) {
+            $productId = $product->get_parent_id();
+        }
+
+        $query->set('_petshop_exact_sku_product_id', $productId);
+        $query->set('posts_per_page', 1);
+    }
+
+    public static function filterExactSkuSearch(string $searchSql, \WP_Query $query): string
+    {
+        $productId = (int) $query->get('_petshop_exact_sku_product_id');
+        if ($productId <= 0) {
+            return $searchSql;
+        }
+
+        global $wpdb;
+
+        return $wpdb->prepare(" AND {$wpdb->posts}.ID = %d", $productId);
     }
 
     /**
@@ -618,7 +802,7 @@ BLOCKS;
                 $hydratedCurrent = self::hydrateHeroAlt($currentHero);
                 $currentManaged = $knownHash === ''
                     && hash_equals(
-                        hash('sha256', self::heroContent($shopUrl, $heroId)),
+                        hash('sha256', self::campaignHeroContent($shopUrl, $heroId)),
                         hash('sha256', $hydratedCurrent)
                     );
 
@@ -636,6 +820,77 @@ BLOCKS;
                 // Qualquer outro conteúdo é uma customização e deve permanecer intacto.
                 $setHeroSchema = true;
             }
+        }
+
+        $setSchemaEight = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 8) {
+            $heroClassPosition = strpos($content, '"className":"petshop-hero"');
+            $heroStart = $heroClassPosition === false
+                ? false
+                : strrpos(substr($content, 0, $heroClassPosition), '<!-- wp:cover ');
+            $heroEnd = $heroStart === false ? false : strpos($content, '<!-- /wp:cover -->', $heroStart);
+
+            if ($heroStart !== false && $heroEnd !== false) {
+                $heroEnd += strlen('<!-- /wp:cover -->');
+                $currentHero = substr($content, $heroStart, $heroEnd - $heroStart);
+                $currentHash = hash('sha256', $currentHero);
+                $knownHash = (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true);
+                $isManaged = ($managedHeroMarkup !== '' && hash_equals(hash('sha256', $managedHeroMarkup), $currentHash))
+                    || ($knownHash !== '' && hash_equals($knownHash, $currentHash))
+                    || hash_equals(hash('sha256', self::heroContent($shopUrl, $heroId)), $currentHash)
+                    || hash_equals(hash('sha256', self::campaignHeroContent($shopUrl, $heroId)), $currentHash);
+
+                if ($isManaged) {
+                    $managedHeroMarkup = self::heroContent($shopUrl, $heroId);
+                    $content = substr($content, 0, $heroStart)
+                        . $managedHeroMarkup
+                        . substr($content, $heroEnd);
+                    $heroEnd = $heroStart + strlen($managedHeroMarkup);
+                } else {
+                    delete_post_meta($homeId, '_petshop_managed_hero_hash');
+                }
+            } else {
+                delete_post_meta($homeId, '_petshop_managed_hero_hash');
+            }
+
+            if (!str_contains($content, '"className":"petshop-benefits"')) {
+                $benefits = self::benefitsContent();
+                $insertAt = $heroEnd === false ? 0 : $heroEnd;
+                $content = substr($content, 0, $insertAt)
+                    . "\n" . $benefits
+                    . substr($content, $insertAt);
+            }
+            $setSchemaEight = true;
+        }
+
+        $setSchemaNine = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 9) {
+            $heroClassPosition = strpos($content, '"className":"petshop-hero"');
+            $heroStart = $heroClassPosition === false
+                ? false
+                : strrpos(substr($content, 0, $heroClassPosition), '<!-- wp:cover ');
+            $heroEnd = $heroStart === false ? false : strpos($content, '<!-- /wp:cover -->', $heroStart);
+            if ($heroStart !== false && $heroEnd !== false) {
+                $heroEnd += strlen('<!-- /wp:cover -->');
+                $currentHero = substr($content, $heroStart, $heroEnd - $heroStart);
+                $currentHash = hash('sha256', $currentHero);
+                $knownHash = (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true);
+                $isManaged = ($managedHeroMarkup !== '' && hash_equals(hash('sha256', $managedHeroMarkup), $currentHash))
+                    || ($knownHash !== '' && hash_equals($knownHash, $currentHash))
+                    || hash_equals(hash('sha256', self::invalidInstitutionalHeroContent($shopUrl, $heroId)), $currentHash)
+                    || hash_equals(hash('sha256', self::heroContent($shopUrl, $heroId)), $currentHash);
+                if ($isManaged) {
+                    $managedHeroMarkup = self::heroContent($shopUrl, $heroId);
+                    $content = substr($content, 0, $heroStart)
+                        . $managedHeroMarkup
+                        . substr($content, $heroEnd);
+                } else {
+                    delete_post_meta($homeId, '_petshop_managed_hero_hash');
+                }
+            } else {
+                delete_post_meta($homeId, '_petshop_managed_hero_hash');
+            }
+            $setSchemaNine = true;
         }
 
         if ($content !== $originalContent) {
@@ -663,6 +918,37 @@ BLOCKS;
                     throw new \RuntimeException('Não foi possível confirmar a assinatura do hero gerenciado.');
                 }
             }
+        }
+        if ($setSchemaEight) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 8);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 8) {
+                throw new \RuntimeException('Não foi possível confirmar o schema institucional da Home.');
+            }
+            if ($managedHeroMarkup !== '') {
+                update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $managedHeroMarkup));
+            }
+        }
+        if ($setSchemaNine) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 9);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 9) {
+                throw new \RuntimeException('Não foi possível confirmar o schema válido do Gutenberg.');
+            }
+            if ($managedHeroMarkup !== '') {
+                update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $managedHeroMarkup));
+            }
+        }
+    }
+
+    private static function stampNewManagedHome(int $homeId, string $shopUrl, int $heroId): void
+    {
+        $hero = self::heroContent($shopUrl, $heroId);
+        update_post_meta($homeId, '_petshop_home_schema_version', 9);
+        update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $hero));
+        if (
+            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 9
+            || (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true) !== hash('sha256', $hero)
+        ) {
+            throw new \RuntimeException('Não foi possível assinar a nova Home gerenciada.');
         }
     }
 
@@ -754,7 +1040,9 @@ BLOCKS;
         set_theme_mod('buttonMinHeight', '44');
         set_theme_mod('shop_cards_alignment', 'left');
         set_theme_mod('has_product_categories', 'yes');
-        set_theme_mod('custom_logo', self::ensureLogoAttachment());
+        if ((int) get_theme_mod('custom_logo', 0) <= 0) {
+            set_theme_mod('custom_logo', self::ensureLogoAttachment());
+        }
         if (in_array(get_option('blogname'), ['Petshop', 'Petshop Local', 'Autelie Moda Pet'], true)) {
             update_option('blogname', 'Auteliê Moda Pet');
         }
@@ -762,6 +1050,96 @@ BLOCKS;
             update_option('blogdescription', 'Acessórios pet com personalidade');
         }
         update_post_meta($homeId, 'blocksy_post_meta_options', ['has_hero_section' => 'disabled']);
+    }
+
+    private static function ensureHeaderDefaults(): void
+    {
+        if (get_stylesheet() !== 'petshop-theme') {
+            return;
+        }
+        if (get_theme_mod('petshop_benefit_text', null) === null) {
+            set_theme_mod('petshop_benefit_text', 'Acabamento cuidadoso para tutores e profissionais');
+        }
+        if (get_theme_mod('petshop_support_label', null) === null) {
+            set_theme_mod('petshop_support_label', 'Atendimento');
+        }
+        if (get_theme_mod('petshop_account_label', null) === null) {
+            set_theme_mod('petshop_account_label', 'Minha conta');
+        }
+        if (get_theme_mod('petshop_support_page', null) === null) {
+            $supportPage = get_page_by_path('atendimento');
+            if ($supportPage instanceof \WP_Post) {
+                set_theme_mod('petshop_support_page', (int) $supportPage->ID);
+            }
+        }
+    }
+
+    private static function ensureCommercialMenu(int $collectionsId, int $personalizeId): void
+    {
+        if (get_option(self::COMMERCIAL_MENU_OPTION) === '1') {
+            return;
+        }
+
+        $menuId = self::ensureMenu('Navegação comercial');
+        $targets = [
+            ['type' => 'taxonomy', 'slug' => 'lacos', 'label' => 'Laços'],
+            ['type' => 'taxonomy', 'slug' => 'bandanas', 'label' => 'Bandanas'],
+            ['type' => 'taxonomy', 'slug' => 'adesivos', 'label' => 'Adesivos'],
+            ['type' => 'taxonomy', 'slug' => 'gravatas', 'label' => 'Gravatas'],
+            ['type' => 'taxonomy', 'slug' => 'conjuntos', 'label' => 'Kits Econômicos'],
+            ['type' => 'page', 'id' => $collectionsId, 'label' => 'Coleções'],
+            ['type' => 'page', 'id' => $personalizeId, 'label' => 'Personalizados'],
+        ];
+
+        foreach ($targets as $position => $target) {
+            if ($target['type'] === 'taxonomy') {
+                $term = get_term_by('slug', $target['slug'], 'product_cat');
+                if (!$term instanceof \WP_Term) {
+                    throw new \RuntimeException('Categoria ausente para o menu comercial: ' . $target['slug']);
+                }
+                $object = 'product_cat';
+                $objectId = (int) $term->term_id;
+                $itemType = 'taxonomy';
+            } else {
+                $object = 'page';
+                $objectId = (int) $target['id'];
+                $itemType = 'post_type';
+            }
+
+            $itemId = self::findMenuObjectItem($menuId, $itemType, $object, $objectId);
+            if ($itemId <= 0) {
+                $itemId = wp_update_nav_menu_item($menuId, 0, [
+                    'menu-item-title' => $target['label'],
+                    'menu-item-object' => $object,
+                    'menu-item-object-id' => $objectId,
+                    'menu-item-type' => $itemType,
+                    'menu-item-position' => $position + 1,
+                    'menu-item-status' => 'publish',
+                ]);
+                if (is_wp_error($itemId)) {
+                    throw new \RuntimeException($itemId->get_error_message());
+                }
+                update_post_meta((int) $itemId, '_petshop_managed_menu_item_005', '1');
+            }
+        }
+
+        $items = wp_get_nav_menu_items($menuId);
+        if (!is_array($items) || count($items) !== count($targets)) {
+            throw new \RuntimeException('O menu comercial não possui as sete entradas esperadas.');
+        }
+
+        $locations = get_theme_mod('nav_menu_locations', []);
+        $locations['petshop-primary'] = $menuId;
+        set_theme_mod('nav_menu_locations', $locations);
+        update_option(self::COMMERCIAL_MENU_OPTION, '1', false);
+
+        $confirmedLocations = get_theme_mod('nav_menu_locations', []);
+        if (
+            (int) ($confirmedLocations['petshop-primary'] ?? 0) !== $menuId
+            || get_option(self::COMMERCIAL_MENU_OPTION) !== '1'
+        ) {
+            throw new \RuntimeException('Não foi possível confirmar o menu comercial.');
+        }
     }
 
     private static function ensureLogoAttachment(): int
@@ -971,7 +1349,7 @@ BLOCKS;
         );
     }
 
-    private static function heroContent(string $shopUrl, int $heroId): string
+    private static function campaignHeroContent(string $shopUrl, int $heroId): string
     {
         $heroUrl = wp_get_attachment_image_url($heroId, 'full') ?: '';
         $heroAlt = (string) get_post_meta($heroId, '_wp_attachment_image_alt', true);
@@ -996,12 +1374,72 @@ BLOCKS;
 BLOCKS;
     }
 
+    private static function invalidInstitutionalHeroContent(string $shopUrl, int $heroId): string
+    {
+        $heroUrl = esc_url(wp_get_attachment_image_url($heroId, 'full') ?: '');
+        $heroAlt = (string) get_post_meta($heroId, '_wp_attachment_image_alt', true);
+        $heroAltJson = wp_json_encode($heroAlt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $heroAltAttribute = esc_attr($heroAlt);
+        $featuredUrl = esc_url($shopUrl);
+        $kitsUrl = get_term_link('conjuntos', 'product_cat');
+        $kitsUrl = esc_url(is_wp_error($kitsUrl) ? $shopUrl : $kitsUrl);
+
+        return <<<BLOCKS
+<!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
+<div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-15 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Acessórios para banho e tosa</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Acessórios que valorizam cada banho e tosa</h1><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Bandanas, laços, gravatas e adesivos com acabamento profissional e opções para diferentes volumes.</p><!-- /wp:paragraph -->
+<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="{$featuredUrl}">Ver destaques da loja</a></div><!-- /wp:button -->
+<!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="{$kitsUrl}">Conhecer kits econômicos</a></div><!-- /wp:button --></div><!-- /wp:buttons -->
+</div><!-- /wp:group --></div></div>
+<!-- /wp:cover -->
+BLOCKS;
+    }
+
+    private static function heroContent(string $shopUrl, int $heroId): string
+    {
+        $heroUrl = esc_url(wp_get_attachment_image_url($heroId, 'full') ?: '');
+        $heroAlt = (string) get_post_meta($heroId, '_wp_attachment_image_alt', true);
+        $heroAltJson = wp_json_encode($heroAlt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $heroAltAttribute = esc_attr($heroAlt);
+        $featuredUrl = esc_url($shopUrl);
+        $kitsUrl = get_term_link('conjuntos', 'product_cat');
+        $kitsUrl = esc_url(is_wp_error($kitsUrl) ? $shopUrl : $kitsUrl);
+
+        return <<<BLOCKS
+<!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
+<div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-20 has-background-dim"></span><div class="wp-block-cover__inner-container">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Acessórios para banho e tosa</p><!-- /wp:paragraph -->
+<!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Acessórios que valorizam cada banho e tosa</h1><!-- /wp:heading -->
+<!-- wp:paragraph --><p>Bandanas, laços, gravatas e adesivos com acabamento profissional e opções para diferentes volumes.</p><!-- /wp:paragraph -->
+<!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="{$featuredUrl}">Ver destaques da loja</a></div><!-- /wp:button -->
+<!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="{$kitsUrl}">Conhecer kits econômicos</a></div><!-- /wp:button --></div><!-- /wp:buttons -->
+</div><!-- /wp:group --></div></div>
+<!-- /wp:cover -->
+BLOCKS;
+    }
+
+    private static function benefitsContent(): string
+    {
+        return <<<'BLOCKS'
+<!-- wp:group {"align":"full","className":"petshop-benefits","layout":{"type":"constrained"}} --><div class="wp-block-group alignfull petshop-benefits">
+<!-- wp:group {"className":"petshop-benefits__inner","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"center"}} --><div class="wp-block-group petshop-benefits__inner">
+<!-- wp:paragraph --><p>Pronta entrega</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Condições para volume</p><!-- /wp:paragraph -->
+<!-- wp:paragraph --><p>Envio para todo o Brasil</p><!-- /wp:paragraph -->
+</div><!-- /wp:group --></div><!-- /wp:group -->
+BLOCKS;
+    }
+
     private static function homeContent(string $shopUrl, string $supportUrl, int $heroId): string
     {
         $shopUrl = esc_url($shopUrl);
         $supportUrl = esc_url($supportUrl);
 
-        return self::heroContent($shopUrl, $heroId) . <<<BLOCKS
+        return self::heroContent($shopUrl, $heroId) . "\n" . self::benefitsContent() . <<<BLOCKS
 <!-- wp:group {"className":"petshop-section","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section">
 <!-- wp:heading --><h2 class="wp-block-heading">Compre por categoria</h2><!-- /wp:heading -->
 <!-- wp:shortcode -->[petshop_categories limit="8"]<!-- /wp:shortcode --></div><!-- /wp:group -->

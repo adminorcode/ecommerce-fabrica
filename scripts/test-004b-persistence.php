@@ -14,9 +14,9 @@ $originalVersion = (string) get_option('petshop_storefront_version');
 $supportPage = get_page_by_path('atendimento');
 $supportUrl = $supportPage instanceof WP_Post ? (string) get_permalink($supportPage) : home_url('/atendimento/');
 
-$edited = str_replace('Coleção Dia dos Pais', 'Conteúdo editorial sentinela', $original);
+$edited = str_replace('Acessórios para banho e tosa', 'Conteúdo editorial sentinela', $original);
 $edited = (string) preg_replace(
-    '/href="[^"]+">Ver a coleção de Dia dos Pais/',
+    '/href="[^"]+">Ver destaques da loja/',
     'href="' . esc_url($supportUrl) . '">CTA editorial sentinela',
     $edited,
     1

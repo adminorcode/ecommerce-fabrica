@@ -7,6 +7,6 @@
 | [003-ambiente-totalmente-docker.md](./003-ambiente-totalmente-docker.md) | Em andamento | Stack Compose criada; validação bloqueada até atualizar e iniciar Docker Desktop |
 | [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md) | Em andamento | Implementação e correção 004b validadas; aguarda teste manual com leitor de tela ou aceite explícito da transferência |
 | [004b-correcao-vitrine-e-catalogo.md](./004b-correcao-vitrine-e-catalogo.md) | Concluído | Catálogo demonstrável, hero full-bleed editável, densidade comercial e persistência validados |
-| [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Planejado | Nove sessões verificáveis para cabeçalho, hero, imagens, cards, Home, rodapé, identidade e mobile |
+| [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Bloqueado | Sessões 01–02 concluídas e filtro lateral do catálogo validado; Sessão 03 aguarda fotografias reais autorizadas |
 
 **Última atualização:** 2026-07-31

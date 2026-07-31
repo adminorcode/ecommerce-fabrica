@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
+add_filter('blocksy:builder:header:enabled', '__return_false');
+
 add_action(
     'after_setup_theme',
     static function (): void {
@@ -37,6 +39,30 @@ add_action(
             'petshop_benefit_text' => [
                 'label' => __('Mensagem da barra superior', 'petshop-theme'),
                 'default' => 'Acabamento cuidadoso para tutores e profissionais',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
+            'petshop_benefit_url' => [
+                'label' => __('Link da barra superior', 'petshop-theme'),
+                'default' => '',
+                'type' => 'url',
+                'sanitize' => 'esc_url_raw',
+            ],
+            'petshop_support_label' => [
+                'label' => __('Rótulo do atendimento no cabeçalho', 'petshop-theme'),
+                'default' => 'Atendimento',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
+            'petshop_support_page' => [
+                'label' => __('Página de atendimento do cabeçalho', 'petshop-theme'),
+                'default' => 0,
+                'type' => 'dropdown-pages',
+                'sanitize' => 'absint',
+            ],
+            'petshop_account_label' => [
+                'label' => __('Rótulo da conta no cabeçalho', 'petshop-theme'),
+                'default' => 'Minha conta',
                 'type' => 'text',
                 'sanitize' => 'sanitize_text_field',
             ],
@@ -78,30 +104,76 @@ add_action(
 add_action(
     'wp_body_open',
     static function (): void {
+        $benefitText = (string) get_theme_mod(
+            'petshop_benefit_text',
+            'Acabamento cuidadoso para tutores e profissionais'
+        );
+        $benefitUrl = (string) get_theme_mod('petshop_benefit_url', '');
+        $supportPageId = (int) get_theme_mod('petshop_support_page', 0);
+        $supportPage = $supportPageId > 0 ? get_post($supportPageId) : null;
+        $supportUrl = $supportPage instanceof \WP_Post && $supportPage->post_status === 'publish'
+            ? (string) get_permalink($supportPage)
+            : '';
+        $supportLabel = trim((string) get_theme_mod('petshop_support_label', 'Atendimento'));
+        $accountLabel = trim((string) get_theme_mod('petshop_account_label', 'Minha conta'));
+        $accountUrl = class_exists('WooCommerce')
+            ? (string) wc_get_page_permalink('myaccount')
+            : wp_login_url();
         ?>
-        <aside class="petshop-benefit-bar" aria-label="<?php esc_attr_e('Benefícios da loja', 'petshop-theme'); ?>">
-            <div class="ct-container">
-                <span><?php echo esc_html((string) get_theme_mod('petshop_benefit_text', 'Acabamento cuidadoso para tutores e profissionais')); ?></span>
-                <?php if (has_nav_menu('petshop-utility')) : ?>
-                    <?php
-                    wp_nav_menu([
-                        'theme_location' => 'petshop-utility',
-                        'container' => 'nav',
-                        'container_aria_label' => __('Acessos rápidos', 'petshop-theme'),
-                        'menu_class' => 'petshop-utility-nav',
-                        'depth' => 1,
-                        'fallback_cb' => false,
-                    ]);
-                    ?>
-                <?php endif; ?>
+        <?php if (trim($benefitText) !== '') : ?>
+            <aside class="petshop-promo-bar" aria-label="<?php esc_attr_e('Mensagem promocional', 'petshop-theme'); ?>">
+                <div class="ct-container">
+                    <?php if ($benefitUrl !== '') : ?>
+                        <a href="<?php echo esc_url($benefitUrl); ?>"><?php echo esc_html($benefitText); ?></a>
+                    <?php else : ?>
+                        <span><?php echo esc_html($benefitText); ?></span>
+                    <?php endif; ?>
+                </div>
+            </aside>
+        <?php endif; ?>
+        <header class="petshop-commercial-header" itemscope itemtype="https://schema.org/WPHeader">
+            <div class="petshop-commercial-header__main ct-container">
+                <div class="petshop-commercial-header__brand" itemscope itemtype="https://schema.org/Organization">
+                    <?php if (has_custom_logo()) : ?>
+                        <?php the_custom_logo(); ?>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url(home_url('/')); ?>" rel="home"><?php echo esc_html(get_bloginfo('name')); ?></a>
+                    <?php endif; ?>
+                </div>
                 <?php if (class_exists('WooCommerce')) : ?>
-                    <div class="petshop-commerce-tools">
+                    <div class="petshop-commercial-header__search">
                         <?php get_product_search_form(); ?>
-                        <?php echo do_blocks('<!-- wp:woocommerce/mini-cart /-->'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     </div>
                 <?php endif; ?>
+                <nav class="petshop-commercial-header__actions" aria-label="<?php esc_attr_e('Conta e atendimento', 'petshop-theme'); ?>">
+                    <?php if ($supportUrl !== '' && $supportLabel !== '') : ?>
+                        <a href="<?php echo esc_url($supportUrl); ?>"><?php echo esc_html($supportLabel); ?></a>
+                    <?php endif; ?>
+                    <?php if ($accountLabel !== '') : ?>
+                        <a href="<?php echo esc_url($accountUrl); ?>"><?php echo esc_html($accountLabel); ?></a>
+                    <?php endif; ?>
+                    <?php if (class_exists('WooCommerce')) : ?>
+                        <?php echo do_blocks('<!-- wp:woocommerce/mini-cart /-->'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    <?php endif; ?>
+                </nav>
             </div>
-        </aside>
+            <?php if (has_nav_menu('petshop-primary')) : ?>
+                <div class="petshop-commercial-header__navigation">
+                    <div class="ct-container">
+                        <?php
+                        wp_nav_menu([
+                            'theme_location' => 'petshop-primary',
+                            'container' => 'nav',
+                            'container_aria_label' => __('Categorias e coleções', 'petshop-theme'),
+                            'menu_class' => 'petshop-commercial-menu',
+                            'depth' => 2,
+                            'fallback_cb' => false,
+                        ]);
+                        ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </header>
         <?php
     },
     5

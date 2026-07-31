@@ -1,8 +1,8 @@
 # Plano 005 — Refinamento comercial do storefront
 
-**Status:** Planejado  
+**Status:** Bloqueado — aguarda acervo fotográfico real
 **Data:** 2026-07-31  
-**Branch prevista:** `codex/005-refinamento-comercial-storefront`  
+**Branch de implementação:** `codex/005-refinamento-comercial-do-storefront` — entrega parcial incorporada em `master`
 **Dependência:** base funcional entregue pelo Plano 004/004b
 
 ## 1. Objetivo
@@ -69,7 +69,7 @@ A proporção 70% neutros, 20% azul-petróleo e 10% laranja é uma direção de 
 
 ### Sessão 01 — Cabeçalho comercial sem redundâncias
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -117,7 +117,7 @@ A proporção 70% neutros, 20% azul-petróleo e 10% laranja é uma direção de 
 
 ### Sessão 02 — Hero institucional e faixa de benefícios
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -146,6 +146,7 @@ A proporção 70% neutros, 20% azul-petróleo e 10% laranja é uma direção de 
 **Gate verificável**
 
 - hero full-bleed desktop entre 2,4:1 e 3,3:1;
+- eyebrow, título, descrição e grupo de CTAs compartilham um único eixo esquerdo;
 - título sem palavras isoladas ou quebras artificiais em 1440 e 390 px;
 - cabeça do animal e acessório visíveis no recorte desktop/mobile;
 - dois CTAs com destinos cadastrados e foco visível;
@@ -157,7 +158,7 @@ Esta sessão pode validar o layout com a imagem provisória existente, mas o Pla
 
 ### Sessão 03 — Fotografia real e padronização das imagens
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [ ] Bloqueada — aguarda acervo fotográfico real autorizado
 
 **Pré-condição não negociável**
 
@@ -190,6 +191,12 @@ Receber ou localizar fotografias reais dos produtos autorizadas pelo cliente. Au
 
 **Escopo**
 
+- preparar a listagem de loja/categoria com sidebar esquerda no desktop e acima
+  da grade no mobile;
+- apresentar campo textual para localizar opções de categoria e lista vertical
+  com checkbox e contagem real de produtos;
+- separar a aprovação do layout da implementação da consulta: controles não
+  podem ser declarados funcionais antes do gate específico de filtragem;
 - limitar título a duas linhas sem cortar informação essencial;
 - uniformizar imagem, espaçamento, preço e CTA;
 - exibir preço anterior somente quando existir preço promocional válido;
@@ -201,6 +208,15 @@ Receber ou localizar fotografias reais dos produtos autorizadas pelo cliente. Au
 
 **Gate verificável**
 
+- sidebar e grade formam colunas distintas em desktop, sem grande bloco
+  horizontal de chips;
+- sidebar aparece antes da toolbar/grade no mobile e não cria overflow;
+- campo textual, checkboxes, nomes e contagens têm rótulos acessíveis;
+- screenshot do layout é aprovado antes da implementação da filtragem real;
+- seleção múltipla usa query string canônica da loja e combina categorias com
+  semântica OR, preservando todos os checkboxes selecionados após a navegação;
+- busca textual reduz apenas as opções da sidebar, tolera acentos e não altera
+  os produtos até que uma categoria seja selecionada;
 - nenhum card contém desconto, preço no Pix, avaliação ou badge fabricado;
 - produtos sem sale/review não deixam buracos no card;
 - produtos com dados reais exibem os campos correspondentes;
@@ -335,6 +351,10 @@ Regras:
 - uma família tipográfica computada em headings, body, botões e menu;
 - nenhuma seção extensa usa laranja como fundo;
 - contraste AA em texto, links, preços, badges e botões;
+- ícones devem herdar a cor de primeiro plano do controle e manter contraste AA
+  contra seu fundo em todos os estados; texto sobre fotografia deve usar uma
+  superfície, faixa ou gradiente de contraste determinístico, nunca depender
+  apenas da luminosidade circunstancial da imagem;
 - comparação visual confirma predominância de branco/neutros.
 
 ### Sessão 09 — Mobile, acessibilidade e integração final
