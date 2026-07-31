@@ -49,6 +49,11 @@ wp option update timezone_string 'America/Sao_Paulo' --path="$runtime" --allow-r
 wp option update permalink_structure '/%postname%/' --path="$runtime" --allow-root
 wp rewrite flush --path="$runtime" --allow-root
 wp language core install pt_BR --activate --path="$runtime" --allow-root || true
+wp language plugin install woocommerce pt_BR --path="$runtime" --allow-root || true
+wp language plugin install blocksy-companion pt_BR --path="$runtime" --allow-root || true
+wp language plugin install fluentform pt_BR --path="$runtime" --allow-root || true
+wp language plugin install stackable-ultimate-gutenberg-blocks pt_BR --path="$runtime" --allow-root || true
+wp language theme install blocksy pt_BR --path="$runtime" --allow-root || true
 wp plugin activate woocommerce blocksy-companion stackable-ultimate-gutenberg-blocks fluentform petshop-core --path="$runtime" --allow-root
 wp theme activate petshop-theme --path="$runtime" --allow-root
 
