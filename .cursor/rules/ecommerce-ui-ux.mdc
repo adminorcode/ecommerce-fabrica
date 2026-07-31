@@ -1,0 +1,122 @@
+---
+description: UI, UX e padrões visuais do storefront WooCommerce do petshop
+globs: wp-content/themes/petshop-theme/**,wp-content/plugins/petshop-core/**,Plans/**
+alwaysApply: false
+---
+
+# UI/UX — E-commerce Petshop
+
+Regras de interface e usabilidade para decisões de design no storefront. Complementam `.cursor/rules/project.mdc` (conteúdo administrável) e detalham gates do Plano 005 quando aplicável.
+
+## Princípios de conversão e confiança
+
+1. **Uma ação principal por área** — no hero, no card e na PDP, um CTA primário claro; secundário visualmente mais leve.
+2. **Dados reais ou ocultar** — preço, promoção, estoque, avaliação, badge “Mais vendido” e Pix só aparecem com origem WooCommerce/configuração real. Sem placeholder comercial enganoso.
+3. **Reduzir fricção de compra** — busca e carrinho sempre acessíveis no header; quantidade e “Adicionar ao carrinho” visíveis na PDP sem scroll excessivo em mobile.
+4. **Confiança antes de ornamentação** — benefícios (entrega, volume, envio), aviso de produto e atendimento visíveis sem competir com o CTA de compra.
+5. **Sem redundância** — nunca duplicar busca, carrinho, logo ou navegação principal na mesma viewport.
+
+## Design system (usar tokens existentes)
+
+Preferir variáveis CSS de `petshop-theme/style.css` em vez de cores/tamanhos soltos:
+
+| Token | Uso |
+|-------|-----|
+| `--color-brand-teal` / `--color-brand-teal-dark` | Marca, links, superfícies institucionais |
+| `--color-brand-orange` / `--color-brand-orange-dark` | **Somente** CTA primário, preço em destaque, badges de ação |
+| `--color-surface`, `--color-surface-soft`, `--color-ink`, `--color-muted` | Fundos e texto |
+| `--radius-sm` (8px), `--radius-md` (16px), `--radius-pill` | Cards, inputs, botões |
+| `--shadow-card` | Elevação de cards de produto |
+| `--space-1` … `--space-6` | Ritmo vertical consistente |
+
+Direção de composição (Plano 005): ~70% neutros, ~20% azul-petróleo, ~10% laranja. Laranja **não** deve dominar grandes seções inteiras.
+
+Layout: container máximo **1280px**; espaçamento entre seções desktop ~**72px**; uma família tipográfica.
+
+## Hierarquia e copy comercial
+
+- Títulos de seção menores que o hero; hero com eyebrow + título + apoio + grupo de CTAs alinhados no **mesmo eixo esquerdo**.
+- Títulos de produto/categoria: máximo **2 linhas** na grade; truncar sem perder informação essencial (SKU, variante).
+- CTAs com verbos de ação (`Comprar`, `Ver`, `Conhecer`); evitar “Clique aqui”.
+- Campanhas sazonais **secundárias** ao hero institucional — nunca substituir o H1 principal da Home.
+
+## Padrões por superfície
+
+### Header
+
+- Barra promocional fina (opcional) → logo → busca central dominante → conta/atendimento/minicarrinho.
+- Menu comercial com destinos HTTP 200; profundidade máxima 2 níveis no desktop.
+- Contador do carrinho no minicarrinho; sem link textual “Carrinho” duplicado.
+
+### Home
+
+- Hero full-bleed desktop entre **2,4:1 e 3,3:1**; produto/pet com cabeça e acessório visíveis.
+- Faixa de benefícios compacta abaixo do hero (3 itens típicos).
+- Categorias em grid **1:1**; imagem distinta e semanticamente correta por categoria.
+- Sem seções vazias, categorias promocionais misturadas às de produto ou grandes blocos de whitespace improdutivo.
+
+### Catálogo / categoria
+
+- Desktop: **sidebar de filtro à esquerda** + grade à direita (colunas distintas).
+- Mobile: sidebar **antes** da toolbar/grade; sem overflow horizontal.
+- Filtros com rótulos acessíveis, contagem real de produtos e estado persistente na URL.
+- Toolbar de ordenação/results alinhada à grade, não competindo com sidebar.
+
+### Card de produto
+
+- Imagem **1:1**, `object-fit: contain` quando o produto exige.
+- Preço atual sempre visível; preço “de” só com promoção válida.
+- CTA de card consistente (altura, raio, cor primária).
+- Campos opcionais ausentes: ocultar bloco **sem** deixar buraco na grade.
+
+### PDP (página de produto)
+
+- Galeria, título, preço, estoque, variações e CTA acima da dobra em mobile quando possível.
+- Bloco “Antes de adicionar ao carrinho” (Customizer) abaixo do resumo, tom informativo.
+- Relacionados limitados e com mesma qualidade visual dos cards da loja.
+
+### Checkout (WooCommerce Blocks)
+
+- Não quebrar fluxo do Checkout Block; alterações visuais via CSS/hooks compatíveis.
+- Manter contraste e área de toque nos botões de pagamento e “Finalizar pedido”.
+
+## Mobile e responsividade
+
+Validar em **390px**, **768px**, **1024px** e **1440px** antes de concluir interface.
+
+- Alvos de toque mínimo **44×44px** (links de nav, botões, checkboxes de filtro).
+- Busca e minicarrinho permanecem utilizáveis em 390px sem sobreposição.
+- Evitar `min-height` fixo que corte conteúdo em telas pequenas sem `@media` correspondente.
+- Respeitar `prefers-reduced-motion: reduce` (já presente no tema).
+
+## Acessibilidade (obrigatório)
+
+- Contraste de texto e CTA conforme WCAG AA; não depender só de cor para estado (estoque, promoção).
+- `:focus-visible` visível em links, botões e inputs (token `--color-focus`).
+- `aria-label` em navs, busca, minicarrinho e filtros quando o rótulo visual for insuficiente.
+- Imagens de conteúdo com **alt** específico e editável; decorativas com `alt=""`.
+- Ordem de tab lógica: promo → logo → busca → utilidades → menu → conteúdo.
+- Teste de teclado (Tab/Enter/Escape) em header, filtros e modais antes de fechar sessão de UI.
+
+## Anti-patterns (não implementar)
+
+- Segunda busca, segundo carrinho ou logo com título duplicado abaixo da imagem.
+- Reviews, vendas, descontos, Pix, CNPJ ou endereço fabricados.
+- Imagens de banco ou repetidas entre categorias distintas como estado final.
+- Seções hero ou promo com fundo laranja/marrom ocupando a viewport inteira.
+- Chips horizontais de categoria no lugar da sidebar quando o plano exige filtro lateral.
+- Texto comercial ou URL de imagem fixos em PHP/CSS/JS (usar Gutenberg, Customizer, WC).
+- Animações excessivas, parallax ou carrosséis auto-play que atrapalham leitura/compra.
+
+## Checklist antes de entregar UI
+
+1. Screenshot desktop e mobile da rota alterada (incluir lazy load carregado).
+2. Confirmar tokens CSS reutilizados; sem hex solto salvo exceção documentada.
+3. Confirmar um único CTA primário por bloco comercial.
+4. Confirmar elementos condicionais ocultos sem whitespace residual.
+5. Confirmar persistência editorial se textos/imagens forem administráveis.
+6. Executar scripts browser/PHP do plano ativo quando existirem (`scripts/validate-005-*`).
+7. Atualizar inventário de conteúdo por rota no plano se novos textos/imagens forem introduzidos.
+
+- Referências internas: `Plans/005-refinamento-comercial-do-storefront.md`, `style.css`, exemplos em `.cursor/skills/ecommerce-design-review/references/design-tokens.md`
+- Componentes UI genéricos: skill `/ui-design-brain` (sempre mapear para tokens deste projeto)

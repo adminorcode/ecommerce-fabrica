@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "ui-design-brain": {
+      "source": "carmahhawwari/ui-design-brain",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "a51816925376721c7bd63cf8ff97905146f596e481c3c7598bfa0722ca75b1f4"
+    },
+    "wordpress-router": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wordpress-router/SKILL.md",
+      "computedHash": "2b8e04e47a3b616f770c7aca2546e7277e0fc425dae5e0f6f2be6551bff3a307"
+    },
+    "wp-block-development": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-block-development/SKILL.md",
+      "computedHash": "98f9a44abf8e07b7e5eeefa0d3b0aa94ee166d215c4687b5b782baa666f96c29"
+    },
+    "wp-plugin-development": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-plugin-development/SKILL.md",
+      "computedHash": "60078812f6c895603651eb201061b89fa5511325204c778419f509d30304f08d"
+    },
+    "wp-project-triage": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-project-triage/SKILL.md",
+      "computedHash": "48dff13ebd14bd6d68b0cfd87c275fa3d85d023d0b7aeb3d7f0601e67d6317c1"
+    },
+    "wp-wpcli-and-ops": {
+      "source": "WordPress/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/wp-wpcli-and-ops/SKILL.md",
+      "computedHash": "13231a1c83a82eff74946569ab247a279dfbe32b5ab4a328eaad7ab238e0ba85"
+    }
+  }
+}
