@@ -37,12 +37,12 @@ Opções:
 
 Sequência padrão:
 
-1. `StorefrontCatalog::maybeEnsureCategories()` + `StorefrontExperience::maybeEnsureStorefront()`
+1. `StorefrontCatalog::maybeEnsureCategories()`
 2. `seed-storefront-placeholders.php`
-3. `validate-storefront.php`
-4. `validate-004b.php`
-5. `validate-005-session-01.php`
-6. `validate-005-session-02.php`
+3. `StorefrontExperience::maybeEnsureStorefront()`
+4. validators PHP
+
+**Git Bash (Windows):** `run-gates.sh` exporta `MSYS_NO_PATHCONV=1` para preservar paths `/var/www/html/scripts` no contêiner.
 
 ## Catálogo por plano
 

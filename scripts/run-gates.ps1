@@ -24,10 +24,12 @@ function Invoke-EvalFile {
 }
 
 if (-not $SkipProvision) {
-    Write-Host '==> provisionando taxonomia e storefront'
-    Invoke-WpCli eval 'Petshop\Core\StorefrontCatalog::maybeEnsureCategories(); Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
+    Write-Host '==> provisionando taxonomia'
+    Invoke-WpCli eval 'Petshop\Core\StorefrontCatalog::maybeEnsureCategories();'
     Write-Host '==> seed demonstrativo 004b (idempotente)'
     Invoke-EvalFile 'seed-storefront-placeholders.php'
+    Write-Host '==> provisionando storefront'
+    Invoke-WpCli eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
 }
 
 Invoke-EvalFile 'validate-storefront.php'

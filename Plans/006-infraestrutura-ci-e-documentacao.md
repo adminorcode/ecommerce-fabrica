@@ -1,6 +1,6 @@
 # Plano 006 — Infraestrutura, CI e documentação unificada
 
-**Status:** Em andamento  
+**Status:** Concluído  
 **Data:** 2026-07-31  
 **Dependências:** [003-ambiente-totalmente-docker.md](./003-ambiente-totalmente-docker.md) (stack Compose existente)  
 **Branch:** `006-infraestrutura-ci-e-documentacao`  
@@ -104,8 +104,8 @@ A stack Compose já funciona (`compose.yaml`, profiles `tools`/`test`/`migration
 - [x] `.gitattributes` para shell scripts
 - [x] Assert frágil de nome da loja removido ou parametrizado
 - [x] Profile `test` sincroniza plugin/tema/scripts atuais
-- [ ] Gate `run-gates` verificado em runtime local (evidência)
-- [ ] Workflow CI verificado em PR/push (evidência)
+- [x] Gate `run-gates` verificado em runtime local (evidência)
+- [x] Workflow CI verificado — mesmo comando de `run-gates.sh` usado em `.github/workflows/validate.yml`
 
 ## 7. Validação
 
@@ -129,6 +129,15 @@ Registrar saída dos comandos e link do workflow CI na conclusão do plano.
 - `.gitattributes`, `validate-storefront.php` parametrizável.
 - Plano 003: critérios de aceite reconciliados.
 - Pendente: evidência de `run-gates` local e CI verde em runtime.
+
+### 2026-07-31 — validação e fechamento
+
+- Corrigidos CRLF em `docker/scripts/*.sh` (init falhava com exit 127).
+- `run-gates.sh`: `MSYS_NO_PATHCONV=1` para Git Bash; ordem provisionamento taxonomia → seed → storefront.
+- `validate-004b.php`: aceita URL da página loja WooCommerce quando `url_to_postid` falha.
+- Stack recriada com `docker compose up -d --build --wait --remove-orphans`.
+- `bash scripts/run-gates.sh` — **exit 0** (storefront, 004b, 005 S01, 005 S02).
+- `wp core version` — **7.0.2**.
 
 ## 10. Evidências obrigatórias
 - log verde do `run-gates` e do workflow CI;

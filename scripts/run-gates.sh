@@ -4,8 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# Git Bash no Windows reescreve /var/... — preservar paths do contêiner.
+export MSYS_NO_PATHCONV=1
+export MSYS2_ARG_CONV_EXCL="*"
+
 COMPOSE=(docker compose --profile tools run --rm --no-deps cli)
-SCRIPTS=/var/www/html/scripts
+SCRIPTS=//var/www/html/scripts
 RUN_BROWSER=0
 
 usage() {
@@ -46,10 +50,12 @@ run_eval_file() {
 }
 
 if [[ "$SKIP_PROVISION" -eq 0 ]]; then
-  echo "==> provisionando taxonomia e storefront"
-  run_wp eval 'Petshop\Core\StorefrontCatalog::maybeEnsureCategories(); Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
+  echo "==> provisionando taxonomia"
+  run_wp eval 'Petshop\Core\StorefrontCatalog::maybeEnsureCategories();'
   echo "==> seed demonstrativo 004b (idempotente)"
   run_eval_file seed-storefront-placeholders.php
+  echo "==> provisionando storefront"
+  run_wp eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
 fi
 
 run_eval_file validate-storefront.php

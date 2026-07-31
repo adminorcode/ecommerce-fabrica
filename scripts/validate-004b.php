@@ -173,7 +173,13 @@ if ($heroBlock === null) {
         $categorySlug = count($pathParts) >= 2 && $pathParts[count($pathParts) - 2] === 'product-category'
             ? $pathParts[count($pathParts) - 1]
             : '';
+        $shopPageId = (int) get_option('woocommerce_shop_page_id');
+        $shopUrl = $shopPageId > 0 ? (string) get_permalink($shopPageId) : '';
         $targetExists = url_to_postid($ctaUrl) > 0
+            || (
+                $shopUrl !== ''
+                && untrailingslashit($ctaUrl) === untrailingslashit($shopUrl)
+            )
             || ($categorySlug !== '' && get_term_by('slug', $categorySlug, 'product_cat') instanceof WP_Term);
         if (!$targetExists) {
             $failures[] = 'CTA do hero não aponta para conteúdo cadastrado';

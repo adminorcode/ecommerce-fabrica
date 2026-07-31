@@ -8,7 +8,7 @@
 | [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md) | Em andamento | Implementação e 004b validados; a11y manual pendente (Plano 009 Etapa 5) |
 | [004b-correcao-vitrine-e-catalogo.md](./004b-correcao-vitrine-e-catalogo.md) | Concluído | Catálogo demonstrável, hero full-bleed editável, densidade comercial e persistência validados |
 | [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Bloqueado | Sessões 01–02 concluídas; Sessão 03 aguarda fotografias reais; Sessões 04–08 pendentes |
-| [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Em andamento | Docker/docs unificados, scripts no cli, CI smoke, reconciliação do 003 |
+| [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, run-gates, CI workflow; gates PHP validados em runtime |
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
 | [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Pendente | PHPUnit, Playwright no contêiner, gates PDP/carrinho; depende do 006 |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Pendente | Tokens, a11y técnica, CSS cleanup, cart/checkout blocks; paralelo ao 007 |

@@ -126,6 +126,23 @@ o runner falha intencionalmente em vez de apresentar um falso positivo. Ao adici
 testes, versione a configuração e as dependências necessárias antes de declarar a
 suite aprovada.
 
+## Validação (smoke PHP)
+
+Com a stack em execução e `.env` configurado:
+
+```powershell
+npm run validate
+```
+
+Equivalente a `bash scripts/run-gates.sh` (PowerShell: `./scripts/run-gates.ps1`).
+Scripts ficam montados em `/var/www/html/scripts` no serviço `cli`.
+
+Validação individual:
+
+```powershell
+docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/validate-storefront.php
+```
+
 ## Trabalhar por plano
 
 1. Leia este arquivo, qualquer `AGENTS.md`, [Plans/STATUS.md](Plans/STATUS.md) e o
