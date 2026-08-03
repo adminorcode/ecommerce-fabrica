@@ -5,6 +5,7 @@ declare(strict_types=1);
 defined('ABSPATH') || exit;
 
 add_filter('blocksy:builder:header:enabled', '__return_false');
+add_filter('blocksy:footer:theme-author', '__return_false');
 
 add_action(
     'after_setup_theme',
@@ -20,8 +21,13 @@ add_action(
 
         register_nav_menus([
             'petshop-primary' => __('Navegação principal', 'petshop-theme'),
-            'petshop-utility' => __('Navegação de apoio', 'petshop-theme'),
             'petshop-footer' => __('Navegação do rodapé', 'petshop-theme'),
+        ]);
+
+        add_theme_support('editor-styles');
+        add_editor_style([
+            'style.css',
+            'assets/css/editor-storefront.css',
         ]);
     }
 );
@@ -66,6 +72,12 @@ add_action(
                 'type' => 'text',
                 'sanitize' => 'sanitize_text_field',
             ],
+            'petshop_featured_section_title' => [
+                'label' => __('Título da seção de destaques (sem vendas reais)', 'petshop-theme'),
+                'default' => 'Destaques da loja',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
             'petshop_product_assurance_title' => [
                 'label' => __('Título do aviso de produto', 'petshop-theme'),
                 'default' => 'Antes de adicionar ao carrinho',
@@ -84,6 +96,54 @@ add_action(
                 'type' => 'textarea',
                 'sanitize' => 'sanitize_textarea_field',
             ],
+            'petshop_footer_description' => [
+                'label' => __('Descrição curta no rodapé', 'petshop-theme'),
+                'default' => '',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+            ],
+            'petshop_footer_whatsapp' => [
+                'label' => __('URL do WhatsApp', 'petshop-theme'),
+                'default' => '',
+                'type' => 'url',
+                'sanitize' => 'esc_url_raw',
+            ],
+            'petshop_footer_hours' => [
+                'label' => __('Horário de atendimento', 'petshop-theme'),
+                'default' => '',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
+            'petshop_footer_cnpj' => [
+                'label' => __('CNPJ', 'petshop-theme'),
+                'default' => '',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
+            'petshop_footer_address' => [
+                'label' => __('Endereço', 'petshop-theme'),
+                'default' => '',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+            ],
+            'petshop_footer_instagram' => [
+                'label' => __('URL do Instagram', 'petshop-theme'),
+                'default' => '',
+                'type' => 'url',
+                'sanitize' => 'esc_url_raw',
+            ],
+            'petshop_footer_facebook' => [
+                'label' => __('URL do Facebook', 'petshop-theme'),
+                'default' => '',
+                'type' => 'url',
+                'sanitize' => 'esc_url_raw',
+            ],
+            'petshop_footer_payment_text' => [
+                'label' => __('Formas de pagamento (texto)', 'petshop-theme'),
+                'default' => '',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
         ];
 
         foreach ($settings as $id => $config) {
@@ -99,6 +159,34 @@ add_action(
             ]);
         }
     }
+);
+
+add_filter(
+    'get_product_search_form',
+    static function (string $form): string {
+        if (str_contains($form, 'aria-label=') || str_contains($form, '<label')) {
+            return $form;
+        }
+
+        $label = esc_attr__('Buscar produtos', 'petshop-theme');
+
+        return (string) preg_replace(
+            '/(<input[^>]*class="[^"]*search-field[^"]*"[^>]*)(>)/',
+            '$1 aria-label="' . $label . '"$2',
+            $form,
+            1
+        );
+    }
+);
+
+add_action(
+    'wp_body_open',
+    static function (): void {
+        ?>
+        <a class="petshop-skip-link" href="#main"><?php esc_html_e('Ir para o conteúdo', 'petshop-theme'); ?></a>
+        <?php
+    },
+    1
 );
 
 add_action(
@@ -182,24 +270,135 @@ add_action(
 add_action(
     'wp_footer',
     static function (): void {
-        if (!has_nav_menu('petshop-footer')) {
+        $description = trim((string) get_theme_mod('petshop_footer_description', ''));
+        $whatsapp = trim((string) get_theme_mod('petshop_footer_whatsapp', ''));
+        $hours = trim((string) get_theme_mod('petshop_footer_hours', ''));
+        $cnpj = trim((string) get_theme_mod('petshop_footer_cnpj', ''));
+        $address = trim((string) get_theme_mod('petshop_footer_address', ''));
+        $instagram = trim((string) get_theme_mod('petshop_footer_instagram', ''));
+        $facebook = trim((string) get_theme_mod('petshop_footer_facebook', ''));
+        $paymentText = trim((string) get_theme_mod('petshop_footer_payment_text', ''));
+        $accountUrl = class_exists('WooCommerce') ? (string) wc_get_page_permalink('myaccount') : '';
+        $ordersUrl = $accountUrl !== '' ? wc_get_endpoint_url('orders', '', $accountUrl) : '';
+        $hasSocial = $instagram !== '' || $facebook !== '';
+        $hasContact = $whatsapp !== '' || $hours !== '';
+        $hasLegal = $cnpj !== '' || $address !== '';
+        $hasFooterMenu = has_nav_menu('petshop-footer');
+        $hasPrimaryMenu = has_nav_menu('petshop-primary');
+
+        if (
+            !$hasFooterMenu
+            && !$hasPrimaryMenu
+            && $description === ''
+            && !$hasContact
+            && !$hasSocial
+            && $paymentText === ''
+            && !$hasLegal
+        ) {
             return;
         }
         ?>
-        <div class="petshop-footer-links">
-            <div class="ct-container">
-                <?php
-                wp_nav_menu([
-                    'theme_location' => 'petshop-footer',
-                    'container' => 'nav',
-                    'container_aria_label' => __('Informações da loja', 'petshop-theme'),
-                    'menu_class' => 'petshop-footer-nav',
-                    'depth' => 1,
-                    'fallback_cb' => false,
-                ]);
-                ?>
+        <footer class="petshop-institutional-footer" aria-label="<?php esc_attr_e('Rodapé da loja', 'petshop-theme'); ?>">
+            <div class="ct-container petshop-institutional-footer__grid">
+                <?php if ($description !== '' || has_custom_logo()) : ?>
+                    <div class="petshop-institutional-footer__brand">
+                        <?php if (has_custom_logo()) : ?>
+                            <div class="petshop-institutional-footer__logo"><?php the_custom_logo(); ?></div>
+                        <?php endif; ?>
+                        <?php if ($description !== '') : ?>
+                            <p><?php echo esc_html($description); ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($hasContact) : ?>
+                    <div class="petshop-institutional-footer__contact">
+                        <h2><?php esc_html_e('Atendimento', 'petshop-theme'); ?></h2>
+                        <?php if ($whatsapp !== '') : ?>
+                            <p><a href="<?php echo esc_url($whatsapp); ?>"><?php esc_html_e('WhatsApp', 'petshop-theme'); ?></a></p>
+                        <?php endif; ?>
+                        <?php if ($hours !== '') : ?>
+                            <p><?php echo esc_html($hours); ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($hasPrimaryMenu) : ?>
+                    <nav class="petshop-institutional-footer__categories" aria-label="<?php esc_attr_e('Categorias', 'petshop-theme'); ?>">
+                        <h2><?php esc_html_e('Categorias', 'petshop-theme'); ?></h2>
+                        <?php
+                        wp_nav_menu([
+                            'theme_location' => 'petshop-primary',
+                            'container' => false,
+                            'menu_class' => 'petshop-institutional-footer__menu',
+                            'depth' => 1,
+                            'fallback_cb' => false,
+                        ]);
+                        ?>
+                    </nav>
+                <?php endif; ?>
+
+                <?php if ($hasFooterMenu || ($accountUrl !== '' && $ordersUrl !== '')) : ?>
+                    <nav class="petshop-institutional-footer__policies" aria-label="<?php esc_attr_e('Informações da loja', 'petshop-theme'); ?>">
+                        <h2><?php esc_html_e('Institucional', 'petshop-theme'); ?></h2>
+                        <ul class="petshop-institutional-footer__menu">
+                            <?php if ($accountUrl !== '') : ?>
+                                <li><a href="<?php echo esc_url($accountUrl); ?>"><?php esc_html_e('Minha conta', 'petshop-theme'); ?></a></li>
+                            <?php endif; ?>
+                            <?php if ($ordersUrl !== '') : ?>
+                                <li><a href="<?php echo esc_url($ordersUrl); ?>"><?php esc_html_e('Meus pedidos', 'petshop-theme'); ?></a></li>
+                            <?php endif; ?>
+                        </ul>
+                        <?php if ($hasFooterMenu) : ?>
+                            <?php
+                            wp_nav_menu([
+                                'theme_location' => 'petshop-footer',
+                                'container' => false,
+                                'menu_class' => 'petshop-institutional-footer__menu',
+                                'depth' => 1,
+                                'fallback_cb' => false,
+                            ]);
+                            ?>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
+
+                <?php if ($hasSocial || $paymentText !== '') : ?>
+                    <div class="petshop-institutional-footer__extras">
+                        <?php if ($hasSocial) : ?>
+                            <div class="petshop-institutional-footer__social">
+                                <h2><?php esc_html_e('Redes sociais', 'petshop-theme'); ?></h2>
+                                <ul class="petshop-institutional-footer__menu">
+                                    <?php if ($instagram !== '') : ?>
+                                        <li><a href="<?php echo esc_url($instagram); ?>">Instagram</a></li>
+                                    <?php endif; ?>
+                                    <?php if ($facebook !== '') : ?>
+                                        <li><a href="<?php echo esc_url($facebook); ?>">Facebook</a></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($paymentText !== '') : ?>
+                            <div class="petshop-institutional-footer__payment">
+                                <h2><?php esc_html_e('Pagamento', 'petshop-theme'); ?></h2>
+                                <p><?php echo esc_html($paymentText); ?></p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
-        </div>
+
+            <?php if ($hasLegal) : ?>
+                <div class="petshop-institutional-footer__legal ct-container">
+                    <?php if ($cnpj !== '') : ?>
+                        <p><?php echo esc_html(sprintf(/* translators: %s: CNPJ */ __('CNPJ: %s', 'petshop-theme'), $cnpj)); ?></p>
+                    <?php endif; ?>
+                    <?php if ($address !== '') : ?>
+                        <p><?php echo esc_html($address); ?></p>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </footer>
         <?php
     },
     5

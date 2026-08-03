@@ -12,6 +12,7 @@
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
 | [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Pendente | PHPUnit, Playwright no contêiner, gates PDP/carrinho; depende do 006 |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Pendente | Tokens, a11y técnica, CSS cleanup, cart/checkout blocks; paralelo ao 007 |
+| [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Pendente | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais |
 
 ## Ordem recomendada de execução
 
@@ -23,10 +24,11 @@
 
 005 (storefront comercial — sessões 03–08, conteúdo e produto)
   └── Sessão 03 bloqueada por fotos reais; 04–08 após ou em paralelo com 009
+      └── 010 (layout vitrines Home — especializa 005 Sessões 04–06)
 ```
 
 ## Origem
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-07-31
+**Última atualização:** 2026-08-02

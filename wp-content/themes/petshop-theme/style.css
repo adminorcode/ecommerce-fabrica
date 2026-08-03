@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.1.0
+Version: 0.3.9
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -15,15 +15,21 @@ Text Domain: petshop-theme
   --color-brand-teal-dark: #17676a;
   --color-brand-orange: #f37d35;
   --color-brand-orange-dark: #9f3e0a;
+  --color-brand-orange-hover: #7f3008; /* token-exception: derived from brand palette */
+  --color-brand-orange-active: #652505; /* token-exception: derived from brand palette */
   --color-surface-soft: #e6e7e9;
   --color-surface: #ffffff;
   --color-ink: #373435;
   --color-muted: #625f60;
   --color-border: #d1d3d4;
+  --color-neutral-border: #747172;
   --color-focus: #005fcc;
+  --color-disabled: #747172;
+  --color-error: #b42318;
   --color-on-teal: #ffffff;
   --color-on-orange: #ffffff;
   --shadow-card: 0 8px 24px rgb(55 52 53 / 12%);
+  --shadow-soft: 0 6px 20px rgb(55 52 53 / 8%);
   --radius-sm: .5rem;
   --radius-md: 1rem;
   --radius-pill: 999px;
@@ -33,6 +39,9 @@ Text Domain: petshop-theme
   --space-4: 1.5rem;
   --space-5: 2.25rem;
   --space-6: 3.5rem;
+  --space-section: 4.5rem;
+  --container-max: 1280px;
+  --font-heading-weight: 700;
 }
 
 body {
@@ -49,13 +58,126 @@ a:hover { color: var(--color-brand-orange-dark); }
   outline-offset: 3px;
 }
 
+.petshop-skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-3);
+  z-index: 100000;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-teal-dark);
+  color: var(--color-on-teal);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.petshop-skip-link:focus {
+  top: var(--space-3);
+}
+
+.petshop-skip-link:focus {
+  top: var(--space-3);
+}
+
+.petshop-breadcrumbs {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+  font-size: .875rem;
+  line-height: 1.4;
+}
+
+.petshop-breadcrumbs > .ct-container {
+  padding-block: var(--space-2) var(--space-3);
+}
+
+.petshop-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem .5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.petshop-breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-muted);
+}
+
+.petshop-breadcrumbs__item:not(:first-child)::before {
+  content: "/";
+  margin-inline-end: .5rem;
+  color: var(--color-neutral-border);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.petshop-breadcrumbs__item a {
+  color: var(--color-brand-teal-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.petshop-breadcrumbs__item a:hover,
+.petshop-breadcrumbs__item a:focus-visible {
+  color: var(--color-brand-orange-dark);
+  text-decoration: underline;
+}
+
+.petshop-breadcrumbs__item span[aria-current="page"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.petshop-breadcrumbs__item .breadcrumb-last,
+.petshop-breadcrumbs__item:last-child span:not([aria-current]) {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.ct-container,
+.petshop-page-shell {
+  width: min(100% - 2rem, var(--container-max));
+  margin-inline: auto;
+}
+
+/* Home: Blocksy adiciona padding-top no container; hero deve encostar no header */
+.home .ct-container-full[data-vertical-spacing*="top"] {
+  padding-top: 0;
+}
+
+.home #main-container {
+  overflow-x: clip;
+}
+
+.home .entry-content.is-layout-constrained > .petshop-hero:first-child {
+  margin-block-start: 0;
+}
+
+.home .entry-content.is-layout-constrained > .petshop-hero + .alignfull {
+  margin-block-start: 0;
+}
+
+.petshop-section > .wp-block-heading,
+.petshop-section h2.wp-block-heading {
+  margin-block: 0 var(--space-4);
+  color: var(--color-brand-teal-dark);
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.2;
+}
+
 .petshop-button,
 .woocommerce a.button, .woocommerce button.button,
 .woocommerce input.button, .wc-block-components-button {
   border: 2px solid var(--color-brand-orange-dark);
   border-radius: var(--radius-pill);
   background: var(--color-brand-orange-dark);
-  color: #fff;
+  color: var(--color-on-orange);
   font-weight: 700;
   min-height: 44px;
   padding: .65rem 1.15rem;
@@ -66,9 +188,9 @@ a:hover { color: var(--color-brand-orange-dark); }
 .petshop-button:hover,
 .woocommerce a.button:hover, .woocommerce button.button:hover,
 .woocommerce input.button:hover, .wc-block-components-button:hover {
-  background: #7f3008;
-  border-color: #7f3008;
-  color: #fff;
+  background: var(--color-brand-orange-hover);
+  border-color: var(--color-brand-orange-hover);
+  color: var(--color-on-orange);
   transform: translateY(-1px);
 }
 
@@ -77,63 +199,116 @@ a:hover { color: var(--color-brand-orange-dark); }
 .woocommerce button.button:active,
 .woocommerce input.button:active,
 .wc-block-components-button:active {
-  background: #652505;
-  border-color: #652505;
+  background: var(--color-brand-orange-active);
+  border-color: var(--color-brand-orange-active);
   transform: translateY(0);
 }
 
 .petshop-button:disabled, .woocommerce .button.disabled,
 .wc-block-components-button:disabled {
-  background: #747172;
-  border-color: #747172;
-  color: #fff;
+  background: var(--color-disabled);
+  border-color: var(--color-disabled);
+  color: var(--color-on-orange);
   cursor: not-allowed;
   opacity: 1;
   transform: none;
 }
 
-.petshop-utility-nav, .petshop-primary-nav, .petshop-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  list-style: none;
+.woocommerce ul.products {
+  display: grid;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-.petshop-utility-nav a, .petshop-primary-nav a, .petshop-footer-nav a {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  padding: .4rem .65rem;
-  text-decoration: none;
-}
+.woocommerce ul.products.columns-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.woocommerce ul.products.columns-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.woocommerce ul.products.columns-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .woocommerce ul.products li.product,
 .wc-block-grid__product {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
   overflow: hidden;
   padding: var(--space-3);
+  transition: border-color .18s ease, transform .18s ease;
+}
+
+.woocommerce ul.products li.product:hover,
+.woocommerce ul.products li.product:focus-within {
+  border-color: var(--color-brand-teal-dark);
+  transform: translateY(-2px);
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: inherit;
+  text-decoration: none;
 }
 
 .woocommerce ul.products li.product img,
 .wc-block-grid__product-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: var(--radius-sm);
+  object-fit: contain;
+  background: var(--color-surface-soft);
 }
 
-.woocommerce div.product .price,
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  min-height: 2.75em;
+  font-size: .95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.woocommerce ul.products li.product .star-rating:empty {
+  display: none;
+}
+
 .woocommerce ul.products li.product .price,
 .wc-block-components-product-price {
+  margin-top: auto;
   color: var(--color-ink);
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
+.woocommerce ul.products li.product .price ins {
+  color: var(--color-brand-orange);
+  text-decoration: none;
+}
+
+.woocommerce ul.products li.product .price del {
+  color: var(--color-muted);
+  font-size: .9rem;
+  font-weight: 500;
+}
+
+.woocommerce ul.products li.product .button {
+  align-self: stretch;
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
 .woocommerce span.onsale, .wc-block-components-product-sale-badge {
-  background: var(--color-brand-orange-dark);
+  background: var(--color-brand-orange);
   border-radius: var(--radius-pill);
-  color: #fff;
+  color: var(--color-on-orange);
   font-weight: 700;
   padding: .3rem .65rem;
 }
@@ -144,22 +319,48 @@ a:hover { color: var(--color-brand-orange-dark); }
   border-left: 4px solid var(--color-brand-teal-dark);
 }
 
-.woocommerce-error { border-left-color: #b42318; }
+.woocommerce-error { border-left-color: var(--color-error); }
 
 .woocommerce input.input-text, .woocommerce select,
 .wc-block-components-text-input input,
 .wc-block-components-combobox .components-combobox-control__input {
-  border: 2px solid #747172;
+  border: 2px solid var(--color-neutral-border);
   border-radius: var(--radius-sm);
   color: var(--color-ink);
   min-height: 44px;
 }
 
-.woocommerce .outofstock { color: #b42318; font-weight: 700; }
+.woocommerce .outofstock { color: var(--color-error); font-weight: 700; }
+
+.wc-block-cart,
+.wc-block-checkout {
+  color: var(--color-ink);
+}
+
+.wc-block-cart .wc-block-components-product-name,
+.wc-block-checkout .wc-block-components-checkout-step__title {
+  color: var(--color-brand-teal-dark);
+  font-weight: 700;
+}
+
+.wc-block-cart .wc-block-components-totals-item,
+.wc-block-checkout .wc-block-components-totals-item {
+  border-color: var(--color-border);
+}
+
+.wc-block-cart .wc-block-components-button:not(.is-link),
+.wc-block-checkout .wc-block-components-checkout-place-order-button {
+  border-radius: var(--radius-pill);
+}
+
+.wc-block-components-button.is-secondary,
+.wc-block-cart .wc-block-components-button.is-link {
+  color: var(--color-brand-teal-dark);
+}
 
 .petshop-promo-bar {
   background: var(--color-brand-teal-dark);
-  color: #fff;
+  color: var(--color-on-teal);
   font-size: .8125rem;
 }
 
@@ -167,26 +368,39 @@ a:hover { color: var(--color-brand-orange-dark); }
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 32px;
+  min-height: 44px;
   text-align: center;
 }
 
-.petshop-promo-bar a,
-.petshop-footer-links a {
+.petshop-promo-bar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: inherit;
 }
 
 .petshop-promo-bar a:hover,
 .petshop-promo-bar a:focus-visible {
-  color: #fff;
+  color: var(--color-on-teal);
   text-decoration: underline;
 }
 
 .petshop-commercial-header {
-  position: relative;
-  z-index: 20;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   border-bottom: 1px solid var(--color-border);
-  background: #fff;
+  background: var(--color-surface);
+}
+
+.admin-bar .petshop-commercial-header {
+  top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+  .admin-bar .petshop-commercial-header {
+    top: 46px;
+  }
 }
 
 .petshop-commercial-header__main {
@@ -219,7 +433,7 @@ a:hover { color: var(--color-brand-orange-dark); }
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill) 0 0 var(--radius-pill);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-ink);
   padding-inline: 1rem;
 }
@@ -258,7 +472,7 @@ a:hover { color: var(--color-brand-orange-dark); }
   align-items: center;
   min-height: 44px;
   color: var(--color-ink);
-  font-size: .9rem;
+  font-size: clamp(.8125rem, 1.6vw, .9rem);
   font-weight: 700;
   text-decoration: none;
 }
@@ -274,39 +488,61 @@ a:hover { color: var(--color-brand-orange-dark); }
 }
 
 .petshop-commercial-header__navigation {
-  border-top: 1px solid #edf0f0;
+  border-top: 1px solid var(--color-border);
+}
+
+.petshop-commercial-header__navigation .ct-container {
+  padding-block: .5rem;
 }
 
 .petshop-commercial-header__navigation nav {
   overflow-x: auto;
   overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
-.petshop-commercial-menu {
+.petshop-commercial-menu,
+.petshop-footer-nav,
+.petshop-institutional-footer__menu {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(.25rem, 1.8vw, 1.5rem);
-  min-width: max-content;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.petshop-commercial-menu {
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  min-width: max-content;
+  padding-inline: 1rem;
+}
+
 .petshop-commercial-menu a {
   display: inline-flex;
   align-items: center;
-  min-height: 48px;
+  min-height: 44px;
+  padding-inline: .15rem;
   color: var(--color-ink);
-  font-size: .9rem;
-  font-weight: 700;
+  font-size: clamp(.8125rem, 3.2vw, .875rem);
+  font-weight: 600;
+  line-height: 1.2;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .petshop-commercial-menu a:hover,
 .petshop-commercial-menu a:focus-visible,
 .petshop-commercial-menu .current-menu-item > a {
   color: var(--color-brand-orange-dark);
+}
+
+.petshop-footer-nav,
+.petshop-institutional-footer__menu {
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .ct-header-trigger {
@@ -319,58 +555,104 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .petshop-hero {
   width: 100vw;
-  max-width: none;
-  min-height: 440px !important;
-  margin: 0 calc(50% - 50vw);
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  min-height: clamp(380px, 72vw, 460px);
   overflow: hidden;
   border-radius: 0;
   color: var(--color-ink);
-  padding: 2rem !important;
+  padding: 0;
+  isolation: isolate;
 }
 
-.petshop-hero.wp-block-cover .wp-block-cover__background.has-background-dim {
+.petshop-hero.wp-block-cover {
+  padding: 0;
+}
+
+/* Gutenberg cover (center-left) forces margin:0 and width:auto — override for page grid alignment */
+.petshop-hero.wp-block-cover.has-custom-content-position.is-position-center-left .wp-block-cover__inner-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: min(100% - 1.25rem, var(--container-max));
+  max-width: min(100% - 1.25rem, var(--container-max));
+  min-height: inherit;
+  margin-inline: auto;
+  padding-block: 1rem;
+}
+
+.petshop-hero.wp-block-cover .wp-block-cover__background.has-background-dim,
+.petshop-hero.wp-block-cover .wp-block-cover__background.has-white-background-color {
   background-color: transparent !important;
-  background-image: linear-gradient(90deg, rgb(255 255 255 / 98%) 0%, rgb(255 255 255 / 90%) 38%, rgb(255 255 255 / 15%) 68%, transparent 100%) !important;
+  background-image: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 96%) 0%,
+    rgb(255 255 255 / 88%) 42%,
+    rgb(255 255 255 / 35%) 68%,
+    transparent 82%
+  );
   opacity: 1 !important;
 }
 
 .petshop-hero .wp-block-cover__image-background {
-  object-position: 72% 25%;
-}
-
-.petshop-hero .wp-block-cover__inner-container {
-  width: 100%;
+  object-fit: cover;
+  object-position: center 20%;
 }
 
 .petshop-hero__copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  width: min(40rem, 44vw);
-  max-width: calc(100% - 4rem);
-  margin-inline: max(2rem, calc((100vw - 1400px) / 2 + 2rem)) auto;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: blur(8px);
   text-align: left;
 }
 
-.petshop-hero__copy.is-layout-constrained > * {
+.petshop-hero__copy.is-layout-constrained {
+  max-width: 100%;
+}
+
+/* Constrained layout centers children via margin auto — force single left axis (gate 005-02) */
+.petshop-hero__copy.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+  align-self: flex-start;
+  width: 100%;
+  max-width: none;
   margin-inline: 0 !important;
 }
 
+.petshop-hero__copy :where(p, h1, .wp-block-heading, .wp-block-buttons) {
+  text-align: left;
+}
+
+.petshop-hero__copy .wp-block-buttons.is-layout-flex {
+  justify-content: flex-start;
+}
+
 .petshop-hero h1 {
-  max-width: 14ch;
   margin: 0;
-  font-size: clamp(2.25rem, 4.2vw, 4.4rem);
-  line-height: 1;
+  max-width: none;
+  font-size: clamp(1.5rem, 6.5vw, 1.85rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.08;
   color: var(--color-ink);
 }
 
 .petshop-hero .petshop-eyebrow {
-  margin-block: 0 1rem;
+  margin-block: 0 .85rem;
+  font-size: .78rem;
 }
 
 .petshop-hero p:not(.petshop-eyebrow) {
-  max-width: 48ch;
-  margin-block: .75rem 1.5rem;
+  max-width: 42ch;
+  margin-block: .5rem .85rem;
+  color: var(--color-muted);
+  font-size: .88rem;
+  line-height: 1.4;
 }
 
 .petshop-hero__accent {
@@ -380,16 +662,18 @@ a:hover { color: var(--color-brand-orange-dark); }
 .petshop-hero .petshop-hero__note {
   margin-top: .65rem;
   color: var(--color-muted);
-  font-size: .95rem;
+  font-size: .72rem;
 }
 
 .petshop-hero .wp-element-button,
-.petshop-support-cta .wp-element-button {
+.petshop-support-cta .wp-element-button,
+.petshop-section__cta .wp-element-button {
   border: 2px solid var(--color-brand-orange-dark);
   border-radius: var(--radius-pill);
   background: var(--color-brand-orange-dark);
-  color: #fff;
+  color: var(--color-on-orange);
   font-weight: 800;
+  text-decoration: none;
 }
 
 .petshop-eyebrow {
@@ -400,7 +684,12 @@ a:hover { color: var(--color-brand-orange-dark); }
 }
 
 .petshop-section {
-  padding-block: var(--space-6);
+  padding-block: var(--space-section);
+}
+
+.petshop-section__cta {
+  margin-block: var(--space-4) 0;
+  text-align: center;
 }
 
 .petshop-category-grid {
@@ -416,14 +705,15 @@ a:hover { color: var(--color-brand-orange-dark); }
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
+  transition: border-color .18s ease, transform .18s ease;
 }
 
 .petshop-category-card a {
   display: block;
   color: var(--color-ink);
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -445,7 +735,8 @@ a:hover { color: var(--color-brand-orange-dark); }
   transform: translateY(-2px);
 }
 
-.petshop-section--soft {
+.petshop-section--soft,
+.petshop-kits-section {
   border-radius: var(--radius-md);
   background: var(--color-surface-soft);
   padding-inline: clamp(1rem, 4vw, 3rem);
@@ -453,23 +744,18 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .petshop-commerce-banner {
   border-radius: var(--radius-md);
-  background:
-    radial-gradient(circle at 90% 30%, rgb(255 255 255 / 22%), transparent 16rem),
-    var(--color-brand-orange-dark);
-  color: #fff;
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
   padding: clamp(1.5rem, 4vw, 3rem);
-}
-
-.petshop-commerce-banner h2,
-.petshop-commerce-banner a {
-  color: #fff;
 }
 
 .petshop-professional {
   border-block: 1px solid var(--color-border);
 }
 
-.petshop-seasonal:not(:has(.products)) {
+.petshop-seasonal:not(:has(li.product)),
+.petshop-professional:not(:has(li.product)),
+.petshop-reviews:not(:has(.petshop-review-grid)) {
   display: none;
 }
 
@@ -485,7 +771,7 @@ a:hover { color: var(--color-brand-orange-dark); }
 .petshop-review-card {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
   padding: var(--space-4);
 }
@@ -497,13 +783,13 @@ a:hover { color: var(--color-brand-orange-dark); }
 .petshop-support-cta {
   border-radius: var(--radius-md);
   background: var(--color-brand-teal-dark);
-  color: #fff;
+  color: var(--color-on-teal);
   padding-inline: clamp(1rem, 4vw, 3rem);
   text-align: center;
 }
 
 .petshop-support-cta h2 {
-  color: #fff;
+  color: var(--color-on-teal);
 }
 
 .petshop-support-cta .wp-block-buttons {
@@ -515,27 +801,26 @@ a:hover { color: var(--color-brand-orange-dark); }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  box-shadow: 0 6px 20px rgb(55 52 53 / 8%);
+  box-shadow: var(--shadow-soft);
 }
 
-.woocommerce-shop main .ct-container > section,
-.tax-product_cat main .ct-container > section,
-.tax-product_tag main .ct-container > section {
+:is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) main .ct-container > section {
   display: grid;
   grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
   align-items: start;
   gap: clamp(1.5rem, 3vw, 3rem);
 }
 
-.woocommerce-shop main .ct-container > section > :is(.woocommerce-products-header, .petshop-category-introduction, .woocommerce-notices-wrapper),
-.tax-product_cat main .ct-container > section > :is(.woocommerce-products-header, .petshop-category-introduction, .woocommerce-notices-wrapper),
-.tax-product_tag main .ct-container > section > :is(.woocommerce-products-header, .petshop-category-introduction, .woocommerce-notices-wrapper) {
+:is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) main .ct-container > section > :is(.woocommerce-products-header, .woocommerce-notices-wrapper) {
   grid-column: 1 / -1;
 }
 
-.woocommerce-shop .woo-listing-top,
-.tax-product_cat .woo-listing-top,
-.tax-product_tag .woo-listing-top {
+:is(.tax-product_cat, .tax-product_tag) .hero-section,
+:is(.tax-product_cat, .tax-product_tag) main .woocommerce-products-header {
+  display: none;
+}
+
+:is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) .woo-listing-top {
   display: contents;
 }
 
@@ -563,20 +848,9 @@ a:hover { color: var(--color-brand-orange-dark); }
   margin: 0;
 }
 
-.woocommerce-shop main ul.products,
-.tax-product_cat main ul.products,
-.tax-product_tag main ul.products,
-.woocommerce-shop main .woocommerce-pagination,
-.tax-product_cat main .woocommerce-pagination,
-.tax-product_tag main .woocommerce-pagination {
+:is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) main :is(ul.products, .woocommerce-pagination) {
   grid-column: 2;
   min-width: 0;
-}
-
-.petshop-category-introduction {
-  max-width: 75ch;
-  margin-bottom: var(--space-3);
-  color: var(--color-muted);
 }
 
 .hero-section[data-type="type-2"] {
@@ -597,7 +871,7 @@ a:hover { color: var(--color-brand-orange-dark); }
 }
 
 .hero-section[data-type="type-2"] .page-title {
-  color: #fff;
+  color: var(--color-on-teal);
   text-shadow: 0 2px 12px rgb(0 0 0 / 45%);
 }
 
@@ -606,7 +880,7 @@ a:hover { color: var(--color-brand-orange-dark); }
   color: var(--color-ink);
   font-size: 1.25rem;
   line-height: 1.2;
-  font-weight: 800;
+  font-weight: var(--font-heading-weight);
 }
 
 .petshop-catalog-filter__search {
@@ -625,9 +899,9 @@ a:hover { color: var(--color-brand-orange-dark); }
   width: 100%;
   min-height: 44px;
   padding-inline: .75rem;
-  border: 1px solid #747172;
+  border: 1px solid var(--color-neutral-border);
   border-radius: var(--radius-sm);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-ink);
 }
 
@@ -694,53 +968,345 @@ a:hover { color: var(--color-brand-orange-dark); }
   margin-bottom: 0;
 }
 
-.petshop-footer-links {
-  padding-block: var(--space-3);
+.petshop-institutional-footer {
+  margin-top: var(--space-section);
+  padding-block: var(--space-6) var(--space-4);
   background: var(--color-ink);
-  color: #fff;
+  color: var(--color-on-teal);
 }
 
-.petshop-footer-nav {
-  justify-content: center;
+.petshop-institutional-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.petshop-institutional-footer a:hover,
+.petshop-institutional-footer a:focus-visible {
+  color: var(--color-brand-teal);
+  text-decoration: underline;
+}
+
+.petshop-institutional-footer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-5);
+}
+
+.petshop-institutional-footer h2 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-brand-teal);
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.petshop-institutional-footer p {
+  margin: 0 0 var(--space-2);
+  color: rgb(255 255 255 / 88%);
+  font-size: .9rem;
+}
+
+.petshop-institutional-footer__menu {
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.petshop-institutional-footer__menu a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: .9rem;
+}
+
+.petshop-institutional-footer__logo .custom-logo {
+  max-width: 10rem;
+  max-height: 56px;
+  margin-bottom: var(--space-2);
+  filter: brightness(0) invert(1);
+}
+
+.petshop-institutional-footer__legal {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgb(255 255 255 / 16%);
+  color: rgb(255 255 255 / 72%);
+  font-size: .8125rem;
+}
+
+.petshop-institutional-footer__legal p {
+  margin: 0 0 .35rem;
+  font-size: inherit;
+}
+
+footer.ct-footer [data-id="theme"],
+footer.ct-footer .ct-footer-theme-author {
+  display: none;
 }
 
 .petshop-hero .wp-block-buttons {
-  gap: .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  width: 100%;
+}
+
+.petshop-hero .wp-block-button__link {
+  min-height: 44px;
+  width: 100%;
+  padding: .6rem 1.1rem;
+  font-size: clamp(.82rem, 1.4vw, .95rem);
+  text-align: center;
+  white-space: normal;
 }
 
 .petshop-hero .is-style-outline .wp-element-button {
   border-color: var(--color-brand-teal-dark);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-brand-teal-dark);
 }
 
 .petshop-benefits {
+  display: flex;
+  flex-direction: column;
   width: 100vw;
-  max-width: none !important;
-  margin-inline: calc(50% - 50vw) !important;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
   border-block: 1px solid var(--color-border);
-  background: var(--color-surface-soft);
+  background: var(--color-surface);
+  --wp--style--block-gap: 0;
 }
 
-.petshop-benefits__inner {
+.petshop-benefits :where(.wp-block-group:not(.petshop-benefits__inner), .wp-block-paragraph, .wp-block-image, figure) {
+  margin: 0 !important;
+}
+
+.petshop-benefits :where(.is-layout-flow, .wp-block-group-is-layout-flow) > :where(* + *) {
+  margin-block-start: 0 !important;
+}
+
+.petshop-benefits__inner,
+.petshop-benefits__inner.is-layout-flow,
+.petshop-benefits__inner.wp-block-group-is-layout-flow {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   gap: 0;
-  width: min(100% - 2rem, 1280px);
-  margin-inline: auto;
+  flex: 1 1 auto;
+  width: min(100% - 1.25rem, var(--container-max));
+  margin-inline: auto !important;
+  --wp--style--block-gap: 0;
 }
 
-.petshop-benefits__inner p {
+.petshop-benefits__item,
+.petshop-benefits__item.is-layout-flow,
+.petshop-benefits__item.wp-block-group-is-layout-flow {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  align-self: stretch;
+  padding: .95rem clamp(.85rem, 2vw, 1.25rem);
+  min-height: 100%;
+  width: 100%;
+  --wp--style--block-gap: 0;
+}
+
+.petshop-benefits__content,
+.petshop-benefits__content.is-layout-flow,
+.petshop-benefits__content.wp-block-group-is-layout-flow {
+  display: inline-flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: .75rem;
+  width: fit-content !important;
+  max-width: 100%;
+  margin: 0 !important;
+  --wp--style--block-gap: 0;
+}
+
+.petshop-benefits__content:not(:has(.petshop-benefits__icon img[src]:not([src=""])))::before {
+  content: "";
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--color-brand-teal-dark);
+  mask: var(--petshop-benefit-icon) center / contain no-repeat;
+  -webkit-mask: var(--petshop-benefit-icon) center / contain no-repeat;
+}
+
+.petshop-benefits__content:has(.petshop-benefits__icon img[src]:not([src=""]))::before {
+  content: none;
+  display: none;
+}
+
+.petshop-benefits__icon {
+  display: none !important;
+  flex: 0 0 auto;
   margin: 0;
-  padding: 1rem;
-  color: var(--color-ink);
-  font-size: .9rem;
-  font-weight: 800;
-  text-align: center;
+  line-height: 0;
 }
 
-.petshop-benefits__inner p + p {
+.petshop-benefits__icon:has(img[src]:not([src=""])) {
+  display: block !important;
+}
+
+.petshop-benefits__icon img {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+
+.petshop-benefits__copy,
+.petshop-benefits__copy.is-layout-flow,
+.petshop-benefits__copy.wp-block-group-is-layout-flow {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .125rem;
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 0;
+  text-align: left;
+  --wp--style--block-gap: 0;
+}
+
+.petshop-benefits__item--delivery {
+  --petshop-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'/%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'/%3E%3C/svg%3E");
+}
+
+.petshop-benefits__item--volume {
+  --petshop-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z'/%3E%3Ccircle cx='7.5' cy='7.5' r='.5' fill='%23000'/%3E%3C/svg%3E");
+}
+
+.petshop-benefits__item--shipping {
+  --petshop-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2'/%3E%3Cpath d='M15 18H9'/%3E%3Cpath d='M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14'/%3E%3Ccircle cx='7' cy='18' r='2'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3C/svg%3E");
+}
+
+.petshop-benefits__item + .petshop-benefits__item {
   border-left: 1px solid var(--color-border);
+}
+
+.petshop-benefits__title,
+.petshop-benefits__title.wp-block-paragraph {
+  margin: 0 !important;
+  color: var(--color-ink);
+  font-size: .9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.petshop-benefits__title strong {
+  font-weight: inherit;
+}
+
+.petshop-benefits__detail,
+.petshop-benefits__detail.wp-block-paragraph {
+  margin: 0 !important;
+  color: var(--color-muted);
+  font-size: .8125rem;
+  line-height: 1.3;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .petshop-benefits__title,
+  .petshop-benefits__detail {
+    white-space: nowrap;
+  }
+
+  .petshop-hero {
+    min-height: clamp(460px, 40vw, 540px);
+  }
+
+  .petshop-hero.wp-block-cover.has-custom-content-position.is-position-center-left .wp-block-cover__inner-container {
+    align-items: center;
+    width: min(100% - 2rem, var(--container-max));
+    max-width: min(100% - 2rem, var(--container-max));
+    padding-block: clamp(1.5rem, 4vw, 2.75rem);
+  }
+
+  .petshop-hero.wp-block-cover .wp-block-cover__background.has-background-dim,
+  .petshop-hero.wp-block-cover .wp-block-cover__background.has-white-background-color {
+    background-image: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 97%) 0%,
+      rgb(255 255 255 / 92%) 34%,
+      rgb(255 255 255 / 55%) 46%,
+      rgb(255 255 255 / 12%) 56%,
+      transparent 62%
+    );
+  }
+
+  .petshop-hero .wp-block-cover__image-background {
+    object-position: 78% center;
+  }
+
+  .petshop-hero__copy {
+    width: min(100%, 38rem);
+    max-width: min(100%, 48%);
+    padding: clamp(1.15rem, 2.5vw, 1.85rem);
+    background: rgb(255 255 255 / 82%);
+  }
+
+  .petshop-hero h1 {
+    font-size: clamp(1.85rem, 3.2vw, 2.85rem);
+    line-height: 1.12;
+  }
+
+  .petshop-hero p:not(.petshop-eyebrow) {
+    margin-block: .75rem 1.35rem;
+    font-size: clamp(.92rem, 1.5vw, 1.05rem);
+    line-height: 1.5;
+  }
+
+  .petshop-hero .petshop-hero__note {
+    font-size: .95rem;
+  }
+
+  .petshop-hero .wp-block-buttons {
+    flex-flow: row wrap;
+    gap: .75rem;
+    width: auto;
+  }
+
+  .petshop-hero .wp-block-button__link {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .petshop-commercial-header__navigation .ct-container {
+    padding-block: .75rem;
+  }
+
+  .petshop-commercial-menu {
+    justify-content: center;
+    gap: clamp(1.5rem, 2.5vw, 2.75rem);
+    min-width: 0;
+    padding-inline: 0;
+  }
+
+  .petshop-commercial-menu a {
+    font-size: .9375rem;
+  }
+
+  .woocommerce ul.products.columns-4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .woocommerce ul.products.columns-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .woocommerce ul.products.columns-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) and (max-width: 900px) {
@@ -756,21 +1322,12 @@ a:hover { color: var(--color-brand-orange-dark); }
   .petshop-commercial-header__actions {
     gap: .35rem;
   }
-
-  .petshop-commercial-header__actions > a {
-    font-size: .75rem;
-  }
 }
 
 @media (max-width: 767px) {
-  :root { --space-6: 2.5rem; }
-
-  .petshop-utility-nav, .petshop-primary-nav, .petshop-footer-nav {
-    display: block;
-  }
-
-  .petshop-utility-nav a, .petshop-primary-nav a, .petshop-footer-nav a {
-    width: 100%;
+  :root {
+    --space-section: 2.5rem;
+    --space-6: 2.5rem;
   }
 
   .petshop-commercial-header__main {
@@ -791,49 +1348,27 @@ a:hover { color: var(--color-brand-orange-dark); }
   }
 
   .petshop-commercial-header__actions {
-    gap: .15rem;
+    gap: .35rem;
   }
 
   .petshop-commercial-header__actions > a {
     min-height: 44px;
-    padding-inline: .2rem;
-    font-size: .6875rem;
-  }
-
-  .petshop-commercial-header__navigation .ct-container {
-    padding-inline: 0;
-  }
-
-  .petshop-commercial-menu {
-    justify-content: flex-start;
-    gap: 1rem;
-    padding-inline: 1rem;
-  }
-
-  .petshop-commercial-menu a {
-    min-height: 44px;
-    font-size: .8125rem;
+    padding-inline: .35rem;
+    font-size: clamp(.8125rem, 3.2vw, .875rem);
   }
 
   .petshop-category-grid,
   .petshop-review-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .woocommerce-shop main .ct-container > section,
-  .tax-product_cat main .ct-container > section,
-  .tax-product_tag main .ct-container > section {
+  :is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) main .ct-container > section {
     grid-template-columns: 1fr;
   }
 
   .petshop-catalog-sidebar,
   .petshop-catalog-toolbar,
-  .woocommerce-shop main ul.products,
-  .tax-product_cat main ul.products,
-  .tax-product_tag main ul.products,
-  .woocommerce-shop main .woocommerce-pagination,
-  .tax-product_cat main .woocommerce-pagination,
-  .tax-product_tag main .woocommerce-pagination {
+  :is(.woocommerce-shop, .tax-product_cat, .tax-product_tag) main :is(ul.products, .woocommerce-pagination) {
     grid-column: 1;
     grid-row: auto;
   }
@@ -848,72 +1383,36 @@ a:hover { color: var(--color-brand-orange-dark); }
     width: 100%;
   }
 
-  .petshop-hero {
-    min-height: 400px !important;
-    border-radius: 0;
-    padding: .75rem !important;
-  }
-
-  .petshop-hero.wp-block-cover .wp-block-cover__background.has-background-dim {
-    background-color: transparent !important;
-    background-image: linear-gradient(90deg, rgb(255 255 255 / 98%) 0%, rgb(255 255 255 / 92%) 52%, rgb(255 255 255 / 28%) 68%, transparent 78%) !important;
-  }
-
-  .petshop-hero .wp-block-cover__image-background {
-    object-position: 68% center;
-  }
-
-  .petshop-hero__copy {
-    width: 15rem;
-    max-width: calc(100vw - 1rem);
-    margin-inline: .5rem auto;
-  }
-
-  .petshop-hero h1 {
-    max-width: none;
-    font-size: 1.45rem;
-    line-height: .98;
-  }
-
-  .petshop-hero p {
-    margin-block: .45rem;
-    font-size: .82rem;
-    line-height: 1.35;
-  }
-
-  .petshop-hero .wp-element-button {
-    min-height: 44px;
-    padding: .5rem .85rem;
-    font-size: .8rem;
-  }
-
-  .petshop-hero .wp-block-buttons {
-    gap: .4rem;
-  }
-
   .petshop-benefits__inner {
     grid-template-columns: 1fr;
     width: 100%;
   }
 
-  .petshop-benefits__inner p {
-    min-height: 44px;
-    padding: .7rem 1rem;
+  .petshop-benefits__item {
+    padding: .85rem 1rem;
   }
 
-  .petshop-benefits__inner p + p {
+  .petshop-benefits__item + .petshop-benefits__item {
     border-top: 1px solid var(--color-border);
     border-left: 0;
   }
 
-  .petshop-hero .petshop-hero__note {
-    font-size: .72rem;
+  .petshop-benefits__title {
+    font-size: .875rem;
+  }
+
+  .petshop-benefits__detail {
+    font-size: .78rem;
+  }
+
+  .woocommerce ul.products.columns-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    scroll-behavior: auto !important;
-    transition-duration: .01ms !important;
+    scroll-behavior: auto;
+    transition-duration: .01ms;
   }
 }

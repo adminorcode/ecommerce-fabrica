@@ -1,0 +1,41 @@
+---
+description: Paridade visual Gutenberg ↔ storefront para blocos editáveis
+globs: wp-content/themes/petshop-theme/**/*
+alwaysApply: false
+---
+
+# Paridade editor ↔ loja
+
+O cliente edita conteúdo no Gutenberg; a apresentação final vem do child theme. **O preview do editor deve ser o mais fiel possível à Home/loja.**
+
+## Obrigatório
+
+1. Registrar `add_theme_support('editor-styles')` e `add_editor_style()` em `petshop-theme/functions.php`.
+2. Carregar `style.css` no editor como fonte única de tokens e estilos de blocos (`.petshop-hero`, `.petshop-benefits`, `.petshop-section`, botões, tipografia).
+3. Usar `assets/css/editor-storefront.css` **somente** para overrides do iframe (sem duplicar regras do hero).
+4. Ao alterar CSS de bloco Gutenberg editável, validar **editor + front** nas viewports 390 e 1440 px.
+
+## Overrides permitidos no editor
+
+- neutralizar full-bleed (`calc(50% - 50vw)`) que causa scroll no canvas;
+- remover padding conflitante do bloco Cover;
+- reforçar contraste/gradiente quando o CSS do bloco WP sobrescrever o tema.
+
+## Fora do escopo do editor (documentar, não “consertar” no Gutenberg)
+
+- header comercial, barra promocional, busca, minicarrinho e rodapé (renderizados via hooks do tema);
+- grids WooCommerce de shortcodes (dependem de produtos reais);
+- comportamento de hover/foco em navegação global.
+
+## Anti-patterns
+
+- estilos de hero apenas em `wp_enqueue_scripts` sem espelho no editor;
+- duplicar tokens ou regras longas só em `editor-storefront.css`;
+- instruir o cliente a “confiar no editor” sem preview na loja quando houver dúvida.
+
+## Checklist ao entregar CSS de interface
+
+- [ ] `style.css` alterado
+- [ ] `editor-storefront.css` revisado (se o canvas precisar de override)
+- [ ] bump de versão do tema para cache bust
+- [ ] screenshot ou inspeção visual no editor e em `http://localhost:8888`

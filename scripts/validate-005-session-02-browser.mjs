@@ -50,7 +50,7 @@ try {
       }
       return [...lines.values()];
     });
-    const benefits = (await page.locator('.petshop-benefits p').allTextContents()).map((value) => value.trim());
+    const benefits = (await page.locator('.petshop-benefits__title').allTextContents()).map((value) => value.trim());
     const ctas = page.locator('.petshop-hero .wp-block-button__link');
     const ctaUrls = await ctas.evaluateAll((links) => links.map((link) => link.href));
     const alt = await hero.locator('img.wp-block-cover__image-background').getAttribute('alt');

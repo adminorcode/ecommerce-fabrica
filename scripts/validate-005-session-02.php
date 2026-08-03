@@ -59,10 +59,13 @@ if ($benefits === null) {
     $benefitParagraphs = [];
     $collectBenefitParagraphs = static function (array $blocks) use (&$collectBenefitParagraphs, &$benefitParagraphs): void {
         foreach ($blocks as $block) {
-            if (($block['blockName'] ?? '') === 'core/paragraph') {
+            $className = (string) ($block['attrs']['className'] ?? '');
+            if (($block['blockName'] ?? '') === 'core/paragraph' && str_contains($className, 'petshop-benefits__title')) {
                 $benefitParagraphs[] = trim(wp_strip_all_tags((string) ($block['innerHTML'] ?? '')));
             }
-            if (!empty($block['innerBlocks'])) $collectBenefitParagraphs($block['innerBlocks']);
+            if (!empty($block['innerBlocks'])) {
+                $collectBenefitParagraphs($block['innerBlocks']);
+            }
         }
     };
     $collectBenefitParagraphs($benefits['innerBlocks'] ?? []);

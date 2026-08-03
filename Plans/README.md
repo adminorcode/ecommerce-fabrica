@@ -32,5 +32,6 @@ O plano não pode ser marcado como concluído enquanto algum texto ou imagem de 
 | [008](./008-suite-de-testes-automatizados.md) | PHPUnit, Playwright containerizado |
 | [007](./007-refatoracao-petshop-core.md) | Refatoração arquitetural do plugin |
 | [009](./009-design-system-acessibilidade-e-checkout.md) | Design tokens, a11y técnica, cart/checkout |
+| [010](./010-layout-secoes-produto-home.md) | Layout das vitrines de produto na Home (cards, cabeçalho, badges) |
 
 Consulte [STATUS.md](./STATUS.md) para ordem de execução e dependências.

@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontExperience
 {
-    private const VERSION = '2.1.1';
+    private const VERSION = '2.2.5';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -27,7 +27,6 @@ final class StorefrontExperience
         add_filter('wp_nav_menu_objects', [self::class, 'filterSeasonalMenuItems']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueCatalogFilterAssets']);
         add_action('template_redirect', [self::class, 'canonicalizeCatalogCategoryFilter']);
-        add_action('woocommerce_before_shop_loop', [self::class, 'renderCategoryIntroduction'], 5);
         add_action('woocommerce_before_shop_loop', [self::class, 'renderCatalogFilter'], 15);
         add_action('woocommerce_before_shop_loop', [self::class, 'closeCatalogToolbar'], 40);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductAssurance'], 25);
@@ -40,6 +39,10 @@ final class StorefrontExperience
         add_shortcode('petshop_categories', [self::class, 'renderCategoryGrid']);
         add_shortcode('petshop_seasonal_products', [self::class, 'renderSeasonalProducts']);
         add_shortcode('petshop_reviews', [self::class, 'renderReviews']);
+        add_shortcode('petshop_featured_products', [self::class, 'renderFeaturedProducts']);
+        add_shortcode('petshop_kits_section', [self::class, 'renderKitsSection']);
+        add_shortcode('petshop_reviews_section', [self::class, 'renderReviewsSection']);
+        add_filter('woocommerce_product_get_rating_html', [self::class, 'filterProductRatingHtml'], 10, 3);
     }
 
     public static function maybeEnsureStorefront(): void
@@ -427,21 +430,6 @@ final class StorefrontExperience
         }
     }
 
-    public static function renderCategoryIntroduction(): void
-    {
-        if (!is_product_category()) {
-            return;
-        }
-        $term = get_queried_object();
-        if (!$term instanceof \WP_Term || trim((string) $term->description) === '') {
-            return;
-        }
-
-        echo '<div class="petshop-category-introduction">';
-        echo wp_kses_post(wpautop($term->description));
-        echo '</div>';
-    }
-
     public static function resolveExactSkuSearch(\WP_Query $query): void
     {
         if (is_admin() || !$query->is_main_query() || !$query->is_search() || !class_exists('WooCommerce')) {
@@ -503,11 +491,12 @@ final class StorefrontExperience
         $visibleTerms = array_values(
             array_filter(
                 $terms,
-                static fn (\WP_Term $term): bool => (bool) get_term_meta(
-                    $term->term_id,
-                    'petshop_visible_in_menu',
-                    true
-                )
+                static fn (\WP_Term $term): bool => $term->slug !== 'promocoes'
+                    && (bool) get_term_meta(
+                        $term->term_id,
+                        'petshop_visible_in_menu',
+                        true
+                    )
             )
         );
         $visibleTerms = array_slice($visibleTerms, 0, max(1, absint($attributes['limit'])));
@@ -595,6 +584,167 @@ final class StorefrontExperience
             echo '</li>';
         }
         echo '</ul>';
+
+        return (string) ob_get_clean();
+    }
+
+    public static function filterProductRatingHtml(string $ratingHtml, float $rating, int $count): string
+    {
+        return $count > 0 ? $ratingHtml : '';
+    }
+
+    private static function hasCatalogSales(): bool
+    {
+        $query = new \WP_Query([
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'fields' => 'ids',
+            'posts_per_page' => 1,
+            'meta_query' => [
+                [
+                    'key' => 'total_sales',
+                    'value' => 0,
+                    'compare' => '>',
+                    'type' => 'NUMERIC',
+                ],
+            ],
+            'no_found_rows' => true,
+        ]);
+
+        return $query->have_posts();
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public static function renderFeaturedProducts(array $attributes = []): string
+    {
+        $attributes = shortcode_atts(
+            [
+                'limit' => 4,
+                'columns' => 4,
+                'fallback_title' => '',
+            ],
+            $attributes,
+            'petshop_featured_products'
+        );
+
+        $fallbackTitle = trim((string) $attributes['fallback_title']);
+        if ($fallbackTitle === '') {
+            $fallbackTitle = (string) get_theme_mod(
+                'petshop_featured_section_title',
+                __('Destaques da loja', 'petshop-core')
+            );
+        }
+
+        $title = self::hasCatalogSales()
+            ? __('Mais vendidos', 'petshop-core')
+            : $fallbackTitle;
+
+        $products = do_shortcode(
+            sprintf(
+                '[products limit="%d" columns="%d" orderby="popularity"]',
+                max(1, absint($attributes['limit'])),
+                max(1, absint($attributes['columns']))
+            )
+        );
+
+        if (!preg_match('/class="[^"]*\bproduct\b[^"]*"/', $products)) {
+            return '';
+        }
+
+        ob_start();
+        echo '<section class="petshop-section petshop-featured-section" aria-labelledby="petshop-featured-heading">';
+        echo '<h2 id="petshop-featured-heading" class="wp-block-heading">' . esc_html($title) . '</h2>';
+        echo $products; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '</section>';
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public static function renderKitsSection(array $attributes = []): string
+    {
+        $attributes = shortcode_atts(
+            [
+                'limit' => 4,
+                'columns' => 4,
+                'title' => __('Economize comprando kits', 'petshop-core'),
+                'intro' => __(
+                    'Escolhas práticas para compor o visual e facilitar a rotina profissional.',
+                    'petshop-core'
+                ),
+                'cta' => __('Ver todos os kits', 'petshop-core'),
+                'category' => 'conjuntos',
+            ],
+            $attributes,
+            'petshop_kits_section'
+        );
+
+        $term = get_term_by('slug', (string) $attributes['category'], 'product_cat');
+        if (!$term instanceof \WP_Term || (int) $term->count <= 0) {
+            return '';
+        }
+
+        $products = do_shortcode(
+            sprintf(
+                '[products limit="%d" columns="%d" category="%s" orderby="date" order="DESC"]',
+                max(1, absint($attributes['limit'])),
+                max(1, absint($attributes['columns'])),
+                esc_attr((string) $attributes['category'])
+            )
+        );
+
+        if (!preg_match('/class="[^"]*\bproduct\b[^"]*"/', $products)) {
+            return '';
+        }
+
+        $ctaUrl = get_term_link($term);
+        if (is_wp_error($ctaUrl)) {
+            $ctaUrl = wc_get_page_permalink('shop');
+        }
+
+        ob_start();
+        echo '<section class="petshop-section petshop-kits-section petshop-section--soft" aria-labelledby="petshop-kits-heading">';
+        echo '<h2 id="petshop-kits-heading" class="wp-block-heading">' . esc_html((string) $attributes['title']) . '</h2>';
+        if (trim((string) $attributes['intro']) !== '') {
+            echo '<p>' . esc_html((string) $attributes['intro']) . '</p>';
+        }
+        echo $products; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<p class="petshop-section__cta"><a class="wp-element-button" href="' . esc_url((string) $ctaUrl) . '">';
+        echo esc_html((string) $attributes['cta']);
+        echo '</a></p>';
+        echo '</section>';
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public static function renderReviewsSection(array $attributes = []): string
+    {
+        $attributes = shortcode_atts(['limit' => 3], $attributes, 'petshop_reviews_section');
+        $reviews = self::renderReviews($attributes);
+        if ($reviews === '') {
+            return '';
+        }
+
+        ob_start();
+        echo '<section class="petshop-section petshop-reviews" aria-labelledby="petshop-reviews-heading">';
+        echo '<h2 id="petshop-reviews-heading" class="wp-block-heading">';
+        echo esc_html__('Quem compra, conta', 'petshop-core');
+        echo '</h2>';
+        echo '<p>';
+        echo esc_html__(
+            'Avaliações reais e aprovadas dos produtos aparecem nesta seção.',
+            'petshop-core'
+        );
+        echo '</p>';
+        echo $reviews; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '</section>';
 
         return (string) ob_get_clean();
     }
@@ -712,6 +862,28 @@ final class StorefrontExperience
                 wp_update_post(['ID' => $pageId, 'post_content' => $block]);
             }
         }
+    }
+
+    private static function managedHomeContentPersisted(int $homeId, string $expected): bool
+    {
+        $saved = (string) get_post_field('post_content', $homeId);
+        if ($saved === $expected) {
+            return true;
+        }
+
+        $markers = [
+            'petshop-benefits__content',
+            'petshop-benefits__item',
+            'petshop-benefits__copy',
+            'petshop-hero',
+        ];
+        foreach ($markers as $marker) {
+            if (str_contains($expected, $marker) && !str_contains($saved, $marker)) {
+                return false;
+            }
+        }
+
+        return $saved !== '';
     }
 
     private static function migrateManagedHome(
@@ -893,6 +1065,48 @@ BLOCKS;
             $setSchemaNine = true;
         }
 
+        $setSchemaTen = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 10) {
+            $content = self::applyHomeSchemaTen($content, $supportUrl);
+            $setSchemaTen = true;
+        }
+
+        $setSchemaEleven = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 11) {
+            $content = self::applyHomeSchemaTen($content, $supportUrl);
+            $setSchemaEleven = true;
+        }
+
+        $setSchemaTwelve = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 12) {
+            $content = self::applyHomeSchemaTen($content, $supportUrl);
+            $setSchemaTwelve = true;
+        }
+
+        $setSchemaThirteen = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 13) {
+            $content = self::applyHomeSchemaThirteen($content);
+            $setSchemaThirteen = true;
+        }
+
+        $setSchemaFourteen = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 14) {
+            $content = self::applyHomeSchemaFourteen($content);
+            $setSchemaFourteen = true;
+        }
+
+        $setSchemaFifteen = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 15) {
+            $content = self::applyHomeSchemaFifteen($content);
+            $setSchemaFifteen = true;
+        }
+
+        $setSchemaSixteen = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 16) {
+            $content = self::applyHomeSchemaSixteen($content);
+            $setSchemaSixteen = true;
+        }
+
         if ($content !== $originalContent) {
             wp_save_post_revision($homeId);
         }
@@ -900,7 +1114,7 @@ BLOCKS;
         if (is_wp_error($saved)) {
             throw new \RuntimeException($saved->get_error_message());
         }
-        if ((string) get_post_field('post_content', $homeId) !== $content) {
+        if (!self::managedHomeContentPersisted($homeId, $content)) {
             throw new \RuntimeException('A atualização da Home não foi persistida integralmente.');
         }
         if ($setSchemaTwo) {
@@ -937,15 +1151,57 @@ BLOCKS;
                 update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $managedHeroMarkup));
             }
         }
+        if ($setSchemaTen) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 10);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 10) {
+                throw new \RuntimeException('Não foi possível confirmar o schema comercial da Home.');
+            }
+        }
+        if ($setSchemaEleven) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 11);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 11) {
+                throw new \RuntimeException('Não foi possível confirmar a ordem comercial da Home.');
+            }
+        }
+        if ($setSchemaTwelve) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 12);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 12) {
+                throw new \RuntimeException('Não foi possível confirmar a estrutura comercial da Home.');
+            }
+        }
+        if ($setSchemaThirteen) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 13);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 13) {
+                throw new \RuntimeException('Não foi possível confirmar a faixa de benefícios da Home.');
+            }
+        }
+        if ($setSchemaFourteen) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 14);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 14) {
+                throw new \RuntimeException('Não foi possível confirmar o layout da faixa de benefícios.');
+            }
+        }
+        if ($setSchemaFifteen) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 15);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 15) {
+                throw new \RuntimeException('Não foi possível confirmar os textos da faixa de benefícios.');
+            }
+        }
+        if ($setSchemaSixteen) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 16);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 16) {
+                throw new \RuntimeException('Não foi possível confirmar a centralização da faixa de benefícios.');
+            }
+        }
     }
 
     private static function stampNewManagedHome(int $homeId, string $shopUrl, int $heroId): void
     {
         $hero = self::heroContent($shopUrl, $heroId);
-        update_post_meta($homeId, '_petshop_home_schema_version', 9);
+        update_post_meta($homeId, '_petshop_home_schema_version', 16);
         update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $hero));
         if (
-            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 9
+            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 16
             || (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true) !== hash('sha256', $hero)
         ) {
             throw new \RuntimeException('Não foi possível assinar a nova Home gerenciada.');
@@ -1086,7 +1342,7 @@ BLOCKS;
             ['type' => 'taxonomy', 'slug' => 'bandanas', 'label' => 'Bandanas'],
             ['type' => 'taxonomy', 'slug' => 'adesivos', 'label' => 'Adesivos'],
             ['type' => 'taxonomy', 'slug' => 'gravatas', 'label' => 'Gravatas'],
-            ['type' => 'taxonomy', 'slug' => 'conjuntos', 'label' => 'Kits Econômicos'],
+            ['type' => 'taxonomy', 'slug' => 'conjuntos', 'label' => 'Kits econômicos'],
             ['type' => 'page', 'id' => $collectionsId, 'label' => 'Coleções'],
             ['type' => 'page', 'id' => $personalizeId, 'label' => 'Personalizados'],
         ];
@@ -1275,7 +1531,7 @@ BLOCKS;
         return <<<BLOCKS
 <!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","className":"petshop-hero"} -->
 <div class="wp-block-cover has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-15 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="" src="{$heroUrl}" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"default"}} --><div class="wp-block-group petshop-hero__copy">
 <!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Acessórios para banho e tosa</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1} --><h1 class="wp-block-heading">O acabamento que faz seu cliente lembrar</h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Laços, bandanas, gravatas e finalizações para valorizar cada atendimento.</p><!-- /wp:paragraph -->
@@ -1363,7 +1619,7 @@ BLOCKS;
         return <<<BLOCKS
 <!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
 <div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-15 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"default"}} --><div class="wp-block-group petshop-hero__copy">
 <!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Coleção Dia dos Pais</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1} --><h1 class="wp-block-heading">O detalhe que <span class="petshop-hero__accent">fideliza seu cliente</span></h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Gravatas, laços e adesivos temáticos que vão transformar cada atendimento em uma experiência especial e encantar o tutor.</p><!-- /wp:paragraph -->
@@ -1387,7 +1643,7 @@ BLOCKS;
         return <<<BLOCKS
 <!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
 <div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-15 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"default"}} --><div class="wp-block-group petshop-hero__copy">
 <!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Acessórios para banho e tosa</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Acessórios que valorizam cada banho e tosa</h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Bandanas, laços, gravatas e adesivos com acabamento profissional e opções para diferentes volumes.</p><!-- /wp:paragraph -->
@@ -1409,9 +1665,9 @@ BLOCKS;
         $kitsUrl = esc_url(is_wp_error($kitsUrl) ? $shopUrl : $kitsUrl);
 
         return <<<BLOCKS
-<!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":15,"overlayColor":"white","minHeight":440,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
-<div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:440px"><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-white-background-color has-background-dim-20 has-background-dim"></span><div class="wp-block-cover__inner-container">
-<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-hero__copy">
+<!-- wp:cover {"url":"{$heroUrl}","id":{$heroId},"alt":{$heroAltJson},"dimRatio":0,"minHeight":480,"minHeightUnit":"px","contentPosition":"center left","align":"full","className":"petshop-hero"} -->
+<div class="wp-block-cover alignfull has-custom-content-position is-position-center-left petshop-hero" style="min-height:480px"><img class="wp-block-cover__image-background wp-image-{$heroId}" alt="{$heroAltAttribute}" src="{$heroUrl}" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
+<!-- wp:group {"className":"petshop-hero__copy","layout":{"type":"default"}} --><div class="wp-block-group petshop-hero__copy">
 <!-- wp:paragraph {"className":"petshop-eyebrow"} --><p class="petshop-eyebrow">Acessórios para banho e tosa</p><!-- /wp:paragraph -->
 <!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Acessórios que valorizam cada banho e tosa</h1><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Bandanas, laços, gravatas e adesivos com acabamento profissional e opções para diferentes volumes.</p><!-- /wp:paragraph -->
@@ -1422,37 +1678,278 @@ BLOCKS;
 BLOCKS;
     }
 
-    private static function benefitsContent(): string
+    private static function benefitsContent(array $overrides = []): string
     {
-        return <<<'BLOCKS'
-<!-- wp:group {"align":"full","className":"petshop-benefits","layout":{"type":"constrained"}} --><div class="wp-block-group alignfull petshop-benefits">
-<!-- wp:group {"className":"petshop-benefits__inner","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"center"}} --><div class="wp-block-group petshop-benefits__inner">
-<!-- wp:paragraph --><p>Pronta entrega</p><!-- /wp:paragraph -->
-<!-- wp:paragraph --><p>Condições para volume</p><!-- /wp:paragraph -->
-<!-- wp:paragraph --><p>Envio para todo o Brasil</p><!-- /wp:paragraph -->
-</div><!-- /wp:group --></div><!-- /wp:group -->
+        $items = [
+            [
+                'class' => 'petshop-benefits__item--delivery',
+                'title' => __('Pronta entrega', 'petshop-core'),
+                'detail' => __('Produtos à pronta entrega', 'petshop-core'),
+            ],
+            [
+                'class' => 'petshop-benefits__item--volume',
+                'title' => __('Condições para volume', 'petshop-core'),
+                'detail' => __('Preços especiais para pet shops', 'petshop-core'),
+            ],
+            [
+                'class' => 'petshop-benefits__item--shipping',
+                'title' => __('Frete para todo o Brasil', 'petshop-core'),
+                'detail' => __('Envio rápido e seguro', 'petshop-core'),
+            ],
+        ];
+
+        foreach ($overrides as $index => $override) {
+            if (!isset($items[$index]) || !is_array($override)) {
+                continue;
+            }
+            if (isset($override['title']) && trim((string) $override['title']) !== '') {
+                $items[$index]['title'] = (string) $override['title'];
+            }
+            if (isset($override['detail']) && trim((string) $override['detail']) !== '') {
+                $items[$index]['detail'] = (string) $override['detail'];
+            }
+        }
+
+        $itemsMarkup = '';
+        foreach ($items as $item) {
+            $class = esc_attr($item['class']);
+            $title = esc_html($item['title']);
+            $detail = esc_html($item['detail']);
+            $itemsMarkup .= <<<ITEM
+<!-- wp:group {"className":"petshop-benefits__item {$class}","layout":{"type":"default"}} -->
+<div class="wp-block-group petshop-benefits__item {$class}">
+<!-- wp:group {"className":"petshop-benefits__content","layout":{"type":"default"}} -->
+<div class="wp-block-group petshop-benefits__content">
+<!-- wp:image {"className":"petshop-benefits__icon","linkDestination":"none"} -->
+<figure class="wp-block-image petshop-benefits__icon"><img alt="" /></figure>
+<!-- /wp:image -->
+<!-- wp:group {"className":"petshop-benefits__copy","layout":{"type":"default"}} -->
+<div class="wp-block-group petshop-benefits__copy">
+<!-- wp:paragraph {"className":"petshop-benefits__title"} --><p class="petshop-benefits__title"><strong>{$title}</strong></p><!-- /wp:paragraph -->
+<!-- wp:paragraph {"className":"petshop-benefits__detail"} --><p class="petshop-benefits__detail">{$detail}</p><!-- /wp:paragraph -->
+</div><!-- /wp:group -->
+</div><!-- /wp:group -->
+</div><!-- /wp:group -->
+
+ITEM;
+        }
+
+        return <<<BLOCKS
+<!-- wp:group {"align":"full","className":"petshop-benefits","layout":{"type":"default"}} -->
+<div class="wp-block-group alignfull petshop-benefits">
+<!-- wp:group {"className":"petshop-benefits__inner","layout":{"type":"default"}} -->
+<div class="wp-block-group petshop-benefits__inner">
+{$itemsMarkup}</div><!-- /wp:group --></div><!-- /wp:group -->
 BLOCKS;
     }
 
-    private static function homeContent(string $shopUrl, string $supportUrl, int $heroId): string
+    private static function applyHomeSchemaThirteen(string $content): string
     {
-        $shopUrl = esc_url($shopUrl);
+        if (str_contains($content, 'petshop-benefits__item')) {
+            return $content;
+        }
+
+        if (!str_contains($content, 'petshop-benefits')) {
+            return $content;
+        }
+
+        $blocks = parse_blocks($content);
+        $blocks = self::replaceBenefitsBlocks($blocks);
+
+        return serialize_blocks($blocks);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     * @return array<int, array<string, mixed>>
+     */
+    private static function replaceBenefitsBlocks(array $blocks): array
+    {
+        $updated = [];
+
+        foreach ($blocks as $block) {
+            if (
+                ($block['blockName'] ?? '') === 'core/group'
+                && str_contains((string) ($block['attrs']['className'] ?? ''), 'petshop-benefits')
+                && ($block['attrs']['align'] ?? '') === 'full'
+            ) {
+                $replacement = parse_blocks(trim(self::benefitsContent(self::benefitsOverridesFromBlock($block))));
+                foreach ($replacement as $replacementBlock) {
+                    if (($replacementBlock['blockName'] ?? '') !== null) {
+                        $updated[] = $replacementBlock;
+                    }
+                }
+                continue;
+            }
+
+            if (!empty($block['innerBlocks'])) {
+                $block['innerBlocks'] = self::replaceBenefitsBlocks($block['innerBlocks']);
+            }
+
+            $updated[] = $block;
+        }
+
+        return $updated;
+    }
+
+    private static function applyHomeSchemaSixteen(string $content): string
+    {
+        if (!str_contains($content, 'petshop-benefits__item') || str_contains($content, 'petshop-benefits__content')) {
+            return $content;
+        }
+
+        $blocks = parse_blocks($content);
+        $blocks = self::replaceBenefitsBlocks($blocks);
+
+        return serialize_blocks($blocks);
+    }
+
+    private static function applyHomeSchemaFifteen(string $content): string
+    {
+        if (!str_contains($content, 'petshop-benefits')) {
+            return $content;
+        }
+
+        return str_replace(
+            '<strong>Envio para todo o Brasil</strong>',
+            '<strong>Frete para todo o Brasil</strong>',
+            $content
+        );
+    }
+
+    private static function applyHomeSchemaFourteen(string $content): string
+    {
+        if (!str_contains($content, 'petshop-benefits__item') || str_contains($content, 'petshop-benefits__copy')) {
+            return $content;
+        }
+
+        $blocks = parse_blocks($content);
+        $blocks = self::replaceBenefitsBlocks($blocks);
+
+        return serialize_blocks($blocks);
+    }
+
+    /**
+     * @param array<string, mixed> $benefitsBlock
+     * @return list<array{title: string, detail?: string}>
+     */
+    private static function benefitsOverridesFromBlock(array $benefitsBlock): array
+    {
+        if (str_contains((string) ($benefitsBlock['attrs']['className'] ?? ''), 'petshop-benefits__item')) {
+            return self::benefitItemOverrides($benefitsBlock);
+        }
+
+        foreach ($benefitsBlock['innerBlocks'] ?? [] as $innerBlock) {
+            if (str_contains((string) ($innerBlock['attrs']['className'] ?? ''), 'petshop-benefits__inner')) {
+                return self::benefitItemOverrides($innerBlock);
+            }
+        }
+
+        return self::legacyBenefitOverrides($benefitsBlock);
+    }
+
+    /**
+     * @param array<string, mixed> $containerBlock
+     * @return list<array{title: string, detail?: string}>
+     */
+    private static function benefitItemOverrides(array $containerBlock): array
+    {
+        $overrides = [];
+
+        foreach ($containerBlock['innerBlocks'] ?? [] as $block) {
+            if (($block['blockName'] ?? '') !== 'core/group') {
+                continue;
+            }
+            if (!str_contains((string) ($block['attrs']['className'] ?? ''), 'petshop-benefits__item')) {
+                continue;
+            }
+
+            $title = '';
+            $detail = '';
+            $collect = static function (array $blocks) use (&$collect, &$title, &$detail): void {
+                foreach ($blocks as $inner) {
+                    $className = (string) ($inner['attrs']['className'] ?? '');
+                    if (($inner['blockName'] ?? '') === 'core/paragraph' && str_contains($className, 'petshop-benefits__title')) {
+                        $title = trim(wp_strip_all_tags((string) ($inner['innerHTML'] ?? '')));
+                    }
+                    if (($inner['blockName'] ?? '') === 'core/paragraph' && str_contains($className, 'petshop-benefits__detail')) {
+                        $detail = trim(wp_strip_all_tags((string) ($inner['innerHTML'] ?? '')));
+                    }
+                    if (!empty($inner['innerBlocks'])) {
+                        $collect($inner['innerBlocks']);
+                    }
+                }
+            };
+            $collect($block['innerBlocks'] ?? []);
+
+            if ($title !== '') {
+                $override = ['title' => $title];
+                if ($detail !== '') {
+                    $override['detail'] = $detail;
+                }
+                $overrides[] = $override;
+            }
+        }
+
+        return $overrides;
+    }
+
+    /**
+     * @param array<string, mixed> $benefitsBlock
+     * @return list<array{title: string, detail?: string}>
+     */
+    private static function legacyBenefitOverrides(array $benefitsBlock): array
+    {
+        $lines = [];
+        $collect = static function (array $blocks) use (&$collect, &$lines): void {
+            foreach ($blocks as $block) {
+                if (($block['blockName'] ?? '') === 'core/paragraph') {
+                    $text = trim(wp_strip_all_tags((string) ($block['innerHTML'] ?? '')));
+                    if ($text !== '') {
+                        $lines[] = $text;
+                    }
+                }
+                if (!empty($block['innerBlocks'])) {
+                    $collect($block['innerBlocks']);
+                }
+            }
+        };
+        $collect($benefitsBlock['innerBlocks'] ?? []);
+
+        $overrides = [];
+        foreach (array_slice($lines, 0, 3) as $line) {
+            $overrides[] = ['title' => $line];
+        }
+
+        return $overrides;
+    }
+
+    private static function applyHomeSchemaTen(string $content, string $supportUrl): string
+    {
+        $heroEnd = strpos($content, '<!-- /wp:cover -->');
+        if ($heroEnd === false) {
+            return $content;
+        }
+
+        $heroEnd += strlen('<!-- /wp:cover -->');
+
+        return trim(substr($content, 0, $heroEnd))
+            . "\n"
+            . self::benefitsContent()
+            . "\n"
+            . self::managedHomeTail($supportUrl);
+    }
+
+    private static function managedHomeTail(string $supportUrl): string
+    {
         $supportUrl = esc_url($supportUrl);
 
-        return self::heroContent($shopUrl, $heroId) . "\n" . self::benefitsContent() . <<<BLOCKS
+        return <<<BLOCKS
 <!-- wp:group {"className":"petshop-section","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section">
 <!-- wp:heading --><h2 class="wp-block-heading">Compre por categoria</h2><!-- /wp:heading -->
 <!-- wp:shortcode -->[petshop_categories limit="8"]<!-- /wp:shortcode --></div><!-- /wp:group -->
-<!-- wp:group {"className":"petshop-section petshop-commerce-banner","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section petshop-commerce-banner">
-<!-- wp:heading --><h2 class="wp-block-heading">Kits e conjuntos</h2><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Escolhas práticas para compor o visual e facilitar a rotina profissional.</p><!-- /wp:paragraph -->
-<!-- wp:shortcode -->[products limit="4" columns="4" category="conjuntos" orderby="date" order="DESC"]<!-- /wp:shortcode --></div><!-- /wp:group -->
-<!-- wp:group {"className":"petshop-section","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section">
-<!-- wp:heading --><h2 class="wp-block-heading">Mais procurados</h2><!-- /wp:heading -->
-<!-- wp:shortcode -->[products limit="4" columns="4" orderby="popularity"]<!-- /wp:shortcode --></div><!-- /wp:group -->
-<!-- wp:group {"className":"petshop-section petshop-section--soft","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section petshop-section--soft">
-<!-- wp:heading --><h2 class="wp-block-heading">Novidades</h2><!-- /wp:heading -->
-<!-- wp:shortcode -->[products limit="4" columns="4" orderby="date" order="DESC"]<!-- /wp:shortcode --></div><!-- /wp:group -->
+<!-- wp:shortcode -->[petshop_featured_products limit="4" columns="4"]<!-- /wp:shortcode -->
+<!-- wp:shortcode -->[petshop_kits_section limit="4" columns="4"]<!-- /wp:shortcode -->
 <!-- wp:group {"className":"petshop-section petshop-seasonal","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section petshop-seasonal">
 <!-- wp:heading --><h2 class="wp-block-heading">Coleção da estação</h2><!-- /wp:heading -->
 <!-- wp:shortcode -->[petshop_seasonal_products limit="4" columns="4"]<!-- /wp:shortcode --></div><!-- /wp:group -->
@@ -1460,14 +1957,16 @@ BLOCKS;
 <!-- wp:heading --><h2 class="wp-block-heading">Seleção para banho e tosa</h2><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Modelos pensados para finalização profissional, apresentação de kits e recompra recorrente.</p><!-- /wp:paragraph -->
 <!-- wp:shortcode -->[products limit="4" columns="4" category="adesivos,gravatas,lacos" orderby="date" order="DESC"]<!-- /wp:shortcode --></div><!-- /wp:group -->
-<!-- wp:group {"className":"petshop-section petshop-reviews","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section petshop-reviews">
-<!-- wp:heading --><h2 class="wp-block-heading">Quem compra, conta</h2><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Avaliações reais e aprovadas dos produtos aparecem nesta seção.</p><!-- /wp:paragraph -->
-<!-- wp:shortcode -->[petshop_reviews limit="3"]<!-- /wp:shortcode --></div><!-- /wp:group -->
+<!-- wp:shortcode -->[petshop_reviews_section limit="3"]<!-- /wp:shortcode -->
 <!-- wp:group {"className":"petshop-section petshop-support-cta","layout":{"type":"constrained"}} --><div class="wp-block-group petshop-section petshop-support-cta">
 <!-- wp:heading --><h2 class="wp-block-heading">Precisa de ajuda para escolher?</h2><!-- /wp:heading -->
 <!-- wp:paragraph --><p>Fale com nosso atendimento e encontre a opção adequada para o seu pet ou negócio.</p><!-- /wp:paragraph -->
 <!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="{$supportUrl}">Falar com atendimento</a></div><!-- /wp:button --></div><!-- /wp:buttons --></div><!-- /wp:group -->
 BLOCKS;
+    }
+
+    private static function homeContent(string $shopUrl, string $supportUrl, int $heroId): string
+    {
+        return self::heroContent($shopUrl, $heroId) . "\n" . self::benefitsContent() . "\n" . self::managedHomeTail($supportUrl);
     }
 }

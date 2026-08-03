@@ -1,0 +1,44 @@
+/**
+ * Ajustes do iframe Gutenberg para espelhar o storefront.
+ * Carregado após style.css via add_editor_style().
+ * Ao alterar hero, benefícios ou seções Gutenberg no style.css, validar também aqui se o canvas exigir override.
+ */
+
+.editor-styles-wrapper {
+  color: var(--color-ink);
+  line-height: 1.55;
+}
+
+/* Full-bleed no front usa breakout; no editor, respeitar a largura do canvas */
+.editor-styles-wrapper .petshop-hero.alignfull,
+.editor-styles-wrapper .petshop-benefits.alignfull {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+.editor-styles-wrapper .petshop-benefits {
+  --wp--style--block-gap: 0;
+}
+
+.editor-styles-wrapper .petshop-benefits :where(.wp-block-group:not(.petshop-benefits__inner), .wp-block-paragraph, .wp-block-image, figure) {
+  margin: 0 !important;
+}
+
+.editor-styles-wrapper .petshop-benefits__inner {
+  margin-inline: auto !important;
+}
+
+.editor-styles-wrapper .petshop-benefits :where(.is-layout-flow, .wp-block-group-is-layout-flow) > :where(* + *) {
+  margin-block-start: 0 !important;
+}
+
+.editor-styles-wrapper .petshop-hero.wp-block-cover {
+  padding: 0;
+}
+
+/* Gutenberg aplica dim padrão; garantir gradiente/superfície do tema */
+.editor-styles-wrapper .petshop-hero.wp-block-cover .wp-block-cover__background.has-background-dim,
+.editor-styles-wrapper .petshop-hero.wp-block-cover .wp-block-cover__background.has-white-background-color {
+  opacity: 1 !important;
+}
