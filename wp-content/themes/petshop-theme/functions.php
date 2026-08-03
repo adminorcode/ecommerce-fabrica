@@ -164,7 +164,11 @@ add_action(
 add_filter(
     'get_product_search_form',
     static function (string $form): string {
-        if (str_contains($form, 'aria-label=') || str_contains($form, '<label')) {
+        if (preg_match('/class="[^"]*search-field[^"]*"[^>]*\baria-label=/', $form)) {
+            return $form;
+        }
+
+        if (preg_match('/<label\b[^>]*\bfor="[^"]*"/', $form)) {
             return $form;
         }
 

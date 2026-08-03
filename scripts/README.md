@@ -58,6 +58,7 @@ Sequência padrão:
 | `validate-005-session-02-browser.mjs` | 005 S02 | Browser: hero |
 | `validate-005-catalog-layout-browser.mjs` | 005 | Browser: filtro lateral |
 | `validate-005-session-02-editor.mjs` | 005 S02 | Editor Gutenberg |
+| `validate-009-cart-checkout-browser.mjs` | 009 | Browser: cart/checkout tokens e a11y |
 | `test-004b-persistence.php` | 004b | Persistência editorial |
 | `test-005-session-01-persistence.php` | 005 S01 | Persistência header |
 | `test-005-session-02-persistence.php` | 005 S02 | Persistência hero |

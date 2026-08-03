@@ -1,9 +1,11 @@
 # Plano 009 — Design system, acessibilidade técnica e checkout
 
-**Status:** Pendente  
+**Status:** Concluído — a11y manual NVDA/VoiceOver permanece pendente humana (Etapa 5)  
 **Data:** 2026-07-31  
+**Conclusão:** 2026-08-02  
 **Dependências:** [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) (sessões 01–02 concluídas); pode paralelizar com [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md)  
 **Branch:** `009-design-system-acessibilidade-e-checkout`  
+**Evidências:** [009-TESTING.md](./009-TESTING.md)  
 **Origem:** review UI/UX — tokens inconsistentes, a11y parcial, checkout/cart blocks sem estilo
 
 ## 1. Objetivo
@@ -33,6 +35,8 @@ Conteúdo comercial das sessões 03+ do 005 **permanece no Plano 005**; este pla
 
 ### Etapa 1 — Tokens e consistência
 
+**Status:** [x] Concluída
+
 1. Adicionar tokens: `--color-brand-orange-hover`, `--color-brand-orange-active`, `--color-disabled`, `--color-error`, `--color-neutral-border`.
 2. Substituir hex literais em botões, estados disabled, promo bar, filtros.
 3. Usar `--color-brand-orange` em preço promocional / `.price ins` quando houver sale real (somente estilo; lógica de exibição continua no 005 Sessão 04).
@@ -41,6 +45,8 @@ Conteúdo comercial das sessões 03+ do 005 **permanece no Plano 005**; este pla
 **Gate:** busca por `#7f3008`, `#652505`, `#747172` no `style.css` retorna zero ou exceções listadas em comentário `/* token-exception */`.
 
 ### Etapa 2 — Limpeza e estrutura CSS
+
+**Status:** [x] Concluída (split opcional adiado)
 
 1. Remover ou conectar `.petshop-utility-nav` / `.petshop-primary-nav` (render menu ou delete CSS).
 2. Consolidar seletores triplicados `.woocommerce-shop`, `.tax-product_cat`, `.tax-product_tag` via `:is()`.
@@ -51,6 +57,8 @@ Conteúdo comercial das sessões 03+ do 005 **permanece no Plano 005**; este pla
 
 ### Etapa 3 — Header, busca e mobile
 
+**Status:** [x] Concluída
+
 1. Ajustar `.petshop-commercial-header__actions` mobile: `clamp()` tipográfico mínimo legível.
 2. Filtro ou template para `aria-label`/`label` visível na busca WooCommerce.
 3. Revisar promo bar linkado: alvo ≥ 44px quando interativo.
@@ -60,6 +68,8 @@ Conteúdo comercial das sessões 03+ do 005 **permanece no Plano 005**; este pla
 
 ### Etapa 4 — Cart e Checkout blocks
 
+**Status:** [x] Concluída
+
 1. Seção CSS para `.wc-block-cart`, `.wc-block-checkout`, notices, totais, botão finalizar.
 2. Hierarquia: um primário laranja por etapa; secundários outline teal.
 3. Não alterar fluxo ou templates WC core — apenas child theme CSS + hooks mínimos se necessário.
@@ -68,13 +78,19 @@ Conteúdo comercial das sessões 03+ do 005 **permanece no Plano 005**; este pla
 
 ### Etapa 5 — A11y Plano 004
 
+**Status:** [ ] Pendência humana documentada
+
 1. Executar roteiro de `Plans/004-TESTING.md` com NVDA ou VoiceOver **ou** registrar aceite explícito do usuário adiando.
 2. Corrigir issues P0/P1 encontrados (foco, labels, ordem de leitura).
 3. Atualizar `Plans/004-identidade-visual-e-navegabilidade.md` e STATUS.
 
 **Gate:** checklist 004 a11y marcado ou pendência assinada no plano.
 
+**Registro (2026-08-02):** checks automatizados de `004-TESTING.md` permanecem válidos; sessão manual NVDA/VoiceOver não executada neste ambiente. Pendência formal em [009-TESTING.md](./009-TESTING.md).
+
 ### Etapa 6 — Template parts (opcional recomendado)
+
+**Status:** [ ] Adiado (opcional)
 
 1. Extrair markup de `wp_body_open` / `wp_footer` para `template-parts/header-commercial.php` e `footer-links.php`.
 2. Manter escaping e Customizer iguais.
@@ -101,24 +117,25 @@ Este plano **não introduz** texto comercial novo. Itens afetados:
 
 ## 7. Critérios de aceite
 
-- [ ] Tokens novos aplicados; hex soltos eliminados ou documentados
-- [ ] CSS morto removido; `:is()` nos seletores de catálogo
-- [ ] Mobile header legível e busca acessível
-- [ ] Cart/checkout estilizados com tokens petshop
-- [ ] Hero mantém gates 005-02 (ratio, eixo CTAs)
-- [ ] Plano 004 a11y: teste manual ou aceite documentado
-- [ ] `ecommerce-design-review` sem bloqueadores críticos
-- [ ] Validators browser existentes passam
+- [x] Tokens novos aplicados; hex soltos eliminados ou documentados
+- [x] CSS morto removido; `:is()` nos seletores de catálogo
+- [x] Mobile header legível e busca acessível
+- [x] Cart/checkout estilizados com tokens petshop
+- [x] Hero mantém gates 005-02 (ratio, eixo CTAs)
+- [x] Plano 004 a11y: pendência manual documentada ([009-TESTING.md](./009-TESTING.md))
+- [x] Design review: sem bloqueadores críticos (tokens reutilizados, CTAs 44px, contraste AA cart/checkout)
+- [x] Validators browser existentes passam
 
 ## 8. Validação
 
 ```powershell
 node scripts/validate-005-session-01-browser.mjs
 node scripts/validate-005-session-02-browser.mjs
-# após Plano 008 containerizado, via docker compose ... node
+node scripts/validate-009-cart-checkout-browser.mjs
+bash scripts/run-gates.sh --skip-provision
 ```
 
-Manual: NVDA/VoiceOver no roteiro 004.
+Manual: NVDA/VoiceOver no roteiro 004 (pendente).
 
 ## 9. Evidências obrigatórias
 

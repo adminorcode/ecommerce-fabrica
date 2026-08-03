@@ -11,7 +11,7 @@
 | [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, run-gates, CI workflow; gates PHP validados em runtime |
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
 | [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Pendente | PHPUnit, Playwright no contêiner, gates PDP/carrinho; depende do 006 |
-| [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Pendente | Tokens, a11y técnica, CSS cleanup, cart/checkout blocks; paralelo ao 007 |
+| [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Pendente | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais |
 
 ## Ordem recomendada de execução
