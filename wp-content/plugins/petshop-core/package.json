@@ -1,0 +1,13 @@
+{
+  "name": "petshop-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build tooling for Petshop Core Gutenberg blocks.",
+  "scripts": {
+    "build": "wp-scripts build blocks/home-campaign/home-campaign.js blocks/home-campaigns/home-campaigns.js blocks/home-campaigns/view.js --output-path=blocks/build",
+    "start": "wp-scripts start blocks/home-campaign/home-campaign.js blocks/home-campaigns/home-campaigns.js blocks/home-campaigns/view.js --output-path=blocks/build"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.14.0"
+  }
+}

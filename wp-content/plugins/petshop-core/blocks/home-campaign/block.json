@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "petshop/home-campaign",
+  "version": "1.0.0",
+  "title": "Banner de campanha",
+  "category": "petshop",
+  "parent": ["petshop/home-campaigns"],
+  "icon": "format-image",
+  "description": "Imagem de campanha com link de destino para a Home.",
+  "textdomain": "petshop-core",
+  "attributes": {
+    "desktopImageId": {
+      "type": "number",
+      "default": 0
+    },
+    "desktopImageUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "mobileImageId": {
+      "type": "number",
+      "default": 0
+    },
+    "mobileImageUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "imageAlt": {
+      "type": "string",
+      "default": ""
+    },
+    "linkUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "editorLabel": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "lock": false
+  },
+  "editorScript": "file:./home-campaign.js"
+}

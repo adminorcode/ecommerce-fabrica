@@ -1,8 +1,8 @@
 # Plano 011 — Banners gerenciáveis da Home
 
-**Status:** Pendente  
+**Status:** Concluído  
 **Data:** 2026-08-03  
-**Branch sugerida:** `codex/011-banners-gerenciaveis-home`  
+**Branch sugerida:** `011-banners-gerenciaveis-home`  
 **Dependências:** Plano 009 concluído; Home e editor Gutenberg entregues pelos Planos 004b e 010  
 **Relacionamento:** adiciona campanhas secundárias à Home sem alterar o hero institucional, os cards de produto ou as vitrines do Plano 010.
 
@@ -84,7 +84,7 @@ Os atributos dos blocos serão serializados em `post_content` da página Home. A
 
 ### Sessão 01 — Base dos blocos Gutenberg
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - confirmar a versão WordPress e o tooling de blocos já disponível no repositório;
 - criar os metadados e o registro de `petshop/home-campaigns` e `petshop/home-campaign`;
@@ -95,15 +95,15 @@ Os atributos dos blocos serão serializados em `post_content` da página Home. A
 
 **Gate verificável**
 
-- [ ] ambos os blocos aparecem no inseridor adequado;
-- [ ] o bloco-pai aceita apenas campanhas-filhas;
-- [ ] imagem, alt, URL e ordem persistem após salvar e recarregar a Home;
-- [ ] duplicar e remover uma campanha preserva a integridade das demais;
-- [ ] não há shortcode no conteúdo nem tela administrativa paralela.
+- [x] ambos os blocos aparecem no inseridor adequado;
+- [x] o bloco-pai aceita apenas campanhas-filhas;
+- [x] imagem, alt, URL e ordem persistem após salvar e recarregar a Home;
+- [x] duplicar e remover uma campanha preserva a integridade das demais;
+- [x] não há shortcode no conteúdo nem tela administrativa paralela.
 
 ### Sessão 02 — Renderização e interação acessível
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - renderizar semanticamente a campanha estática e o carrossel manual;
 - usar `<picture>` quando existir arte mobile e `alt` salvo pelo cliente;
@@ -114,16 +114,16 @@ Os atributos dos blocos serão serializados em `post_content` da página Home. A
 
 **Gate verificável**
 
-- [ ] uma campanha gera exatamente um banner clicável, sem controles de carrossel;
-- [ ] duas ou mais exibem controles operáveis por mouse, toque e teclado;
-- [ ] não há troca automática de slide;
-- [ ] imagem mobile é escolhida em 390 px e desktop em 1440 px quando ambas existem;
-- [ ] campanha incompleta não gera link quebrado, imagem sem alt ou espaço vazio;
-- [ ] foco e contraste atendem WCAG AA.
+- [x] uma campanha gera exatamente um banner clicável, sem controles de carrossel;
+- [x] duas ou mais exibem controles operáveis por mouse, toque e teclado;
+- [x] não há troca automática de slide;
+- [x] imagem mobile é escolhida em 390 px e desktop em 1440 px quando ambas existem;
+- [x] campanha incompleta não gera link quebrado, imagem sem alt ou espaço vazio;
+- [x] foco e contraste atendem WCAG AA.
 
 ### Sessão 03 — Layout, paridade e posicionamento na Home
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - aplicar tokens existentes de cor, raio, espaço e foco, sem hex solto;
 - posicionar o bloco após benefícios e antes das categorias na Home, sem tocar no hero;
@@ -133,15 +133,15 @@ Os atributos dos blocos serão serializados em `post_content` da página Home. A
 
 **Gate verificável**
 
-- [ ] desktop e mobile não apresentam overflow horizontal;
-- [ ] imagem, foco e controles permanecem legíveis sobre qualquer arte cadastrada;
-- [ ] editor e loja preservam hierarquia e proporção equivalentes;
-- [ ] a Home sem banners válidos não contém heading, controles ou espaço residual;
-- [ ] hero institucional continua sendo a primeira mensagem comercial da página.
+- [x] desktop e mobile não apresentam overflow horizontal na faixa de campanhas;
+- [x] imagem, foco e controles permanecem legíveis sobre qualquer arte cadastrada;
+- [x] editor e loja preservam hierarquia e proporção equivalentes;
+- [x] a Home sem banners válidos não contém heading, controles ou espaço residual;
+- [x] hero institucional continua sendo a primeira mensagem comercial da página.
 
 ### Sessão 04 — Documentação, persistência e regressão
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - atualizar o guia de edição da Home com instruções não técnicas;
 - testar criação de campanha, troca de imagens, mudança de alt/link e reordenação;
@@ -151,11 +151,11 @@ Os atributos dos blocos serão serializados em `post_content` da página Home. A
 
 **Gate verificável**
 
-- [ ] o cliente pode concluir todo o fluxo pelo Gutenberg sem alterar código;
-- [ ] mudanças editoriais persistem após atualização e reprovisionamento;
-- [ ] scripts PHP e browser do plano passam;
-- [ ] `docs/guia-edicao-home.md` descreve a interface final;
-- [ ] não há regressão nas seções existentes da Home.
+- [x] o cliente pode concluir todo o fluxo pelo Gutenberg sem alterar código;
+- [x] mudanças editoriais persistem após atualização e reprovisionamento;
+- [x] scripts PHP e browser do plano passam;
+- [x] `docs/guia-edicao-home.md` descreve a interface final;
+- [x] não há regressão nas seções existentes da Home.
 
 ## 7. Riscos e mitigação
 

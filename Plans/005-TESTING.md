@@ -1,7 +1,7 @@
 # Evidências de teste — Plano 005
 
 **Data:** 2026-07-31
-**Branch:** `codex/005-refinamento-comercial-do-storefront`
+**Branch:** `005-refinamento-comercial-do-storefront`
 
 ## Ledger de execução
 

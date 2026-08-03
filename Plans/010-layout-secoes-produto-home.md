@@ -2,7 +2,7 @@
 
 **Status:** Concluído  
 **Data:** 2026-08-02  
-**Branch sugerida:** `codex/010-layout-secoes-produto-home`  
+**Branch sugerida:** `010-layout-secoes-produto-home`  
 **Última validação:** 2026-08-02 — persistência PHP e browser 1280/390 aprovados  
 **Dependências:** base funcional dos Planos 004/004b; Sessões 01–02 do Plano 005 concluídas  
 **Relacionamento:** especializa o layout comercial das vitrines da Home descrito nas Sessões 04–06 do Plano 005, sem substituir filtros de catálogo, rodapé ou hero.

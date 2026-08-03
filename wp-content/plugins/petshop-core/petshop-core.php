@@ -17,17 +17,21 @@ defined('ABSPATH') || exit;
 
 defined('PETSHOP_CORE_FILE') || define('PETSHOP_CORE_FILE', __FILE__);
 
+require_once __DIR__ . '/includes/class-category-icons.php';
 require_once __DIR__ . '/includes/class-storefront-catalog.php';
 require_once __DIR__ . '/includes/class-storefront-experience.php';
 require_once __DIR__ . '/includes/class-storefront-breadcrumbs.php';
 require_once __DIR__ . '/includes/class-storefront-product-card.php';
 require_once __DIR__ . '/includes/class-storefront-wishlist.php';
+require_once __DIR__ . '/includes/class-home-campaign-blocks.php';
 
+\Petshop\Core\CategoryIcons::bootstrap();
 \Petshop\Core\StorefrontCatalog::bootstrap();
 \Petshop\Core\StorefrontExperience::bootstrap();
 \Petshop\Core\StorefrontBreadcrumbs::bootstrap();
 \Petshop\Core\StorefrontProductCard::bootstrap();
 \Petshop\Core\StorefrontWishlist::bootstrap();
+\Petshop\Core\HomeCampaignBlocks::bootstrap();
 
 add_action(
     'before_woocommerce_init',

@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontExperience
 {
-    private const VERSION = '2.3.9';
+    private const VERSION = '2.4.1';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -166,13 +166,12 @@ final class StorefrontExperience
         $wishlistId = self::ensurePage(
             'lista-de-desejos',
             'Lista de desejos',
-            '<!-- wp:heading --><h2 class="wp-block-heading">Lista de desejos</h2><!-- /wp:heading -->'
-            . '<!-- wp:paragraph --><p>Produtos que você salvou para comprar depois.</p><!-- /wp:paragraph -->'
-            . '<!-- wp:shortcode -->[petshop_wishlist]<!-- /wp:shortcode -->'
+            self::wishlistPageContent()
         );
         if (get_theme_mod('petshop_wishlist_page', null) === null) {
             set_theme_mod('petshop_wishlist_page', $wishlistId);
         }
+        self::migrateWishlistPage($wishlistId);
         $heroId = self::placeholderAttachment('hero-wide');
         if ($heroId <= 0) {
             throw new \RuntimeException('Imagem hero-wide ausente; execute o seed 004b e tente novamente.');
@@ -236,6 +235,10 @@ final class StorefrontExperience
                 <?php esc_html_e('Exibir na navegação', 'petshop-core'); ?>
             </label>
         </div>
+        <div class="form-field">
+            <label><?php esc_html_e('Ícone da vitrine', 'petshop-core'); ?></label>
+            <?php CategoryIcons::renderPicker(''); ?>
+        </div>
         <?php
     }
 
@@ -245,6 +248,7 @@ final class StorefrontExperience
         $order = (int) get_term_meta($term->term_id, 'petshop_menu_order', true);
         $seasonal = (bool) get_term_meta($term->term_id, 'petshop_seasonal', true);
         $visible = (bool) get_term_meta($term->term_id, 'petshop_visible_in_menu', true);
+        $icon = (string) get_term_meta($term->term_id, CategoryIcons::META_KEY, true);
         ?>
         <tr class="form-field">
             <th scope="row"><label for="petshop_menu_order"><?php esc_html_e('Ordem comercial', 'petshop-core'); ?></label></th>
@@ -256,6 +260,10 @@ final class StorefrontExperience
                 <label><input type="checkbox" name="petshop_seasonal" value="1" <?php checked($seasonal); ?>> <?php esc_html_e('Categoria sazonal', 'petshop-core'); ?></label><br>
                 <label><input type="checkbox" name="petshop_visible_in_menu" value="1" <?php checked($visible); ?>> <?php esc_html_e('Exibir na navegação', 'petshop-core'); ?></label>
             </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row"><?php esc_html_e('Ícone da vitrine', 'petshop-core'); ?></th>
+            <td><?php CategoryIcons::renderPicker($icon); ?></td>
         </tr>
         <?php
     }
@@ -276,6 +284,15 @@ final class StorefrontExperience
         update_term_meta($termId, 'petshop_menu_order', isset($_POST['petshop_menu_order']) ? absint($_POST['petshop_menu_order']) : 0);
         update_term_meta($termId, 'petshop_seasonal', isset($_POST['petshop_seasonal']));
         update_term_meta($termId, 'petshop_visible_in_menu', isset($_POST['petshop_visible_in_menu']));
+
+        if (array_key_exists(CategoryIcons::META_KEY, $_POST)) {
+            $icon = sanitize_key((string) wp_unslash($_POST[CategoryIcons::META_KEY]));
+            if ($icon === '' || !CategoryIcons::isValid($icon)) {
+                delete_term_meta($termId, CategoryIcons::META_KEY);
+            } else {
+                update_term_meta($termId, CategoryIcons::META_KEY, $icon);
+            }
+        }
     }
 
     /**
@@ -520,28 +537,124 @@ final class StorefrontExperience
         );
         $visibleTerms = array_slice($visibleTerms, 0, max(1, absint($attributes['limit'])));
 
+        self::enqueueCategoryPreviewAssets();
+
         ob_start();
         echo '<ul class="petshop-category-grid" aria-label="' . esc_attr__('Categorias de produtos', 'petshop-core') . '">';
         foreach ($visibleTerms as $term) {
-            $thumbnailId = (int) get_term_meta($term->term_id, 'thumbnail_id', true);
-            $attachmentAlt = $thumbnailId > 0
-                ? (string) get_post_meta($thumbnailId, '_wp_attachment_image_alt', true)
-                : '';
-            $image = $thumbnailId > 0
-                ? wp_get_attachment_image(
-                    $thumbnailId,
-                    'woocommerce_thumbnail',
-                    false,
-                    $attachmentAlt === '' ? ['alt' => $term->name] : []
-                )
-                : wc_placeholder_img('woocommerce_thumbnail', ['alt' => $term->name]);
-            echo '<li class="petshop-category-card">';
-            echo '<a href="' . esc_url(get_term_link($term)) . '">';
-            echo wp_kses_post($image);
-            echo '<span>' . esc_html($term->name) . '</span>';
+            $icon = CategoryIcons::resolveForTerm($term);
+            $iconUrl = CategoryIcons::url($icon);
+            $termLink = get_term_link($term);
+            if (is_wp_error($termLink)) {
+                continue;
+            }
+            $previewId = 'petshop-category-preview-' . (int) $term->term_id;
+            $products = self::categoryPreviewProducts($term);
+            $hasPreview = $products !== [];
+
+            echo '<li class="petshop-category-card"' . ($hasPreview ? ' data-petshop-category-preview' : '') . '>';
+            echo '<a class="petshop-category-card__trigger" href="' . esc_url($termLink) . '"';
+            if ($hasPreview) {
+                echo ' aria-expanded="false" aria-controls="' . esc_attr($previewId) . '"';
+            }
+            echo '>';
+            echo '<span class="petshop-category-card__well">';
+            echo '<span class="petshop-category-card__icon" style="--petshop-category-icon: url(\'' . esc_url($iconUrl) . '\')" aria-hidden="true"></span>';
+            echo '</span>';
+            echo '<span class="petshop-category-card__label">' . esc_html($term->name) . '</span>';
+            echo '</a>';
+            if ($hasPreview) {
+                echo self::renderCategoryPreviewPanel($term, $products, $previewId, (string) $termLink);
+            }
+            echo '</li>';
+        }
+        echo '</ul>';
+
+        return (string) ob_get_clean();
+    }
+
+    public static function enqueueCategoryPreviewAssets(): void
+    {
+        $assetPath = dirname(__DIR__) . '/assets/js/category-preview.js';
+        wp_enqueue_script(
+            'petshop-category-preview',
+            plugins_url('assets/js/category-preview.js', PETSHOP_CORE_FILE),
+            [],
+            is_file($assetPath) ? (string) filemtime($assetPath) : self::VERSION,
+            true
+        );
+    }
+
+    /**
+     * @return list<\WC_Product>
+     */
+    private static function categoryPreviewProducts(\WP_Term $term): array
+    {
+        if (!function_exists('wc_get_products')) {
+            return [];
+        }
+
+        $candidates = wc_get_products([
+            'status' => 'publish',
+            'limit' => 12,
+            'category' => [$term->slug],
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'return' => 'objects',
+        ]);
+
+        if (!is_array($candidates) || $candidates === []) {
+            return [];
+        }
+
+        $valid = array_values(array_filter(
+            $candidates,
+            static fn ($product): bool => $product instanceof \WC_Product
+        ));
+        $withImage = array_values(array_filter(
+            $valid,
+            static fn (\WC_Product $product): bool => $product->get_image_id() > 0
+        ));
+
+        return array_slice($withImage !== [] ? $withImage : $valid, 0, 3);
+    }
+
+    /**
+     * @param list<\WC_Product> $products
+     */
+    private static function renderCategoryPreviewPanel(
+        \WP_Term $term,
+        array $products,
+        string $previewId,
+        string $termLink
+    ): string {
+        ob_start();
+        echo '<div id="' . esc_attr($previewId) . '" class="petshop-category-preview" hidden aria-hidden="true" role="region" aria-label="'
+            . esc_attr(sprintf(__('Prévia de %s', 'petshop-core'), $term->name))
+            . '">';
+        echo '<ul class="petshop-category-preview__products">';
+        foreach ($products as $product) {
+            $image = $product->get_image(
+                'woocommerce_thumbnail',
+                [
+                    'class' => 'petshop-category-preview__image',
+                    'alt' => $product->get_name(),
+                    'loading' => 'lazy',
+                    'decoding' => 'async',
+                ]
+            );
+            echo '<li class="petshop-category-preview__item">';
+            echo '<a class="petshop-category-preview__link" href="' . esc_url($product->get_permalink()) . '">';
+            echo '<span class="petshop-category-preview__media">' . $image . '</span>';
+            echo '<span class="petshop-category-preview__name">' . esc_html($product->get_name()) . '</span>';
+            echo '<span class="petshop-category-preview__price">' . wp_kses_post($product->get_price_html()) . '</span>';
             echo '</a></li>';
         }
         echo '</ul>';
+        echo '<a class="petshop-category-preview__cta" href="' . esc_url($termLink) . '">';
+        echo esc_html(sprintf(__('Ver %s', 'petshop-core'), $term->name));
+        echo '</a>';
+        echo '</div>';
 
         return (string) ob_get_clean();
     }
@@ -1339,6 +1452,11 @@ BLOCKS;
         return $updated;
     }
 
+    private static function applyHomeSchemaTwentyFour(string $content, string $shopUrl, int $heroId): string
+    {
+        return HomeCampaignBlocks::insertCampaignsIfMissing($content, $heroId, $shopUrl);
+    }
+
     public static function renderSupportBanner(): string
     {
         $imageId = (int) get_theme_mod('petshop_support_banner_image', 0);
@@ -1474,6 +1592,52 @@ BLOCKS;
         }
 
         return (int) $pageId;
+    }
+
+    private static function wishlistPageContent(): string
+    {
+        return '<!-- wp:paragraph --><p>Produtos que você salvou para comprar depois.</p><!-- /wp:paragraph -->'
+            . '<!-- wp:shortcode -->[petshop_wishlist]<!-- /wp:shortcode -->';
+    }
+
+    private static function migrateWishlistPage(int $pageId): void
+    {
+        if ($pageId <= 0) {
+            return;
+        }
+
+        $page = get_post($pageId);
+        if (!$page instanceof \WP_Post) {
+            return;
+        }
+
+        $legacy = [
+            '<!-- wp:heading --><h2 class="wp-block-heading">Lista de desejos</h2><!-- /wp:heading -->'
+            . '<!-- wp:paragraph --><p>Produtos que você salvou para comprar depois.</p><!-- /wp:paragraph -->'
+            . '<!-- wp:shortcode -->[petshop_wishlist]<!-- /wp:shortcode -->',
+            '<!-- wp:heading -->' . "\n" . '<h2 class="wp-block-heading">Lista de desejos</h2>' . "\n"
+            . '<!-- /wp:heading -->' . "\n\n"
+            . '<!-- wp:paragraph -->' . "\n" . '<p>Produtos que você salvou para comprar depois.</p>' . "\n"
+            . '<!-- /wp:paragraph -->' . "\n\n"
+            . '<!-- wp:shortcode -->' . "\n" . '[petshop_wishlist]' . "\n" . '<!-- /wp:shortcode -->',
+        ];
+
+        $current = trim((string) $page->post_content);
+        if (!in_array($current, $legacy, true) && !in_array(str_replace(["\r\n", "\r"], "\n", $current), array_map(
+            static fn (string $value): string => str_replace(["\r\n", "\r"], "\n", $value),
+            $legacy
+        ), true)) {
+            return;
+        }
+
+        $updated = wp_update_post([
+            'ID' => $pageId,
+            'post_content' => self::wishlistPageContent(),
+        ], true);
+
+        if (is_wp_error($updated)) {
+            throw new \RuntimeException($updated->get_error_message());
+        }
     }
 
     private static function hasSeoPlugin(): bool
@@ -1793,6 +1957,12 @@ BLOCKS;
             $setSchemaTwentyThree = true;
         }
 
+        $setSchemaTwentyFour = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 24) {
+            $content = self::applyHomeSchemaTwentyFour($content, $shopUrl, $heroId);
+            $setSchemaTwentyFour = true;
+        }
+
         if ($content !== $originalContent) {
             wp_save_post_revision($homeId);
         }
@@ -1921,15 +2091,21 @@ BLOCKS;
                 throw new \RuntimeException('Não foi possível confirmar a seção de avaliações da Home.');
             }
         }
+        if ($setSchemaTwentyFour) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 24);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 24) {
+                throw new \RuntimeException('Não foi possível confirmar a faixa de banners de campanha da Home.');
+            }
+        }
     }
 
     private static function stampNewManagedHome(int $homeId, string $shopUrl, int $heroId): void
     {
         $hero = self::heroContent($shopUrl, $heroId);
-        update_post_meta($homeId, '_petshop_home_schema_version', 23);
+        update_post_meta($homeId, '_petshop_home_schema_version', 24);
         update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $hero));
         if (
-            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 23
+            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 24
             || (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true) !== hash('sha256', $hero)
         ) {
             throw new \RuntimeException('Não foi possível assinar a nova Home gerenciada.');
@@ -3236,6 +3412,13 @@ BLOCKS;
 
     private static function homeContent(string $shopUrl, string $supportUrl, int $heroId): string
     {
-        return self::heroContent($shopUrl, $heroId) . "\n" . self::benefitsContent() . "\n" . self::managedHomeTail($supportUrl);
+        $campaigns = HomeCampaignBlocks::initialCampaignsBlockMarkup($heroId, $shopUrl);
+
+        return self::heroContent($shopUrl, $heroId)
+            . "\n"
+            . self::benefitsContent()
+            . ($campaigns !== '' ? "\n" . $campaigns : '')
+            . "\n"
+            . self::managedHomeTail($supportUrl);
     }
 }

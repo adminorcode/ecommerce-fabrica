@@ -76,7 +76,41 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 
 
 
-## 3. Compre por categoria
+## 3. Banners de campanha
+
+
+
+**Onde:** bloco **Banners de campanha** (`petshop/home-campaigns`), entre a faixa de benefícios e a seção **Compre por categoria**.
+
+
+
+| Item | Como editar |
+| --- | --- |
+| Inserir a faixa | No editor da Home → **+** → categoria **Petshop** → **Banners de campanha** |
+| Adicionar campanha | Dentro do bloco → **Adicionar banner** |
+| Imagem desktop | Bloco-filho **Banner de campanha** → painel lateral → **Imagem desktop** |
+| Imagem mobile | Mesmo bloco → **Imagem mobile** (opcional; se vazia, usa a desktop) |
+| Texto alternativo | Painel lateral → **Texto alternativo contextual** |
+| Link de destino | Painel lateral → campo de URL (produto, categoria, página ou link externo) |
+| Ordem | Arraste os blocos-filho no editor |
+| Remover campanha | Selecione o bloco-filho → **Opções** → **Remover** |
+| Rótulo interno | Painel lateral → **Rótulo interno** (somente para identificar no editor) |
+
+
+
+Com **uma** campanha completa (imagem desktop, alt e link), a loja exibe um banner estático clicável. Com **duas ou mais**, aparecem setas e indicadores para navegação manual — sem troca automática.
+
+
+
+Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida, a faixa inteira **some** (sem espaço vazio).
+
+
+
+---
+
+
+
+## 4. Compre por categoria
 
 
 
@@ -88,9 +122,15 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 
 | Nome das categorias | **Produtos → Categorias** → editar cada categoria. |
 
-| Imagem da categoria | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. |
+| Ícone da vitrine (Home) | Mesma tela → **Ícone da vitrine** → escolha na galeria outline (teal). |
+
+| Imagem da categoria (página da categoria) | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. |
 
 | Quais categorias aparecem | **Produtos → Categorias** → marque **Exibir na navegação**. Ordem: campo **Ordem comercial**. |
+
+
+
+A Home usa ícones compactos da galeria do projeto. No desktop, ao passar o mouse (ou focar com teclado) em uma categoria com produtos, aparece uma prévia com até 3 itens — sem overlay. A **Miniatura** WooCommerce continua valendo para a página da própria categoria.
 
 
 
@@ -98,7 +138,7 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 
 
 
-## 4. Destaques / Mais vendidos
+## 5. Destaques / Mais vendidos
 
 **Onde:** seção com classe `petshop-featured-section` na Home (título + link visíveis no editor).
 
@@ -113,7 +153,7 @@ A seção **some por completo** se não houver produtos para exibir.
 
 ---
 
-## 5. Kits e conjuntos
+## 6. Kits e conjuntos
 
 **Onde:** seção `petshop-kits-section` na Home.
 
@@ -127,7 +167,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 6. Coleção da estação
+## 7. Coleção da estação
 
 **Onde:** seção `petshop-seasonal-section` na Home.
 
@@ -139,7 +179,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 7. Seleção para banho e tosa
+## 8. Seleção para banho e tosa
 
 **Onde:** seção `petshop-professional-section` na Home.
 
@@ -151,7 +191,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 8. Badges nos cards (promoção e mais pedido)
+## 9. Badges nos cards (promoção e mais pedido)
 
 
 
@@ -173,7 +213,7 @@ Sem promoção ou vendas suficientes, o badge correspondente **não aparece**.
 
 
 
-## 9. Avaliações
+## 10. Avaliações
 
 
 
@@ -185,7 +225,7 @@ Exibidas automaticamente a partir de **avaliações aprovadas** nos produtos (**
 
 
 
-## 10. Banner de atendimento (final)
+## 11. Banner de atendimento (final)
 
 **Onde:** bloco **Imagem** dentro do grupo `petshop-support-banner`, no final da Home — igual ao hero, editável direto no Gutenberg.
 

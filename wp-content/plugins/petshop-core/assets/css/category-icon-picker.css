@@ -1,0 +1,69 @@
+.petshop-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: 36rem;
+}
+
+.petshop-icon-picker__option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  margin: 0;
+  padding: .55rem .35rem;
+  border: 1px solid #d1d3d4;
+  border-radius: .5rem;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+
+.petshop-icon-picker__option:hover {
+  border-color: #17676a;
+}
+
+.petshop-icon-picker__option:has(input:checked) {
+  border-color: #17676a;
+  box-shadow: 0 0 0 1px #17676a;
+  background: #f3fafA;
+}
+
+.petshop-icon-picker__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.petshop-icon-picker__preview {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: #17676a;
+  mask: var(--petshop-icon) center / contain no-repeat;
+  -webkit-mask: var(--petshop-icon) center / contain no-repeat;
+}
+
+.petshop-icon-picker__preview--auto {
+  background:
+    linear-gradient(135deg, #17676a 45%, transparent 45%),
+    linear-gradient(225deg, #17676a 45%, transparent 45%),
+    linear-gradient(45deg, #17676a 45%, transparent 45%),
+    linear-gradient(315deg, #17676a 45%, transparent 45%);
+  background-position: center;
+  background-size: .55rem .55rem;
+  background-repeat: no-repeat;
+  mask: none;
+  -webkit-mask: none;
+  opacity: .55;
+}
+
+.petshop-icon-picker__label {
+  font-size: .7rem;
+  line-height: 1.2;
+  color: #373435;
+}

@@ -3,7 +3,7 @@
 **Status:** Concluído  
 **Data:** 2026-07-31  
 **Plano pai:** [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md)  
-**Branch:** `codex/004-identidade-visual-e-navegabilidade`
+**Branch:** `004-identidade-visual-e-navegabilidade`
 
 ## 1. Contexto e resultado desejado
 

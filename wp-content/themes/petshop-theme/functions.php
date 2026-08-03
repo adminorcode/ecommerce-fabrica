@@ -5,7 +5,20 @@ declare(strict_types=1);
 defined('ABSPATH') || exit;
 
 add_filter('blocksy:builder:header:enabled', '__return_false');
+add_filter('blocksy:builder:footer:enabled', '__return_false');
 add_filter('blocksy:footer:theme-author', '__return_false');
+add_filter('blocksy:footer:copyright:value', static fn (): string => '');
+
+add_filter(
+    'body_class',
+    static function (array $classes): array {
+        if (is_page('lista-de-desejos')) {
+            $classes[] = 'page-lista-de-desejos';
+        }
+
+        return $classes;
+    }
+);
 
 add_action(
     'after_setup_theme',
@@ -195,6 +208,31 @@ add_filter(
     }
 );
 
+/**
+ * @param non-empty-string $url
+ * @param non-empty-string $label
+ * @param 'support'|'wishlist'|'account' $iconKey
+ */
+function petshop_render_header_action(string $url, string $label, string $iconKey): void
+{
+    $icons = [
+        'support' => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+        'wishlist' => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+        'account' => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    ];
+
+    if (!isset($icons[$iconKey])) {
+        return;
+    }
+
+    ?>
+    <a href="<?php echo esc_url($url); ?>" class="petshop-header-action" aria-label="<?php echo esc_attr($label); ?>">
+        <span class="petshop-header-action__icon" aria-hidden="true"><?php echo $icons[$iconKey]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG ?></span>
+        <span class="petshop-header-action__label"><?php echo esc_html($label); ?></span>
+    </a>
+    <?php
+}
+
 add_action(
     'wp_body_open',
     static function (): void {
@@ -255,13 +293,13 @@ add_action(
                 <?php endif; ?>
                 <nav class="petshop-commercial-header__actions" aria-label="<?php esc_attr_e('Conta e atendimento', 'petshop-theme'); ?>">
                     <?php if ($supportUrl !== '' && $supportLabel !== '') : ?>
-                        <a href="<?php echo esc_url($supportUrl); ?>"><?php echo esc_html($supportLabel); ?></a>
+                        <?php petshop_render_header_action($supportUrl, $supportLabel, 'support'); ?>
                     <?php endif; ?>
                     <?php if ($wishlistUrl !== '' && $wishlistLabel !== '') : ?>
-                        <a href="<?php echo esc_url($wishlistUrl); ?>"><?php echo esc_html($wishlistLabel); ?></a>
+                        <?php petshop_render_header_action($wishlistUrl, $wishlistLabel, 'wishlist'); ?>
                     <?php endif; ?>
                     <?php if ($accountLabel !== '') : ?>
-                        <a href="<?php echo esc_url($accountUrl); ?>"><?php echo esc_html($accountLabel); ?></a>
+                        <?php petshop_render_header_action($accountUrl, $accountLabel, 'account'); ?>
                     <?php endif; ?>
                     <?php if (class_exists('WooCommerce')) : ?>
                         <?php echo do_blocks('<!-- wp:woocommerce/mini-cart /-->'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

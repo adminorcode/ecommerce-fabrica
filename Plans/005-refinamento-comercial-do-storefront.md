@@ -2,7 +2,7 @@
 
 **Status:** Bloqueado — aguarda acervo fotográfico real
 **Data:** 2026-07-31  
-**Branch de implementação:** `codex/005-refinamento-comercial-do-storefront` — entrega parcial incorporada em `master`
+**Branch de implementação:** `005-refinamento-comercial-do-storefront` — entrega parcial incorporada em `master`
 **Dependência:** base funcional entregue pelo Plano 004/004b
 
 ## 1. Objetivo

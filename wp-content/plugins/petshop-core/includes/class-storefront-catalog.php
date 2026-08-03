@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontCatalog
 {
-    private const VERSION = '1.2.0';
+    private const VERSION = '1.3.0';
     private const OPTION = 'petshop_catalog_taxonomy_version';
     private const LOCK_OPTION = 'petshop_catalog_taxonomy_lock';
     private const ERROR_OPTION = 'petshop_catalog_taxonomy_error';
@@ -108,6 +108,16 @@ final class StorefrontCatalog
             'sanitize_callback' => 'rest_sanitize_boolean',
             'auth_callback' => static fn (): bool => current_user_can('manage_woocommerce'),
         ]);
+        register_term_meta('product_cat', CategoryIcons::META_KEY, [
+            'type' => 'string',
+            'single' => true,
+            'show_in_rest' => true,
+            'sanitize_callback' => static function ($value): string {
+                $value = sanitize_key((string) $value);
+                return CategoryIcons::isValid($value) ? $value : '';
+            },
+            'auth_callback' => static fn (): bool => current_user_can('manage_woocommerce'),
+        ]);
     }
 
     public static function ensureCategories(): void
@@ -156,7 +166,16 @@ final class StorefrontCatalog
                     $category['visible'] ?? !$category['seasonal']
                 );
             }
+            if ($wasCreated || !metadata_exists('term', $termId, CategoryIcons::META_KEY)) {
+                update_term_meta(
+                    $termId,
+                    CategoryIcons::META_KEY,
+                    CategoryIcons::defaultForSlug($slug)
+                );
+            }
         }
+
+        CategoryIcons::ensureDefaults();
 
         if ($allCategoriesReady) {
             update_option(self::OPTION, self::VERSION, false);

@@ -2,7 +2,7 @@
 
 **Status:** Concluído  
 **Data:** 2026-08-02  
-**Branch:** `codex/010-layout-secoes-produto-home`  
+**Branch:** `010-layout-secoes-produto-home`  
 **Dependências:** [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) (botão nos cards)  
 **Relacionamento:** conclui a Sessão 06 opcional do Plano 010
 

@@ -74,7 +74,7 @@ try {
     if (record.status !== 200) failures.push(`${viewport.name}: HTTP ${record.status}`);
     if (record.searchForms !== 1 || record.searchInputs !== 1) failures.push(`${viewport.name}: busca duplicada ou ausente`);
     if (record.miniCarts !== 1 || record.textualCarts !== 0) failures.push(`${viewport.name}: carrinho duplicado ou ausente`);
-    if (record.actionLinks !== 2) failures.push(`${viewport.name}: atendimento ou conta ausente`);
+    if (record.actionLinks !== 3) failures.push(`${viewport.name}: atendimento, wishlist ou conta ausente`);
     if (record.siteTitles !== 0) failures.push(`${viewport.name}: titulo do site duplicando o logo`);
     if (record.nativeHeaders !== 0) failures.push(`${viewport.name}: estrutura do header nativo ainda presente`);
     if (record.overflow > 1) failures.push(`${viewport.name}: overflow horizontal de ${record.overflow}px`);
