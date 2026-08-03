@@ -148,13 +148,17 @@ Fontes secundárias de referência:
 
 ### Etapa 4 — Conteúdo e catálogo preparados para a interface
 
-1. Concluir o saneamento de importação: SKU, categorias ausentes, preços zero, visibilidade, estoque, imagens e descrições.
-2. Criar as categorias e coleções aprovadas antes de importar produtos.
-3. Garantir imagem principal, texto alternativo e ao menos as informações comerciais mínimas para cada produto publicado.
+1. Concluir o saneamento de importação com regras determinísticas para o CSV do contratante:
+   - categoria vazia → categoria WooCommerce `Outros`;
+   - descrição vazia → usar o próprio título do produto como descrição inicial editável;
+   - preço de venda ausente ou igual a zero → descartar o registro da carga;
+   - imagem ausente → importar sem mídia, sem inventar imagem ou texto alternativo; registrar a pendência para a Sessão 03 do Plano 005.
+2. Criar as categorias e coleções aprovadas, incluindo `Outros`, antes de importar produtos.
+3. Permitir a carga inicial sem imagens, desde que cards, categoria e produto tratem a ausência de mídia sem imagem quebrada ou placeholder apresentado como fotografia real. Quando uma imagem for adicionada, ela deve vir da Biblioteca de mídia e ter texto alternativo editável.
 4. Criar produtos relacionados por categoria, coleção e regra editorial, sem dependência de IDs fixos.
 5. Configurar páginas de coleção para que um administrador possa trocar produtos, textos e imagens, inclusive texto alternativo, sem editar código.
 
-**Aceite:** não há produto publicado sem imagem principal, preço válido, categoria, SKU e descrição comercial mínima; vitrines não mostram produtos ocultos ou sem estoque, salvo regra editorial explicitamente aprovada; reprovisionamentos preservam todos os textos e imagens salvos pelo cliente.
+**Aceite:** a carga inicial contém somente produtos com preço válido, categoria, SKU e descrição comercial mínima; os 8 produtos originalmente sem categoria pertencem a `Outros`, as 48 descrições ausentes usam o título como conteúdo inicial editável e os 2 registros com preço zero são excluídos. A ausência de mídia não bloqueia esta carga, mas impede a conclusão da vitrine comercial final prevista no Plano 005; vitrines não mostram produtos ocultos ou sem estoque, salvo regra editorial explicitamente aprovada; reprovisionamentos preservam todos os textos e imagens salvos pelo cliente.
 
 ### Etapa 5 — Qualidade e lançamento local
 

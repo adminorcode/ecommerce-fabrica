@@ -72,6 +72,18 @@ add_action(
                 'type' => 'text',
                 'sanitize' => 'sanitize_text_field',
             ],
+            'petshop_wishlist_label' => [
+                'label' => __('Rótulo da lista de desejos no cabeçalho', 'petshop-theme'),
+                'default' => 'Lista de desejos',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
+            'petshop_wishlist_page' => [
+                'label' => __('Página da lista de desejos', 'petshop-theme'),
+                'default' => 0,
+                'type' => 'dropdown-pages',
+                'sanitize' => 'absint',
+            ],
             'petshop_featured_section_title' => [
                 'label' => __('Título da seção de destaques (sem vendas reais)', 'petshop-theme'),
                 'default' => 'Destaques da loja',
@@ -207,6 +219,10 @@ add_action(
             ? (string) get_permalink($supportPage)
             : '';
         $supportLabel = trim((string) get_theme_mod('petshop_support_label', 'Atendimento'));
+        $wishlistLabel = trim((string) get_theme_mod('petshop_wishlist_label', 'Lista de desejos'));
+        $wishlistUrl = class_exists(\Petshop\Core\StorefrontWishlist::class)
+            ? \Petshop\Core\StorefrontWishlist::getPageUrl()
+            : '';
         $accountLabel = trim((string) get_theme_mod('petshop_account_label', 'Minha conta'));
         $accountUrl = class_exists('WooCommerce')
             ? (string) wc_get_page_permalink('myaccount')
@@ -240,6 +256,9 @@ add_action(
                 <nav class="petshop-commercial-header__actions" aria-label="<?php esc_attr_e('Conta e atendimento', 'petshop-theme'); ?>">
                     <?php if ($supportUrl !== '' && $supportLabel !== '') : ?>
                         <a href="<?php echo esc_url($supportUrl); ?>"><?php echo esc_html($supportLabel); ?></a>
+                    <?php endif; ?>
+                    <?php if ($wishlistUrl !== '' && $wishlistLabel !== '') : ?>
+                        <a href="<?php echo esc_url($wishlistUrl); ?>"><?php echo esc_html($wishlistLabel); ?></a>
                     <?php endif; ?>
                     <?php if ($accountLabel !== '') : ?>
                         <a href="<?php echo esc_url($accountUrl); ?>"><?php echo esc_html($accountLabel); ?></a>

@@ -12,7 +12,8 @@
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
 | [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Pendente | PHPUnit, Playwright no contêiner, gates PDP/carrinho; depende do 006 |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
-| [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Pendente | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais |
+| [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
+| [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
 
 ## Ordem recomendada de execução
 
@@ -31,4 +32,4 @@
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-02
+**Última atualização:** 2026-08-02 (Plano 010b concluído)

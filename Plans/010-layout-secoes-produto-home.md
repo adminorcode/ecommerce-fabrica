@@ -1,8 +1,9 @@
 # Plano 010 — Layout das seções de produto na Home
 
-**Status:** Pendente  
+**Status:** Concluído  
 **Data:** 2026-08-02  
 **Branch sugerida:** `codex/010-layout-secoes-produto-home`  
+**Última validação:** 2026-08-02 — persistência PHP e browser 1280/390 aprovados  
 **Dependências:** base funcional dos Planos 004/004b; Sessões 01–02 do Plano 005 concluídas  
 **Relacionamento:** especializa o layout comercial das vitrines da Home descrito nas Sessões 04–06 do Plano 005, sem substituir filtros de catálogo, rodapé ou hero.
 
@@ -88,7 +89,7 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 ### Sessão 01 — Cards compactos (CSS global da vitrine)
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -105,16 +106,16 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 **Gate verificável**
 
-- [ ] quatro cards alinhados por linha em 1280 px quando houver quatro produtos;
-- [ ] cards com título de 1 e 2 linhas mantêm CTA alinhado na base;
-- [ ] produto sem promoção não exibe `del` nem badge;
-- [ ] produto sem review não deixa espaço de estrelas;
-- [ ] adição ao carrinho por teclado funciona e atualiza minicarrinho;
-- [ ] screenshots com card “completo” e card “mínimo”.
+- [x] quatro cards alinhados por linha em 1280 px quando houver quatro produtos;
+- [x] cards com título de 1 e 2 linhas mantêm CTA alinhado na base;
+- [x] produto sem promoção não exibe `del` nem badge;
+- [x] produto sem review não deixa espaço de estrelas;
+- [x] adição ao carrinho por teclado funciona e atualiza minicarrinho;
+- [x] screenshots com card “completo” e card “mínimo”.
 
 ### Sessão 02 — Cabeçalho unificado de seção
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -129,14 +130,14 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 **Gate verificável**
 
-- [ ] título e “Ver todos” na mesma linha em desktop;
-- [ ] em mobile, link permanece visível e tocável (44 px), sem overflow horizontal;
-- [ ] foco visível no link (`:focus-visible`);
-- [ ] rótulo do link editável via atributo de shortcode ou bloco na Home.
+- [x] título e “Ver todos” na mesma linha em desktop;
+- [x] em mobile, link permanece visível e tocável (44 px), sem overflow horizontal;
+- [x] foco visível no link (`:focus-visible`);
+- [x] rótulo do link editável via atributo de shortcode ou bloco na Home.
 
 ### Sessão 03 — Padronização dos shortcodes da Home
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -160,16 +161,16 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 **Gate verificável**
 
-- [ ] quatro seções usam o mesmo padrão de cabeçalho + grade;
-- [ ] “Ver todos” de kits resolve para `/product-category/conjuntos/` (ou slug administrável);
-- [ ] “Ver todos” de sazonal resolve para destino válido HTTP 200;
-- [ ] seção banho e tosa editável na Home sem alterar PHP;
-- [ ] reprovisionamento preserva customização manual da Home;
-- [ ] seção sem produtos não renderiza HTML (incluindo `<h2>`).
+- [x] quatro seções usam o mesmo padrão de cabeçalho + grade;
+- [x] “Ver todos” de kits resolve para `/product-category/conjuntos/` (ou slug administrável);
+- [x] “Ver todos” de sazonal resolve para destino válido HTTP 200;
+- [x] seção banho e tosa editável na Home sem alterar PHP;
+- [x] reprovisionamento preserva customização manual da Home;
+- [x] seção sem produtos não renderiza HTML (incluindo `<h2>`).
 
 ### Sessão 04 — Badges condicionais
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -183,15 +184,15 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 **Gate verificável**
 
-- [ ] produto em promoção exibe percentual correto (arredondamento documentado);
-- [ ] produto sem promoção não exibe badge de economia;
-- [ ] produto abaixo do limiar de vendas não exibe “Mais pedido”;
-- [ ] nenhum badge fabricado em ambiente seed sem vendas/promo reais;
-- [ ] badges não quebram layout com título longo.
+- [x] produto em promoção exibe percentual correto (arredondamento documentado);
+- [x] produto sem promoção não exibe badge de economia;
+- [x] produto abaixo do limiar de vendas não exibe “Mais pedido”;
+- [x] nenhum badge fabricado em ambiente seed sem vendas/promo reais;
+- [x] badges não quebram layout com título longo.
 
 ### Sessão 05 — Documentação, guia e validação final
 
-**Status da sessão:** [ ] Pendente
+**Status da sessão:** [x] Concluída
 
 **Escopo**
 
@@ -206,10 +207,10 @@ Nenhum texto comercial ou URL de “Ver todos” pode ficar fixo apenas em PHP/C
 
 **Gate verificável**
 
-- [ ] guia reflete interface final;
-- [ ] scripts de validação passam em Docker local;
-- [ ] matriz desktop/mobile anexada ao ledger;
-- [ ] checklist de conteúdo administrável do `Plans/README.md` satisfeito.
+- [x] guia reflete interface final;
+- [x] scripts de validação passam em Docker local;
+- [x] matriz desktop/mobile anexada ao ledger;
+- [x] checklist de conteúdo administrável do `Plans/README.md` satisfeito.
 
 ### Sessão 06 — Wishlist (opcional / backlog)
 
