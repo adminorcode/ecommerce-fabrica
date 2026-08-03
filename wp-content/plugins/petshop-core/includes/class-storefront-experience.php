@@ -8,7 +8,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontExperience
 {
-    private const VERSION = '2.3.8';
+    private const VERSION = '2.3.9';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -957,16 +957,16 @@ final class StorefrontExperience
         }
 
         $className = (string) ($block['attrs']['className'] ?? '');
-        if (str_contains($className, 'petshop-product-showcase')) {
-            if (preg_match('/class="[^"]*\bproduct\b[^"]*"/', $content)) {
+        if (str_contains($className, 'petshop-reviews-section')) {
+            if (str_contains($content, 'petshop-review-card')) {
                 return $content;
             }
 
             return '';
         }
 
-        if (str_contains($className, 'petshop-reviews-section')) {
-            if (str_contains($content, 'petshop-review-card')) {
+        if (str_contains($className, 'petshop-product-showcase')) {
+            if (preg_match('/class="[^"]*\bproduct\b[^"]*"/', $content)) {
                 return $content;
             }
 
@@ -1036,18 +1036,27 @@ BLOCKS;
 
     private static function reviewsSectionGutenbergMarkup(int $limit = 3): string
     {
-        return self::showcaseSectionGutenbergMarkup(
-            'petshop-reviews-section',
-            'petshop-reviews-heading',
-            __('Quem compra, conta', 'petshop-core'),
-            '',
-            '',
-            __(
-                'Avaliações reais e aprovadas dos produtos aparecem nesta seção.',
-                'petshop-core'
-            ),
-            sprintf('[petshop_reviews limit="%d"]', max(1, $limit))
+        $titleEsc = esc_html__('Quem compra, conta', 'petshop-core');
+        $introEsc = esc_html__(
+            'Avaliações reais e aprovadas dos produtos aparecem nesta seção.',
+            'petshop-core'
         );
+        $gridShortcode = sprintf('[petshop_reviews limit="%d"]', max(1, $limit));
+
+        return <<<BLOCKS
+<!-- wp:group {"tagName":"section","className":"petshop-section petshop-reviews-section","layout":{"type":"constrained"}} -->
+<section class="wp-block-group petshop-section petshop-reviews-section"><!-- wp:group {"className":"petshop-section-head","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between","verticalAlignment":"center"}} -->
+<div class="wp-block-group petshop-section-head"><!-- wp:heading {"level":2} -->
+<h2 class="wp-block-heading" id="petshop-reviews-heading">{$titleEsc}</h2>
+<!-- /wp:heading --></div>
+<!-- /wp:group -->
+
+<!-- wp:paragraph {"className":"petshop-reviews-section__intro"} -->
+<p class="petshop-reviews-section__intro">{$introEsc}</p>
+<!-- /wp:paragraph -->
+<!-- wp:shortcode -->{$gridShortcode}<!-- /wp:shortcode --></section>
+<!-- /wp:group -->
+BLOCKS;
     }
 
     private static function renderSectionHead(
@@ -1305,6 +1314,29 @@ BLOCKS;
         }
 
         return serialize_blocks(self::repairSupportBannerImageBlocks(parse_blocks($content)));
+    }
+
+    private static function applyHomeSchemaTwentyThree(string $content): string
+    {
+        if (
+            str_contains($content, 'petshop-reviews-section')
+            && !str_contains($content, 'petshop-product-showcase petshop-reviews-section')
+        ) {
+            return $content;
+        }
+
+        $updated = str_replace(
+            'petshop-section petshop-product-showcase petshop-reviews-section',
+            'petshop-section petshop-reviews-section',
+            $content
+        );
+        $updated = str_replace(
+            'petshop-product-showcase__intro">Avaliações reais',
+            'petshop-reviews-section__intro">Avaliações reais',
+            $updated
+        );
+
+        return $updated;
     }
 
     public static function renderSupportBanner(): string
@@ -1755,6 +1787,12 @@ BLOCKS;
             $setSchemaTwentyTwo = true;
         }
 
+        $setSchemaTwentyThree = false;
+        if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) < 23) {
+            $content = self::applyHomeSchemaTwentyThree($content);
+            $setSchemaTwentyThree = true;
+        }
+
         if ($content !== $originalContent) {
             wp_save_post_revision($homeId);
         }
@@ -1877,15 +1915,21 @@ BLOCKS;
                 throw new \RuntimeException('Não foi possível confirmar o bloco de imagem do banner de atendimento.');
             }
         }
+        if ($setSchemaTwentyThree) {
+            update_post_meta($homeId, '_petshop_home_schema_version', 23);
+            if ((int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 23) {
+                throw new \RuntimeException('Não foi possível confirmar a seção de avaliações da Home.');
+            }
+        }
     }
 
     private static function stampNewManagedHome(int $homeId, string $shopUrl, int $heroId): void
     {
         $hero = self::heroContent($shopUrl, $heroId);
-        update_post_meta($homeId, '_petshop_home_schema_version', 22);
+        update_post_meta($homeId, '_petshop_home_schema_version', 23);
         update_post_meta($homeId, '_petshop_managed_hero_hash', hash('sha256', $hero));
         if (
-            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 22
+            (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 23
             || (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true) !== hash('sha256', $hero)
         ) {
             throw new \RuntimeException('Não foi possível assinar a nova Home gerenciada.');

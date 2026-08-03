@@ -14,6 +14,7 @@
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
+| [011-banners-gerenciaveis-home.md](./011-banners-gerenciaveis-home.md) | Pendente | Blocos Gutenberg de banners editáveis diretamente na Home; sem shortcode ou painel paralelo |
 
 ## Ordem recomendada de execução
 
@@ -26,10 +27,11 @@
 005 (storefront comercial — sessões 03–08, conteúdo e produto)
   └── Sessão 03 bloqueada por fotos reais; 04–08 após ou em paralelo com 009
       └── 010 (layout vitrines Home — especializa 005 Sessões 04–06)
+      └── 011 (banners gerenciáveis na Home via Gutenberg)
 ```
 
 ## Origem
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-02 (Plano 010b concluído)
+**Última atualização:** 2026-08-03 (Plano 011 adicionado)

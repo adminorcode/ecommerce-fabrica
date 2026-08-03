@@ -47,3 +47,22 @@
 .editor-styles-wrapper .petshop-product-showcase {
   display: block !important;
 }
+
+.editor-styles-wrapper .petshop-reviews-section:not(:has(.petshop-review-card)) {
+  padding-block-end: var(--space-2);
+}
+
+.editor-styles-wrapper .petshop-reviews-section .wp-block-shortcode {
+  min-height: 0;
+  margin: 0;
+}
+
+.editor-styles-wrapper .petshop-support-banner.petshop-section {
+  padding-block-start: var(--space-3);
+}
+
+.editor-styles-wrapper .petshop-support-banner__image img {
+  max-height: 400px;
+  object-fit: cover;
+  object-position: center;
+}
