@@ -38,6 +38,7 @@ Antes de implementar uma funcionalidade:
 # Conteúdo administrável
 
 - Todo texto editorial, comercial ou institucional criado pelo projeto e toda foto ou imagem de conteúdo exibida nas páginas deve ser editável pelo cliente no painel do WordPress.
+- **Padrão de edição:** conteúdo de páginas Gutenberg deve ser gerenciável **no editor**, com paridade ao hero (blocos nativos, preview visual, mídia e links no painel lateral). Ver `.cursor/rules/gutenberg-content-editing.mdc`.
 - Usar Gutenberg para conteúdo de páginas, Biblioteca de mídia para imagens, WooCommerce para conteúdo de produtos e categorias, menus para navegação e Customizer/configuração administrativa para conteúdo global.
 - O código pode fornecer valores iniciais na primeira instalação, mas deve salvá-los em uma origem administrável e nunca sobrescrever alterações posteriores do cliente.
 - Não gravar textos comerciais ou caminhos de imagens diretamente em templates, PHP, CSS ou JavaScript quando eles precisarem de edição de código para serem alterados.

@@ -1,10 +1,11 @@
 # Regras do projeto
 
-Leia `.cursor/rules/project.mdc`, `AI_BOOTSTRAP.md`, `Plans/README.md`, `Plans/STATUS.md` e o plano solicitado antes de implementar alterações.
+Leia `.cursor/rules/project.mdc`, `.cursor/rules/gutenberg-content-editing.mdc`, `AI_BOOTSTRAP.md`, `Plans/README.md`, `Plans/STATUS.md` e o plano solicitado antes de implementar alterações.
 
 ## Conteúdo administrável
 
 - Todo texto editorial, comercial ou institucional próprio e toda foto ou imagem de conteúdo exibida em páginas devem ser editáveis pelo cliente no painel do WordPress.
+- **Regra determinística:** sempre que possível, conteúdo de página = edição no Gutenberg com paridade ao hero (blocos nativos visíveis no canvas). Customizer e shortcodes opacos ficam reservados a conteúdo global ou dados WooCommerce dinâmicos.
 - Use Gutenberg, Biblioteca de mídia, produtos/categorias WooCommerce, menus ou configurações administrativas conforme a natureza do conteúdo.
 - O código pode provisionar valores iniciais, mas deve salvá-los em uma origem administrável e preservar alterações posteriores.
 - Não deixe textos comerciais ou caminhos de imagens fixos em PHP, templates, CSS ou JavaScript quando sua alteração exigir edição de código.

@@ -1,0 +1,62 @@
+---
+description: Conteúdo de página editável no Gutenberg com paridade ao hero
+alwaysApply: true
+---
+
+# Edição de conteúdo — padrão Hero
+
+Quando o conteúdo for **editorial ou comercial** e aparecer em **páginas Gutenberg** (Home, institucionais, coleções), o cliente deve editá-lo **no editor**, com a mesma previsibilidade do hero — não em Customizer, shortcode opaco ou PHP.
+
+## Padrão Hero (referência)
+
+O hero da Home usa blocos nativos salvos em `post_content`:
+
+- **Capa / Imagem / Grupo** para layout e mídia
+- **Título, parágrafo, botões** para copy e CTA
+- **Biblioteca de mídia** + texto alternativo no painel lateral
+- **Preview visual** no Gutenberg (com paridade em `gutenberg-editor-parity.mdc`)
+
+Todo novo bloco de conteúdo de página deve seguir esse modelo **por padrão**.
+
+## Hierarquia de escolha
+
+1. **Blocos Gutenberg nativos** na página (`core/cover`, `core/image`, `core/group`, `core/heading`, `core/paragraph`, `core/buttons`, padrões reutilizáveis).
+2. **Bloco dinâmico próprio** (`petshop/*`) — somente se blocos nativos não derem UX estável; inspector com os mesmos campos que o hero expõe visualmente.
+3. **Shortcode** — **somente** para vitrines/consultas WooCommerce (`[products]`, `[petshop_*_products]`). O shortcode **não** pode ser o único lugar onde o cliente troca imagem, copy ou link de um banner/seção editorial.
+4. **Customizer / theme_mod** — **somente** conteúdo **global** repetido em várias rotas (header, rodapé, barra promocional, aviso de PDP).
+
+## Requisitos determinísticos
+
+Antes de fechar uma feature de interface:
+
+- [ ] O cliente identifica o bloco **visualmente** no editor (não vê só `[shortcode]` para conteúdo editorial).
+- [ ] Imagem: substituível pela Biblioteca de mídia; alt editável.
+- [ ] Texto comercial: editável em blocos de texto ou na imagem (quando for arte final).
+- [ ] Links/CTAs: editáveis no painel lateral do bloco (ex.: link da imagem, botão).
+- [ ] Migração versionada provisiona markup Gutenberg inicial **sem** sobrescrever edições posteriores (hash/versão, padrão do Plano 005).
+- [ ] Plano e `docs/guia-edicao-home.md` indicam **Páginas → [rota]** como origem de edição.
+- [ ] Validar persistência após reprovisionamento.
+
+## Anti-patterns (não implementar)
+
+- Banner/seção editorial administrável **apenas** via Customizer ou atributos de shortcode.
+- Grupo Gutenberg “livre” sem estrutura quando um padrão ou bloco dinâmico evita quebra de layout.
+- Esconder copy comercial em PHP/CSS/JS fixos.
+- Dizer ao cliente “edite no Personalizar” para conteúdo que mora na Home e deveria aparecer no canvas.
+
+## Exceções documentadas
+
+Registrar no plano quando **não** usar Gutenberg na página:
+
+- dado 100 % dinâmico do WooCommerce (preço, estoque, grade de produtos);
+- superfície renderizada por hook global (header, footer, minicarrinho);
+- limitação técnica comprovada — incluir alternativa de edição e critério de aceite.
+
+## Exemplos
+
+| Conteúdo | ✅ Correto | ❌ Evitar |
+| --- | --- | --- |
+| Banner WhatsApp (Home) | `core/image` com link no bloco | `[petshop_support_banner]` + Customizer |
+| Hero institucional | `core/cover` + copy + botões | Imagem/copy só em `theme_mod` |
+| Vitrine de produtos | Cabeçalho Gutenberg (`heading` + link) + shortcode `*_grid` | Título/intro/CTA só em atributos de shortcode |
+| Logo / texto do rodapé | Customizer (global) | Bloco duplicado em cada página |

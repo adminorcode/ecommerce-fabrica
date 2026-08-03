@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.4.4
+Version: 0.4.9
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -895,6 +895,11 @@ a:hover { color: var(--color-brand-orange-dark); }
   min-width: 0;
 }
 
+.petshop-section-head__cta {
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .petshop-section-head__link {
   flex-shrink: 0;
   display: inline-flex;
@@ -1019,6 +1024,51 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .petshop-review-card blockquote {
   margin: var(--space-2) 0;
+}
+
+.petshop-support-banner {
+  margin-inline: auto;
+}
+
+.petshop-support-banner .wp-block-image {
+  margin: 0;
+}
+
+.petshop-support-banner .wp-block-image a {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  line-height: 0;
+}
+
+.petshop-support-banner .wp-block-image a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.petshop-support-banner .wp-block-image img,
+.petshop-support-banner__image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.petshop-support-banner__link {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  line-height: 0;
+}
+
+.petshop-support-banner__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.petshop-support-banner__image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .petshop-support-cta {

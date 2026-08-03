@@ -16,9 +16,10 @@ Um plano de interface deve:
 1. inventariar, por rota, os textos, imagens, CTAs e regras de seleção;
 2. indicar a origem de edição de cada item, como Gutenberg, Biblioteca de mídia, produto, categoria, menu ou configuração global;
 3. proibir dependência de textos comerciais ou caminhos de imagens fixos em PHP, templates, CSS ou JavaScript;
-4. definir migrações que preservem conteúdo já salvo;
-5. validar que o cliente consegue alterar textos, substituir imagens e editar textos alternativos sem modificar código;
-6. testar que uma atualização ou reprovisionamento não desfaz essas alterações.
+4. exigir edição no Gutenberg com paridade ao hero para conteúdo editorial de páginas (ver `.cursor/rules/gutenberg-content-editing.mdc`); Customizer só para conteúdo global;
+5. definir migrações que preservem conteúdo já salvo;
+6. validar que o cliente consegue alterar textos, substituir imagens e editar textos alternativos sem modificar código;
+7. testar que uma atualização ou reprovisionamento não desfaz essas alterações.
 
 ## Critério transversal de aceite
 

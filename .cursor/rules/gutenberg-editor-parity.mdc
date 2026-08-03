@@ -8,6 +8,8 @@ alwaysApply: false
 
 O cliente edita conteúdo no Gutenberg; a apresentação final vem do child theme. **O preview do editor deve ser o mais fiel possível à Home/loja.**
 
+Para **onde** salvar conteúdo editável (blocos na página vs Customizer vs shortcode), siga `.cursor/rules/gutenberg-content-editing.mdc`.
+
 ## Obrigatório
 
 1. Registrar `add_theme_support('editor-styles')` e `add_editor_style()` em `petshop-theme/functions.php`.
