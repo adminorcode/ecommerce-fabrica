@@ -16,6 +16,9 @@
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
 | [011-banners-gerenciaveis-home.md](./011-banners-gerenciaveis-home.md) | Concluído | Blocos `petshop/home-campaigns` e `petshop/home-campaign`; carrossel manual acessível; persistência validada |
 | [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Pendente | Editor open source no `petshop-core`, Store API/HPOS, arquivos privados e fila WooCommerce → Personalizações |
+| [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Pendente | Usabilidade WooCommerce, rotas, filtros, produto, frete, checkout e conta; depende de 008 e 007 |
+| [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Pendente | Tokens de marca, Nunito Sans, componentes acessíveis, footer teal e campanhas editoriais Gutenberg; depende de 009 e 011 |
+| [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
 
 ## Ordem recomendada de execução
 
@@ -33,6 +36,10 @@
 008 (baseline de testes)
   └── 007 (PSR-4, ciclo de vida e modularização do petshop-core)
       └── 012 (personalizador, arquivos privados e fila de produção)
+
+009 + 011 (base visual e campanhas)
+  └── 014 (evolução da identidade visual e campanhas editoriais)
+      └── 015 (seção de atendimento editorial da Home)
 ```
 
 ## Origem
