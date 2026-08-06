@@ -1,11 +1,8 @@
 import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
+import { launchBrowser } from './lib/browser-helpers.mjs';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
 const container = process.env.PETSHOP_CONTAINER || 'petshop-storefront-preview';
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
-const executablePath = process.env.PETSHOP_CHROME || 'C:/Users/lucas/AppData/Local/ms-playwright/chromium-1228/chrome-win64/chrome.exe';
 const wpArgs = ['--path=/var/www/html', '--allow-root'];
 const wp = (...args) => execFileSync('docker', ['exec', container, 'wp', ...args, ...wpArgs], { encoding: 'utf8' }).trim();
 
@@ -23,7 +20,7 @@ if (!attachment) throw new Error('Imagem alternativa ausente para o teste do edi
 if (Number(attachment.ID) === currentHeroId) throw new Error('Teste do editor selecionou novamente a imagem atual do hero.');
 
 let pageId = 0;
-const browser = await chromium.launch({ headless: true, executablePath });
+const browser = await launchBrowser();
 try {
   pageId = Number(wp(
     'post', 'create', '--post_type=page', '--post_status=publish',

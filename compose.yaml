@@ -103,11 +103,13 @@ services:
       context: .
       dockerfile: docker/node/Dockerfile
     environment:
-      PETSHOP_BASE_URL: ${WORDPRESS_URL:-http://host.docker.internal:8888}
+      PETSHOP_BASE_URL: ${PETSHOP_BASE_URL:-http://host.docker.internal:${WORDPRESS_PORT}}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - node_modules:/workspace/node_modules
       - npm_cache:/root/.npm
       - ./scripts:/workspace/scripts:ro
+      - ./.local:/workspace/.local
     networks: [internal]
 
   phpmyadmin:
@@ -220,7 +222,6 @@ volumes:
   wordpress_runtime:
   wordpress_uploads:
   mariadb_data:
-  node_modules:
   composer_cache:
   npm_cache:
   test_wordpress_runtime:

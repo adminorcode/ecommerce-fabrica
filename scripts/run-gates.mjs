@@ -11,11 +11,13 @@ const script = isWindows
 
 const args = process.argv.slice(2);
 const browser = args.includes('--browser');
+const pdp = args.includes('--pdp');
+const cart = args.includes('--cart');
 
 if (isWindows) {
     const pwsh = spawnSync(
         'powershell',
-        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...(browser ? ['-Browser'] : [])],
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...(browser ? ['-Browser'] : []), ...(pdp ? ['-Pdp'] : []), ...(cart ? ['-Cart'] : [])],
         { stdio: 'inherit', cwd: root }
     );
     process.exit(pwsh.status ?? 1);
@@ -26,7 +28,7 @@ if (!existsSync(script)) {
     process.exit(1);
 }
 
-const bash = spawnSync('bash', [script, ...(browser ? ['--browser'] : [])], {
+const bash = spawnSync('bash', [script, ...(browser ? ['--browser'] : []), ...(pdp ? ['--pdp'] : []), ...(cart ? ['--cart'] : [])], {
     stdio: 'inherit',
     cwd: root,
 });

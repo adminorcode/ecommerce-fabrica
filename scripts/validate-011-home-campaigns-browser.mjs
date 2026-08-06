@@ -1,21 +1,11 @@
-import { createRequire } from 'node:module';
-import fs from 'node:fs';
 import path from 'node:path';
+import { createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
-const executablePath = process.env.PETSHOP_CHROME || undefined;
-const evidenceDir = path.resolve('.local/evidence/011');
-fs.mkdirSync(evidenceDir, { recursive: true });
+const evidenceDir = createEvidenceDirectory('011');
 
 const failures = [];
-const launchOptions = { headless: true };
-if (executablePath) {
-  launchOptions.executablePath = executablePath;
-}
-
-const browser = await chromium.launch(launchOptions);
+const browser = await launchBrowser();
 
 try {
   for (const viewport of [

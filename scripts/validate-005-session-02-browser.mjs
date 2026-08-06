@@ -1,25 +1,11 @@
-import { createRequire } from 'node:module';
-import fs from 'node:fs';
 import path from 'node:path';
+import { contrast, createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
-const executablePath = process.env.PETSHOP_CHROME || 'C:/Users/lucas/AppData/Local/ms-playwright/chromium-1228/chrome-win64/chrome.exe';
-const rgb = (value) => (value.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
-const luminance = (value) => rgb(value).map((channel) => {
-  const normalized = channel / 255;
-  return normalized <= .03928 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4;
-}).reduce((total, channel, index) => total + channel * [.2126, .7152, .0722][index], 0);
-const contrast = (foreground, background) => {
-  const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
-  return (values[0] + .05) / (values[1] + .05);
-};
-const evidenceDir = path.resolve('.local/evidence/005/session-02');
-fs.mkdirSync(evidenceDir, { recursive: true });
+const evidenceDir = createEvidenceDirectory('005/session-02');
 const failures = [];
 const results = [];
-const browser = await chromium.launch({ headless: true, executablePath });
+const browser = await launchBrowser();
 
 try {
   for (const viewport of [

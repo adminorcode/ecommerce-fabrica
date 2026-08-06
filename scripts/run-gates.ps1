@@ -1,5 +1,7 @@
 param(
     [switch]$Browser,
+    [switch]$Pdp,
+    [switch]$Cart,
     [switch]$SkipProvision
 )
 
@@ -38,10 +40,21 @@ Invoke-EvalFile 'validate-005-session-01.php'
 Invoke-EvalFile 'validate-005-session-02.php'
 
 if ($Browser) {
-    Write-Host '==> browser gates (host)'
-    node (Join-Path $PSScriptRoot 'validate-005-session-01-browser.mjs')
-    node (Join-Path $PSScriptRoot 'validate-005-session-02-browser.mjs')
-    node (Join-Path $PSScriptRoot 'validate-005-catalog-layout-browser.mjs')
+    Write-Host '==> browser gates (container)'
+    foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs')) {
+        docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+        if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
+    }
+}
+
+if ($Pdp -or $Browser) {
+    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+    if ($LASTEXITCODE -ne 0) { throw 'browser gate PDP falhou' }
+}
+
+if ($Cart -or $Browser) {
+    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+    if ($LASTEXITCODE -ne 0) { throw 'browser gate carrinho falhou' }
 }
 
 Write-Host 'run-gates: all PHP gates passed'
