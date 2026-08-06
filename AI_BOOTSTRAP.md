@@ -121,10 +121,18 @@ docker compose --profile test run --rm test-runner
 docker compose --profile test rm -sf test-init test-db
 ```
 
-No estado atual, o plugin ainda não possui PHPUnit nem `phpunit.xml.dist`; portanto
-o runner falha intencionalmente em vez de apresentar um falso positivo. Ao adicionar
-testes, versione a configuração e as dependências necessárias antes de declarar a
-suite aprovada.
+O profile `test` executa a suite PHPUnit do plugin. O runner monta o plugin e o tema
+do worktree, portanto alterações locais de código e testes são vistas sem rebuild
+manual. Quando `composer.lock`, `package-lock.json` ou um Dockerfile mudar, execute
+`docker compose build wordpress node` antes de validar.
+
+Os gates de navegador usam Playwright e Chromium no serviço `node`, nunca um path
+do navegador do host:
+
+```powershell
+docker compose --profile tools run --rm node node /workspace/scripts/validate-005-session-01-browser.mjs
+npm run validate -- --browser
+```
 
 ## Validação (smoke PHP)
 

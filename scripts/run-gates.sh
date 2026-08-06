@@ -11,12 +11,16 @@ export MSYS2_ARG_CONV_EXCL="*"
 COMPOSE=(docker compose --profile tools run --rm --no-deps cli)
 SCRIPTS=//var/www/html/scripts
 RUN_BROWSER=0
+RUN_PDP=0
+RUN_CART=0
 
 usage() {
   cat <<'EOF'
-Uso: scripts/run-gates.sh [--browser] [--skip-provision]
+Uso: scripts/run-gates.sh [--browser] [--pdp] [--cart] [--skip-provision]
 
-  --browser         Executa gates Playwright (requer Playwright no host; Plano 008)
+  --browser         Executa todos os gates Playwright no contêiner node
+  --pdp             Executa somente o gate da página de produto
+  --cart            Executa somente o gate de adicionar ao carrinho
   --skip-provision  Pula migrações/seed antes dos validators PHP
 
 Executa smoke PHP: validate-storefront, validate-004b, validate-005-session-01/02.
@@ -28,6 +32,8 @@ SKIP_PROVISION=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --browser) RUN_BROWSER=1; shift ;;
+    --pdp) RUN_PDP=1; shift ;;
+    --cart) RUN_CART=1; shift ;;
     --skip-provision) SKIP_PROVISION=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Opção desconhecida: $1" >&2; usage; exit 1 ;;
@@ -64,10 +70,18 @@ run_eval_file validate-005-session-01.php
 run_eval_file validate-005-session-02.php
 
 if [[ "$RUN_BROWSER" -eq 1 ]]; then
-  echo "==> browser gates (host)"
-  node "${ROOT}/scripts/validate-005-session-01-browser.mjs"
-  node "${ROOT}/scripts/validate-005-session-02-browser.mjs"
-  node "${ROOT}/scripts/validate-005-catalog-layout-browser.mjs"
+  echo "==> browser gates (container)"
+  for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs; do
+    docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+  done
+fi
+
+if [[ "$RUN_PDP" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
+  docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+fi
+
+if [[ "$RUN_CART" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
+  docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
 fi
 
 echo "run-gates: all PHP gates passed"

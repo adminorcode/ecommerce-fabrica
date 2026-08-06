@@ -1,6 +1,6 @@
 # Plano 008 — Suite de testes automatizados
 
-**Status:** Pendente  
+**Status:** Em andamento
 **Data:** 2026-07-31  
 **Dependências:** [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md)  
 **Branch:** `008-suite-de-testes-automatizados`  
@@ -91,13 +91,13 @@ Hoje existem scripts WP-CLI e `.mjs` valiosos (`validate-005-*`, `test-*-persist
 
 ## 6. Critérios de aceite
 
-- [ ] PHPUnit configurado e executável via profile `test`
-- [ ] ≥ 5 testes unitários/integração para lógica de catálogo/SKU
-- [ ] Playwright roda no contêiner `node` sem path de host
-- [ ] Helpers compartilhados extraídos
-- [ ] Gates PDP e carrinho adicionados
-- [ ] CI executa PHPUnit em PR
-- [ ] `Plans/008-TESTING.md` com matriz rota × script × comando
+- [x] PHPUnit configurado e executável via profile `test`
+- [x] ≥ 5 testes unitários/integração para lógica de catálogo/SKU
+- [x] Playwright roda no contêiner `node` sem path de host
+- [x] Helpers compartilhados extraídos
+- [x] Gates PDP e carrinho adicionados
+- [x] CI configurada para executar PHPUnit em PR (aguarda primeira execução remota)
+- [x] `Plans/008-TESTING.md` com matriz rota × script × comando
 - [ ] Scripts legados de persistência continuam passando
 
 ## 7. Documentação

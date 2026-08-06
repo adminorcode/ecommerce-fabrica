@@ -71,7 +71,7 @@ echo "taxonomia: passed\n";
 $home = get_page_by_path('inicio');
 petshop_assert($home instanceof WP_Post, 'Página inicial ausente.');
 petshop_assert((int) get_option('page_on_front') === (int) $home->ID, 'Página inicial não configurada.');
-foreach (['petshop-hero', '[petshop_categories', '[products', '[petshop_seasonal_products', '[petshop_reviews'] as $fragment) {
+foreach (['petshop-hero', '[petshop_categories', '[petshop_featured_products_grid', '[petshop_seasonal_products_grid', '[petshop_reviews'] as $fragment) {
     petshop_assert(str_contains($home->post_content, $fragment), "Home sem bloco obrigatório: {$fragment}");
 }
 echo "home: passed\n";

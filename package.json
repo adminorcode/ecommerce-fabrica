@@ -12,6 +12,11 @@
     "wp": "docker compose --profile tools run --rm --no-deps cli wp",
     "bootstrap:legacy": "node scripts/bootstrap-wp-env.mjs"
   },
+  "devDependencies": {
+    "@wordpress/env": "^10.0.0",
+    "extract-zip": "1.7.0",
+    "playwright": "^1.52.0"
+  },
   "engines": {
     "node": ">=20"
   }

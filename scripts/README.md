@@ -32,7 +32,8 @@ npm run validate
 
 Opções:
 
-- `--browser` — inclui gates Playwright no host (Plano 008 containeriza)
+- `--browser` — inclui todos os gates Playwright no contêiner `node`
+- `--pdp` / `--cart` — executa o gate isolado de PDP ou de adicionar ao carrinho
 - `--skip-provision` — pula migrações/seed antes dos validators
 
 Sequência padrão:
@@ -57,6 +58,8 @@ Sequência padrão:
 | `validate-005-session-01-browser.mjs` | 005 S01 | Browser: header |
 | `validate-005-session-02-browser.mjs` | 005 S02 | Browser: hero |
 | `validate-005-catalog-layout-browser.mjs` | 005 | Browser: filtro lateral |
+| `validate-005-pdp-browser.mjs` | 008 | Browser: PDP (preço, CTA e aviso) |
+| `validate-005-cart-browser.mjs` | 008 | Browser: adicionar ao carrinho/minicarrinho |
 | `validate-005-session-02-editor.mjs` | 005 S02 | Editor Gutenberg |
 | `validate-009-cart-checkout-browser.mjs` | 009 | Browser: cart/checkout tokens e a11y |
 | `test-004b-persistence.php` | 004b | Persistência editorial |
@@ -87,7 +90,9 @@ O seed preserva SKUs existentes. Produtos criados recebem `_petshop_placeholder_
 
 ## CI
 
-Pull requests executam `bash scripts/run-gates.sh` via `.github/workflows/validate.yml`.
+Pull requests executam `bash scripts/run-gates.sh` e PHPUnit via `.github/workflows/validate.yml`.
+O workflow manual `.github/workflows/browser-gates.yml` executa os gates Playwright
+no contêiner e publica evidências quando falhar.
 
 ## Legado
 

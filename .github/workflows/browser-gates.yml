@@ -1,0 +1,35 @@
+name: Browser gates
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: browser-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      - name: Build and start stack
+        run: docker compose up -d --build --wait
+
+      - name: Build browser runner
+        run: docker compose --profile tools build node
+
+      - name: Run browser gates in container
+        run: bash scripts/run-gates.sh --browser
+
+      - name: Upload browser evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence
+          path: .local/evidence
+          if-no-files-found: ignore

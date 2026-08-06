@@ -26,6 +26,9 @@ jobs:
       - name: Run PHP validation gates
         run: bash scripts/run-gates.sh
 
+      - name: Run PHPUnit suite
+        run: docker compose --profile test run --rm test-runner
+
       - name: Upload compose logs on failure
         if: failure()
         run: docker compose logs --no-color > compose-logs.txt
