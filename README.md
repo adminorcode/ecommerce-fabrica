@@ -46,7 +46,7 @@ npm run wp -- plugin list
 # Validators PHP (provisiona + smoke)
 npm run validate
 
-# Testes (PHPUnit quando configurado — Plano 008)
+# Testes PHPUnit
 npm run test
 ```
 

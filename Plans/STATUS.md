@@ -10,7 +10,6 @@
 | [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Abandonado | Sessões 01–02 e entregas posteriores preservadas; sessões pendentes não serão continuadas neste plano |
 | [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, run-gates, CI workflow; gates PHP validados em runtime |
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Concluído | PSR-4, modularização, migrador versionado, Customizer/defaults, lifecycle/CLI e matriz PHP/browser validados |
-| [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Em andamento | PHPUnit e gates Playwright implementados; persistência legada integrada aos gates; auditoria editorial isolada |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
@@ -24,8 +23,7 @@
 
 ```
 006 (infra/CI/docs)
-  ├── 008 (testes automatizados)
-  │     └── 007 (refatoração plugin — com rede de segurança)
+  ├── 007 (refatoração plugin — com rede de segurança)
   └── 009 (design system / a11y / checkout CSS)
 
 005 (storefront comercial — sessões 03–08, conteúdo e produto)
@@ -33,8 +31,8 @@
       └── 010 (layout vitrines Home — especializa 005 Sessões 04–06)
       └── 011 (banners gerenciáveis na Home via Gutenberg)
 
-008 (baseline de testes)
-  └── 007 (PSR-4, ciclo de vida e modularização do petshop-core)
+007 (PSR-4, ciclo de vida e modularização do petshop-core)
+  └── 013 (usabilidade e páginas WooCommerce)
       └── 012 (personalizador, arquivos privados e fila de produção)
 
 009 + 011 (base visual e campanhas)
@@ -46,4 +44,4 @@
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-08 (Plano 007 concluído)
+**Última atualização:** 2026-08-08 (Plano 008 removido do roadmap)

@@ -3,7 +3,7 @@
 **Status:** Pendente  
 **Data:** 2026-08-03  
 **Branch sugerida:** `012-personalizador-produtos-e-fila-producao`  
-**Dependências:** [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) concluído; implementar após o baseline do [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) e a base PSR-4/ciclo de vida do [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md)  
+**Dependências:** [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) e [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) concluídos; implementar após o [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md)
 **Relacionamento:** entrega a área `Personalize` reservada nos Planos 004 e 005; não altera o catálogo convencional nem exige plugin de personalização de terceiros.
 
 ## 1. Objetivo
@@ -339,7 +339,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 **Status:** [ ] Pendente
 
-- concluir baseline de testes necessário do Plano 008;
+- confirmar que a suíte PHPUnit e os gates Playwright existentes continuam verdes;
 - consumir a arquitetura PSR-4/ciclo de vida do Plano 007 sem duplicá-la;
 - obter decisão formal sobre licença GPL do `petshop-core`;
 - confirmar medidas físicas, DPI e limites de produção com o cliente;

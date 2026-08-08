@@ -1,4 +1,4 @@
-# Plano 008 — matriz de testes automatizados
+# Matriz de testes automatizados
 
 ## Pré-requisitos
 

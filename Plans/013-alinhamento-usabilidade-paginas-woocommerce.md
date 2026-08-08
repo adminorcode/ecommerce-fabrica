@@ -3,7 +3,7 @@
 **Status:** Pendente
 **Data:** 2026-08-03
 **Branch:** `013-alinhamento-usabilidade-paginas-woocommerce`
-**Dependências:** implementar após o baseline do [008](./008-suite-de-testes-automatizados.md) e a base PSR-4/ciclo de vida do [007](./007-refatoracao-petshop-core.md), antes do [012](./012-personalizador-produtos-e-fila-producao.md)
+**Dependências:** implementar após a base PSR-4/ciclo de vida do [007](./007-refatoracao-petshop-core.md), antes do [012](./012-personalizador-produtos-e-fila-producao.md); suíte PHPUnit e gates Playwright já disponíveis
 **Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2 (1).docx`, revisão estrutural integral; renderização visual do DOCX indisponível no ambiente por ausência de LibreOffice/Microsoft Word
 
 ## 1. Objetivo
@@ -37,7 +37,7 @@ Este plano complementa o visual entregue pelo Plano 009, assume os requisitos Wo
 
 ### Sessão 00 — Pré-requisitos, baseline e arquitetura
 
-- [ ] Plano 008 fornece PHPUnit executável, testes de catálogo/SKU e Playwright containerizado.
+- [x] PHPUnit executável, testes de catálogo/SKU e Playwright containerizado disponíveis.
 - [ ] Plano 007 fornece bootstrap por Composer, módulos PSR-4 e migrador versionado.
 - [ ] Registrar baseline desktop/mobile das rotas críticas.
 - [ ] Confirmar ausência de regressões antes de alterar comportamento.

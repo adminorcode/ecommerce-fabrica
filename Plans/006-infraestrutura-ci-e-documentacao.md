@@ -53,7 +53,7 @@ A stack Compose já funciona (`compose.yaml`, profiles `tools`/`test`/`migration
 
 1. Criar `scripts/run-gates.ps1` e `scripts/run-gates.sh` (ou um entrypoint cross-platform documentado).
 2. Sequência mínima: `validate-storefront.php` → `validate-004b.php` → `validate-005-session-01.php` → `validate-005-session-02.php`.
-3. Parâmetro `--browser` opcional delegando aos `.mjs` (até containerização no Plano 008).
+3. Parâmetro `--browser` opcional delegando aos `.mjs`.
 
 **Gate:** um comando documentado executa smoke PHP completo com exit code ≠ 0 em falha.
 
@@ -86,8 +86,8 @@ A stack Compose já funciona (`compose.yaml`, profiles `tools`/`test`/`migration
 
 ## 5. Fora do escopo
 
-- PHPUnit e suite unitária (Plano 008);
-- Playwright no contêiner (Plano 008);
+- PHPUnit e suite unitária;
+- Playwright no contêiner;
 - refatoração do `petshop-core` (Plano 007);
 - alterações visuais do storefront (Planos 005 e 009);
 - deploy de produção;

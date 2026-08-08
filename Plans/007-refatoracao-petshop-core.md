@@ -2,7 +2,7 @@
 
 **Status:** Concluído
 **Data:** 2026-07-31  
-**Dependências:** [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md); recomendado após baseline do [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) Etapa 1  
+**Dependências:** [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md); baseline automatizado existente
 **Branch:** `007-refatoracao-petshop-core`  
 **Origem:** review — god class ~1.470 linhas, migrações frágeis, PSR-4 não utilizado
 
@@ -103,7 +103,7 @@ Reduzir acoplamento e risco de regressão em `petshop-core`, dividindo responsab
 
 - Novas features de storefront (Plano 005 sessões 04–08);
 - redesign CSS (Plano 009);
-- PHPUnit além do necessário para regressão (Plano 008);
+- PHPUnit além do necessário para regressão;
 - Abilities API / REST endpoints novos.
 
 ## 7. Critérios de aceite

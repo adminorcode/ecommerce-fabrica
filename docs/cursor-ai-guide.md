@@ -104,8 +104,8 @@ npm run validate
 # Validação individual
 docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/validate-005-session-01.php
 
-# Validação browser (host, até Plano 008)
-node scripts/validate-005-session-01-browser.mjs
+# Validação browser (contêiner Node)
+docker compose --profile tools run --rm node node /workspace/scripts/validate-005-session-01-browser.mjs
 ```
 
 ## Invocação manual no Cursor
