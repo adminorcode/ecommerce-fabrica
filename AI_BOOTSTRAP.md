@@ -180,8 +180,8 @@ ou imagens de conteúdo precisam ser editáveis pelo cliente no WordPress. O pla
 deve identificar a origem administrativa de cada item e comprovar que uma atualização
 de código não sobrescreve as alterações salvas pelo cliente.
 
-O Plano 003 está em andamento: a nova stack Compose já funciona, mas o `wp-env`
-legado e seus backups devem ser preservados até a aceitação final da migração.
+O Plano 003 foi abandonado: a stack Compose existente e o `wp-env` legado devem
+ser preservados; não há migração adicional planejada nesse plano.
 
 ## Arquivos importantes
 

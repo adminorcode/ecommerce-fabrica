@@ -98,7 +98,7 @@ Hoje existem scripts WP-CLI e `.mjs` valiosos (`validate-005-*`, `test-*-persist
 - [x] Gates PDP e carrinho adicionados
 - [x] CI configurada para executar PHPUnit em PR (aguarda primeira execução remota)
 - [x] `Plans/008-TESTING.md` com matriz rota × script × comando
-- [ ] Scripts legados de persistência continuam passando
+- [x] Scripts legados de persistência continuam passando
 
 ## 7. Documentação
 

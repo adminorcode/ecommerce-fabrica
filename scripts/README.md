@@ -50,7 +50,8 @@ Sequência padrão:
 | Script | Plano | Descrição |
 |--------|-------|-----------|
 | `seed-storefront-placeholders.php` | 004b | Seed idempotente de produtos demo |
-| `validate-storefront.php` | 004 | Taxonomia, Home, menus, blocks, catálogo |
+| `validate-storefront.php` | 004 | Taxonomia, Home, menus e blocos |
+| `audit-storefront-content.php` | Operacional | Qualidade editorial dos produtos publicados |
 | `validate-004b.php` | 004b | Manifesto XLSX/JSON e vitrine |
 | `validate-storefront.php` | 004 | Smoke geral |
 | `validate-005-session-01.php` | 005 S01 | Header comercial |
@@ -90,7 +91,7 @@ O seed preserva SKUs existentes. Produtos criados recebem `_petshop_placeholder_
 
 ## CI
 
-Pull requests executam `bash scripts/run-gates.sh` e PHPUnit via `.github/workflows/validate.yml`.
+Pull requests executam `bash scripts/run-gates.sh` e PHPUnit via `.github/workflows/validate.yml`. A auditoria editorial não bloqueia esses testes: execute `npm run validate -- --content-audit --skip-provision` para verificar o cadastro atual sem reprovisioná-lo.
 O workflow manual `.github/workflows/browser-gates.yml` executa os gates Playwright
 no contêiner e publica evidências quando falhar.
 

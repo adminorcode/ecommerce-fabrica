@@ -13,11 +13,13 @@ const args = process.argv.slice(2);
 const browser = args.includes('--browser');
 const pdp = args.includes('--pdp');
 const cart = args.includes('--cart');
+const contentAudit = args.includes('--content-audit');
+const skipProvision = args.includes('--skip-provision');
 
 if (isWindows) {
     const pwsh = spawnSync(
         'powershell',
-        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...(browser ? ['-Browser'] : []), ...(pdp ? ['-Pdp'] : []), ...(cart ? ['-Cart'] : [])],
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...(browser ? ['-Browser'] : []), ...(pdp ? ['-Pdp'] : []), ...(cart ? ['-Cart'] : []), ...(contentAudit ? ['-ContentAudit'] : []), ...(skipProvision ? ['-SkipProvision'] : [])],
         { stdio: 'inherit', cwd: root }
     );
     process.exit(pwsh.status ?? 1);
@@ -28,7 +30,7 @@ if (!existsSync(script)) {
     process.exit(1);
 }
 
-const bash = spawnSync('bash', [script, ...(browser ? ['--browser'] : []), ...(pdp ? ['--pdp'] : []), ...(cart ? ['--cart'] : [])], {
+const bash = spawnSync('bash', [script, ...(browser ? ['--browser'] : []), ...(pdp ? ['--pdp'] : []), ...(cart ? ['--cart'] : []), ...(contentAudit ? ['--content-audit'] : []), ...(skipProvision ? ['--skip-provision'] : [])], {
     stdio: 'inherit',
     cwd: root,
 });

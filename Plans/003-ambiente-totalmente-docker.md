@@ -1,6 +1,6 @@
 # Plano 003 — Ambiente de desenvolvimento totalmente em Docker
 
-**Status:** Em andamento
+**Status:** Abandonado
 **Responsável:** A definir
 **Última revisão:** 2026-07-30
 **Objetivo:** Substituir o runtime atual do `wp-env` por uma stack Docker Compose reproduzível, sem executar ferramentas da aplicação no host e sem bind mount do WordPress no NTFS.

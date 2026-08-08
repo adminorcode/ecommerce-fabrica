@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { contrast, createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { canonicalHostHeader, contrast, createEvidenceDirectory, launchBrowser, withBaseUrl } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('005/session-02');
@@ -76,7 +76,10 @@ try {
     }
     if (viewport.name === 'desktop-1440') {
       for (const url of ctaUrls) {
-        const destination = await page.request.get(url, { timeout: 10000 });
+        const destination = await page.request.get(withBaseUrl(url, baseUrl), {
+          headers: canonicalHostHeader(url),
+          timeout: 10000,
+        });
         if (destination.status() !== 200) failures.push(`CTA respondeu HTTP ${destination.status()}: ${url}`);
       }
       await ctas.evaluateAll((links) => links.forEach((link, index) => { link.dataset.session02Cta = String(index); }));

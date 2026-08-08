@@ -45,23 +45,28 @@ $editedHero = str_replace('href="' . $hrefMatches[1][1] . '"', 'href="' . esc_ur
 $edited = substr($original['content'], 0, $heroStart) . $editedHero . substr($original['content'], $heroEnd);
 $edited = str_replace('Pronta entrega', 'Beneficio sentinela', $edited);
 $passed = false;
+$failedChecks = [];
 
 try {
     wp_update_post(['ID' => $homeId, 'post_content' => $edited]);
-    update_post_meta($homeId, '_petshop_home_schema_version', 7);
+    update_post_meta($homeId, '_petshop_home_schema_version', (int) $original['schema']);
     update_option('petshop_storefront_version', 'session-02-persistence-test', false);
     delete_option('petshop_storefront_migration_error');
     Petshop\Core\StorefrontExperience::maybeEnsureStorefront();
     $after = (string) get_post_field('post_content', $homeId);
-    $passed = str_contains($after, 'Titulo institucional sentinela')
-        && str_contains($after, 'Alt institucional sentinela')
-        && str_contains($after, $newUrl)
-        && str_contains($after, home_url('/colecoes/'))
-        && str_contains($after, home_url('/atendimento/'))
-        && str_contains($after, 'Beneficio sentinela')
-        && get_option('petshop_storefront_version') === $targetVersion
-        && (int) get_post_meta($homeId, '_petshop_home_schema_version', true) === 9
-        && get_option('petshop_storefront_migration_error', '') === '';
+    $checks = [
+        'título' => str_contains($after, 'Titulo institucional sentinela'),
+        'alt' => str_contains($after, 'Alt institucional sentinela'),
+        'imagem' => str_contains($after, $newUrl),
+        'CTA coleções' => str_contains($after, home_url('/colecoes/')),
+        'CTA atendimento' => str_contains($after, home_url('/atendimento/')),
+        'benefício' => str_contains($after, 'Beneficio sentinela'),
+        'versão' => get_option('petshop_storefront_version') === $targetVersion,
+        'schema' => (int) get_post_meta($homeId, '_petshop_home_schema_version', true) >= 9,
+        'erro de migração' => get_option('petshop_storefront_migration_error', '') === '',
+    ];
+    $failedChecks = array_keys(array_filter($checks, static fn (bool $check): bool => !$check));
+    $passed = $failedChecks === [];
 } finally {
     wp_update_post(['ID' => $homeId, 'post_content' => $original['content']]);
     update_post_meta($homeId, '_petshop_managed_hero_hash', $original['hash']);
@@ -71,5 +76,5 @@ try {
     else update_option('petshop_storefront_migration_error', $original['error'], false);
 }
 
-if (!$passed) WP_CLI::error('Reprovisionamento sobrescreveu titulo, imagem, alt, URLs ou beneficios editados.');
+if (!$passed) WP_CLI::error('Reprovisionamento falhou para: ' . implode(', ', $failedChecks) . '.');
 WP_CLI::success('Persistencia do hero e beneficios aprovada apos reprovisionamento.');

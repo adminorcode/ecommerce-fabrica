@@ -1,6 +1,6 @@
 # Plano 005 — Refinamento comercial do storefront
 
-**Status:** Bloqueado — aguarda acervo fotográfico real
+**Status:** Abandonado — entrega parcial preservada; não aguardará acervo fotográfico neste plano
 **Data:** 2026-07-31  
 **Branch de implementação:** `005-refinamento-comercial-do-storefront` — entrega parcial incorporada em `master`
 **Dependência:** base funcional entregue pelo Plano 004/004b

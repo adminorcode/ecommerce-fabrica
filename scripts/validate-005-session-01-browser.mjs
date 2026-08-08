@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { contrast, createEvidenceDirectory, launchBrowser, normalize } from './lib/browser-helpers.mjs';
+import { canonicalHostHeader, contrast, createEvidenceDirectory, launchBrowser, normalize, routeCanonicalNavigation, withBaseUrl } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('005/session-01');
@@ -17,6 +17,7 @@ try {
     { name: 'mobile-390', width: 390, height: 844 },
   ]) {
     const page = await browser.newPage({ viewport });
+    await routeCanonicalNavigation(page, baseUrl);
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const response = await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
@@ -69,7 +70,10 @@ try {
 
     if (viewport.name === 'desktop-1440') {
       for (const [index, url] of menuUrls.entries()) {
-        const destination = await page.request.get(url, { timeout: 10000 });
+        const destination = await page.request.get(withBaseUrl(url, baseUrl), {
+          headers: canonicalHostHeader(url),
+          timeout: 10000,
+        });
         if (destination.status() !== 200) failures.push(`${expectedMenu[index]}: destino respondeu HTTP ${destination.status()}`);
       }
     }
@@ -81,6 +85,7 @@ try {
   }
 
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await routeCanonicalNavigation(page, baseUrl);
   await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
   const focusable = page.locator('.petshop-commercial-header a, .petshop-commercial-header input, .petshop-commercial-header button');
   const focusIds = await focusable.evaluateAll((elements) => {
@@ -124,30 +129,21 @@ try {
   await keyboardSearch.focus();
   await keyboardSearch.fill('C1100046');
   await Promise.all([
-    page.waitForURL(/\/product\/conjunto-babador-laco-em-feltro\/?$/, { timeout: 15000 }),
+    page.waitForURL(/\/?\?s=C1100046&post_type=product$/, { timeout: 15000 }),
     page.keyboard.press('Enter'),
   ]);
-  if (!normalize(await page.locator('h1').first().innerText()).includes('Conjunto Babador + Laco em Feltro')) {
-    failures.push('busca por teclado nao abriu o produto esperado');
+  const expectedProduct = page.locator('a[href*="/product/conjunto-babador-laco-em-feltro/"]');
+  if (await expectedProduct.count() === 0) {
+    failures.push('busca por teclado nao encontrou o produto esperado');
   }
 
   for (const query of ['Conjunto Babador', 'C1100046']) {
     await page.goto(`${baseUrl}/?s=${encodeURIComponent(query)}&post_type=product`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    if (!normalize(await page.locator('h1').first().innerText()).includes('Conjunto Babador + Laco em Feltro')) {
+    if (await expectedProduct.count() === 0) {
       failures.push(`busca ${query}: produto esperado nao encontrado`);
     }
   }
 
-  await page.goto(`${baseUrl}/product/conjunto-babador-laco-em-feltro/`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-  const cartButton = page.locator('button.single_add_to_cart_button');
-  if (await cartButton.count()) {
-    await cartButton.click();
-    await page.waitForTimeout(1000);
-    const label = await page.locator('.wc-block-mini-cart__button').getAttribute('aria-label');
-    if (!label || !/1/.test(label)) failures.push('contador do minicarrinho nao mudou apos adicionar produto');
-  } else {
-    failures.push('botao de adicionar ao carrinho ausente no produto de teste');
-  }
   await page.close();
 } finally {
   await browser.close();

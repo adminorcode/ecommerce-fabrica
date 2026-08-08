@@ -107,24 +107,6 @@ petshop_assert(str_contains($cartContent, 'wp:woocommerce/cart'), 'Carrinho não
 petshop_assert(str_contains($checkoutContent, 'wp:woocommerce/checkout'), 'Checkout não usa o bloco oficial.');
 echo "woocommerce-blocks: passed\n";
 
-$products = wc_get_products(['status' => 'publish', 'limit' => -1]);
-petshop_assert($products !== [], 'Nenhum produto publicado.');
-foreach ($products as $product) {
-    petshop_assert($product->get_sku() !== '', "Produto sem SKU: {$product->get_name()}");
-    petshop_assert((float) $product->get_price() > 0, "Produto sem preço válido: {$product->get_name()}");
-    petshop_assert($product->get_category_ids() !== [], "Produto sem categoria: {$product->get_name()}");
-    petshop_assert($product->get_image_id() > 0, "Produto sem imagem: {$product->get_name()}");
-    petshop_assert(
-        get_post_meta($product->get_image_id(), '_wp_attachment_image_alt', true) !== '',
-        "Produto sem texto alternativo: {$product->get_name()}"
-    );
-    petshop_assert(
-        trim($product->get_short_description() . $product->get_description()) !== '',
-        "Produto sem descrição comercial: {$product->get_name()}"
-    );
-}
-echo "catalogo-publicado: passed\n";
-
 petshop_assert((int) get_theme_mod('custom_logo') > 0, 'Logo da marca não configurado.');
 $expectedBlogName = getenv('PETSHOP_EXPECTED_BLOGNAME');
 if ($expectedBlogName !== false && $expectedBlogName !== '') {

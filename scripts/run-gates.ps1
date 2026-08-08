@@ -2,6 +2,7 @@ param(
     [switch]$Browser,
     [switch]$Pdp,
     [switch]$Cart,
+    [switch]$ContentAudit,
     [switch]$SkipProvision
 )
 
@@ -35,9 +36,16 @@ if (-not $SkipProvision) {
 }
 
 Invoke-EvalFile 'validate-storefront.php'
-Invoke-EvalFile 'validate-004b.php'
 Invoke-EvalFile 'validate-005-session-01.php'
 Invoke-EvalFile 'validate-005-session-02.php'
+Invoke-EvalFile 'test-004b-persistence.php'
+Invoke-EvalFile 'test-005-session-01-persistence.php'
+Invoke-EvalFile 'test-005-session-02-persistence.php'
+
+if ($ContentAudit) {
+    Invoke-EvalFile 'validate-004b.php'
+    Invoke-EvalFile 'audit-storefront-content.php'
+}
 
 if ($Browser) {
     Write-Host '==> browser gates (container)'

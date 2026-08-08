@@ -1,6 +1,6 @@
 # Plano 004 — Identidade visual e navegabilidade da loja
 
-**Status:** Em andamento — implementação concluída; validação humana com leitor de tela pendente
+**Status:** Abandonado — implementação parcial preservada; validação humana com leitor de tela não será continuada neste plano
 **Data:** 2026-07-31  
 **Objetivo:** transformar a loja WooCommerce em um catálogo de acessórios pet com a identidade visual e as categorias reais do contratante, navegação comercial clara e experiência mobile-first. A Moda Bicho é referência secundária de merchandising; textos, imagens, marca e interface devem ser originais.
 

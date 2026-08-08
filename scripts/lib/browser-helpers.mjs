@@ -29,4 +29,43 @@ export const createEvidenceDirectory = (relativePath) => {
   return evidenceDir;
 };
 
+export const withBaseUrl = (url, baseUrl) => {
+  const destination = new URL(url, baseUrl);
+  const base = new URL(baseUrl);
+
+  return `${base.origin}${destination.pathname}${destination.search}${destination.hash}`;
+};
+
+export const canonicalHostHeader = (url) => ({
+  Host: new URL(url).host,
+});
+
+export const routeCanonicalNavigation = async (page, baseUrl) => {
+  const base = new URL(baseUrl);
+  const canonicalHost = process.env.PETSHOP_CANONICAL_HOST || base.host;
+
+  await page.route('**/*', async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const isCanonicalLocalUrl = url.hostname === 'localhost' && url.port === '8888';
+
+    if (url.origin === base.origin) {
+      await route.continue({
+        headers: { ...request.headers(), Host: canonicalHost },
+      });
+      return;
+    }
+
+    if (!isCanonicalLocalUrl) {
+      await route.continue();
+      return;
+    }
+
+    await route.continue({
+      headers: { ...request.headers(), Host: canonicalHost },
+      url: withBaseUrl(url, baseUrl),
+    });
+  });
+};
+
 export const launchBrowser = () => chromium.launch({ headless: true });

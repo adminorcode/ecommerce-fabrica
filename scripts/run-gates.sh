@@ -13,17 +13,19 @@ SCRIPTS=//var/www/html/scripts
 RUN_BROWSER=0
 RUN_PDP=0
 RUN_CART=0
+RUN_CONTENT_AUDIT=0
 
 usage() {
   cat <<'EOF'
-Uso: scripts/run-gates.sh [--browser] [--pdp] [--cart] [--skip-provision]
+Uso: scripts/run-gates.sh [--browser] [--pdp] [--cart] [--content-audit] [--skip-provision]
 
   --browser         Executa todos os gates Playwright no contêiner node
   --pdp             Executa somente o gate da página de produto
   --cart            Executa somente o gate de adicionar ao carrinho
+  --content-audit   Audita o cadastro editorial de produtos (imagem, alt e copy)
   --skip-provision  Pula migrações/seed antes dos validators PHP
 
-Executa smoke PHP: validate-storefront, validate-004b, validate-005-session-01/02.
+Executa smoke PHP e testes de persistência sem depender da completude editorial do catálogo.
 Requer stack Compose up e .env configurado.
 EOF
 }
@@ -34,6 +36,7 @@ while [[ $# -gt 0 ]]; do
     --browser) RUN_BROWSER=1; shift ;;
     --pdp) RUN_PDP=1; shift ;;
     --cart) RUN_CART=1; shift ;;
+    --content-audit) RUN_CONTENT_AUDIT=1; shift ;;
     --skip-provision) SKIP_PROVISION=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Opção desconhecida: $1" >&2; usage; exit 1 ;;
@@ -65,9 +68,16 @@ if [[ "$SKIP_PROVISION" -eq 0 ]]; then
 fi
 
 run_eval_file validate-storefront.php
-run_eval_file validate-004b.php
 run_eval_file validate-005-session-01.php
 run_eval_file validate-005-session-02.php
+run_eval_file test-004b-persistence.php
+run_eval_file test-005-session-01-persistence.php
+run_eval_file test-005-session-02-persistence.php
+
+if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then
+  run_eval_file validate-004b.php
+  run_eval_file audit-storefront-content.php
+fi
 
 if [[ "$RUN_BROWSER" -eq 1 ]]; then
   echo "==> browser gates (container)"
