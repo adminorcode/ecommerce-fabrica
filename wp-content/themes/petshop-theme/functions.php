@@ -85,22 +85,12 @@ function petshop_render_header_action(string $url, string $label, string $iconKe
     }
 
     ?>
-    <a href="<?php echo esc_url($url); ?>" class="petshop-header-action" aria-label="<?php echo esc_attr($label); ?>">
+    <a href="<?php echo esc_url($url); ?>" class="petshop-header-action petshop-header-action--<?php echo esc_attr($iconKey); ?>" aria-label="<?php echo esc_attr($label); ?>">
         <span class="petshop-header-action__icon" aria-hidden="true"><?php echo $icons[$iconKey]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG ?></span>
         <span class="petshop-header-action__label"><?php echo esc_html($label); ?></span>
     </a>
     <?php
 }
-
-add_action(
-    'wp_body_open',
-    static function (): void {
-        ?>
-        <a class="petshop-skip-link" href="#main"><?php esc_html_e('Ir para o conteúdo', 'petshop-theme'); ?></a>
-        <?php
-    },
-    1
-);
 
 add_action(
     'wp_body_open',

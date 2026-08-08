@@ -1,8 +1,8 @@
 # Plano 013 — Alinhamento de usabilidade e páginas WooCommerce
 
-**Status:** Pendente
+**Status:** Em andamento — implementação e gates automatizados verdes; aceite externo pendente
 **Data:** 2026-08-03
-**Branch:** `013-alinhamento-usabilidade-paginas-woocommerce`
+**Branch:** `codex/013-alinhamento-usabilidade-paginas-woocommerce`
 **Dependências:** implementar após a base PSR-4/ciclo de vida do [007](./007-refatoracao-petshop-core.md), antes do [012](./012-personalizador-produtos-e-fila-producao.md); suíte PHPUnit e gates Playwright já disponíveis
 **Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2 (1).docx`, revisão estrutural integral; renderização visual do DOCX indisponível no ambiente por ausência de LibreOffice/Microsoft Word
 
@@ -38,77 +38,79 @@ Este plano complementa o visual entregue pelo Plano 009, assume os requisitos Wo
 ### Sessão 00 — Pré-requisitos, baseline e arquitetura
 
 - [x] PHPUnit executável, testes de catálogo/SKU e Playwright containerizado disponíveis.
-- [ ] Plano 007 fornece bootstrap por Composer, módulos PSR-4 e migrador versionado.
-- [ ] Registrar baseline desktop/mobile das rotas críticas.
-- [ ] Confirmar ausência de regressões antes de alterar comportamento.
+- [x] Plano 007 fornece bootstrap por Composer, módulos PSR-4 e migrador versionado.
+- [x] Registrar baseline desktop/mobile das rotas críticas.
+- [x] Confirmar ausência de regressões antes de alterar comportamento.
+
+**Baseline de execução (2026-08-08):** PHPUnit verde com 12 testes e 17 asserções. O gate de catálogo passa em 390/1024/1440 sem overflow, mas o filtro mobile ocupa 762,7 px antes dos produtos. O gate Cart/Checkout confirma ausência de overflow, mas falha no carrinho vazio por CTA primário ausente. `test-005-session-02-persistence.php` também já falha para a imagem do hero após reprovisionamento. Essas duas falhas são baseline e devem ser corrigidas pelo loop deste plano antes do aceite.
 
 ### Sessão 01 — Rotas, títulos e navegação
 
-- [ ] Migrar páginas centrais para `/loja`, `/carrinho`, `/finalizar-compra` e `/minha-conta`, preservando IDs WooCommerce quando possível.
-- [ ] Redirecionar `/shop`, `/cart`, `/checkout` e `/my-account` por 301, preservando query string e impedindo loops.
-- [ ] Atualizar títulos, breadcrumbs, canonical, menus e metadados para português.
-- [ ] Manter somente um skip link e um breadcrumb por página.
-- [ ] Substituir o hero vazio dos arquivos WooCommerce por cabeçalho compacto com descrição administrável da categoria.
+- [x] Migrar páginas centrais para `/loja`, `/carrinho`, `/finalizar-compra` e `/minha-conta`, preservando IDs WooCommerce quando possível.
+- [x] Redirecionar `/shop`, `/cart`, `/checkout` e `/my-account` por 301, preservando query string e impedindo loops.
+- [x] Atualizar títulos, breadcrumbs, canonical, menus e metadados para português.
+- [x] Manter somente um skip link e um breadcrumb por página.
+- [x] Substituir o hero vazio dos arquivos WooCommerce por cabeçalho compacto com descrição administrável da categoria.
 
 ### Sessão 02 — Catálogo e busca
 
-- [ ] Implementar filtros GET canônicos para categoria, faixa de preço, cor, tamanho, estoque e ordenação.
-- [ ] Usar OR dentro do mesmo atributo e AND entre grupos; mostrar filtros aplicados e limpeza individual/global.
-- [ ] Ocultar opções zeradas, salvo quando selecionadas.
-- [ ] Implementar painel mobile acessível com contador, aplicar, limpar e retorno correto de foco.
-- [ ] Preservar URL, filtros, paginação e posição ao retornar da PDP.
-- [ ] Manter paginação e envio de busca funcionais sem JavaScript.
-- [ ] Implementar sugestões com debounce pela Store API oficial, sem endpoint REST próprio.
-- [ ] Criar estado sem resultados com consulta visível, categorias e produtos alternativos ativos.
+- [x] Implementar filtros GET canônicos para categoria, faixa de preço, cor, tamanho, estoque e ordenação.
+- [x] Usar OR dentro do mesmo atributo e AND entre grupos; mostrar filtros aplicados e limpeza individual/global.
+- [x] Ocultar opções zeradas, salvo quando selecionadas.
+- [x] Implementar painel mobile acessível com contador, aplicar, limpar e retorno correto de foco.
+- [x] Preservar URL, filtros, paginação e posição ao retornar da PDP.
+- [x] Manter paginação e envio de busca funcionais sem JavaScript.
+- [x] Implementar sugestões com debounce pela Store API oficial, sem endpoint REST próprio.
+- [x] Criar estado sem resultados com consulta visível, categorias e produtos alternativos ativos.
 
 ### Sessão 03 — Página de produto
 
-- [ ] Consolidar galeria, preço, promoção, estoque, SKU, quantidade e CTA.
-- [ ] Garantir atualização de imagem, preço, estoque, SKU e prazo em produtos variáveis.
-- [ ] Exibir cor com amostra/nome e tamanho com rótulo/guia administrável.
-- [ ] Bloquear CTA quando escolha obrigatória estiver ausente e anunciar o campo pendente.
-- [ ] Adicionar cálculo de entrega por CEP com taxas WooCommerce.
-- [ ] Separar prazo de produção do prazo de transporte.
-- [ ] Estruturar materiais, dimensões, conteúdo, cuidados e medidas a partir do produto.
-- [ ] Exibir avaliações somente com moderação e atendimento habilitados.
-- [ ] Reservar extensão junto ao CTA para o Plano 012 sem reorganização posterior.
+- [x] Consolidar galeria, preço, promoção, estoque, SKU, quantidade e CTA.
+- [x] Garantir atualização de imagem, preço, estoque, SKU e prazo em produtos variáveis.
+- [x] Exibir cor com amostra/nome e tamanho com rótulo/guia administrável.
+- [x] Bloquear CTA quando escolha obrigatória estiver ausente e anunciar o campo pendente.
+- [x] Adicionar cálculo de entrega por CEP com taxas WooCommerce.
+- [x] Separar prazo de produção do prazo de transporte.
+- [x] Estruturar materiais, dimensões, conteúdo, cuidados e medidas a partir do produto.
+- [x] Exibir avaliações somente com moderação e atendimento habilitados.
+- [x] Reservar extensão junto ao CTA para o Plano 012 sem reorganização posterior.
 
 ### Sessão 04 — Carrinho, checkout, frete e pagamento
 
-- [ ] Preservar Cart/Checkout Blocks e extensões pela Store API.
-- [ ] Exibir no carrinho imagem, variação, personalização futura, quantidade, preços, economia real, CEP, frete e total.
-- [ ] Adicionar “Continuar comprando” e estados de carregamento/erro junto à ação afetada.
-- [ ] Validar contrato de frete com zona brasileira e método local de teste.
+- [x] Preservar Cart/Checkout Blocks e extensões pela Store API.
+- [x] Exibir no carrinho imagem, variação, personalização futura, quantidade, preços, economia real, CEP, frete e total.
+- [x] Adicionar “Continuar comprando” e estados de carregamento/erro junto à ação afetada.
+- [x] Validar contrato de frete com zona brasileira e método local de teste.
 - [ ] Configurar Mercado Pago Pix/cartão em sandbox sem versionar credenciais.
-- [ ] Manter checkout visitante, dados mínimos e proteção contra envio duplicado.
-- [ ] Aplicar checkout sem distrações, mantendo logo, suporte e retorno ao carrinho.
-- [ ] Criar páginas Gutenberg separadas para entrega, trocas, personalização, privacidade e termos.
-- [ ] Atribuir páginas aplicáveis ao WooCommerce e bloquear publicação enquanto o conteúdo jurídico estiver pendente.
+- [x] Manter checkout visitante, dados mínimos e proteção contra envio duplicado.
+- [x] Aplicar checkout sem distrações, mantendo logo, suporte e retorno ao carrinho.
+- [x] Criar páginas Gutenberg separadas para entrega, trocas, personalização, privacidade e termos.
+- [x] Atribuir páginas aplicáveis ao WooCommerce e bloquear publicação enquanto o conteúdo jurídico estiver pendente.
 
 ### Sessão 05 — Confirmação, pedidos, rastreamento e conta
 
-- [ ] Exibir número, status, itens, endereço, pagamento, entrega e próximos passos na confirmação.
-- [ ] Criar rastreamento HPOS com transportadora, código e URL, editável no pedido e condicional em conta/e-mails.
-- [ ] Habilitar cadastro em Minha Conta sem exigir autenticação no checkout.
-- [ ] Oferecer criação segura de senha após compra visitante e vincular pedidos por APIs oficiais.
-- [ ] Preservar pedidos, endereços, dados, recuperação, logout e wishlist.
-- [ ] Preparar detalhe do pedido para prévia/estado do Plano 012.
-- [ ] Adicionar atendimento contextual sem dados pessoais ou número em URL pública.
+- [x] Exibir número, status, itens, endereço, pagamento, entrega e próximos passos na confirmação.
+- [x] Criar rastreamento HPOS com transportadora, código e URL, editável no pedido e condicional em conta/e-mails.
+- [x] Habilitar cadastro em Minha Conta sem exigir autenticação no checkout.
+- [x] Oferecer criação segura de senha após compra visitante e vincular pedidos por APIs oficiais.
+- [x] Preservar pedidos, endereços, dados, recuperação, logout e wishlist.
+- [x] Preparar detalhe do pedido para prévia/estado do Plano 012.
+- [x] Adicionar atendimento contextual sem dados pessoais ou número em URL pública.
 
 ### Sessão 06 — Conteúdo, amostra do catálogo e analytics
 
-- [ ] Garantir origem administrativa por rota conforme o inventário da seção 5.
-- [ ] Sanear um produto simples, um variável e um preparado para personalização.
-- [ ] Entregar checklist e relatório de inconsistências para o restante do catálogo.
-- [ ] Emitir eventos locais compatíveis com GA4 para busca, visualização, variação, carrinho, checkout e compra.
-- [ ] Não carregar fornecedor externo de analytics antes de consentimento.
+- [x] Garantir origem administrativa por rota conforme o inventário da seção 5.
+- [x] Sanear um produto simples, um variável e um preparado para personalização.
+- [x] Entregar checklist e relatório de inconsistências para o restante do catálogo.
+- [x] Emitir eventos locais compatíveis com GA4 para busca, visualização, variação, carrinho, checkout e compra.
+- [x] Não carregar fornecedor externo de analytics antes de consentimento.
 
 ### Sessão 07 — Testes, persistência e aceite
 
 - [ ] Executar toda a matriz da seção 7.
-- [ ] Validar persistência editorial após reprovisionamento.
-- [ ] Atualizar guia administrativo, Planos 005/009/012 e `Plans/STATUS.md`.
-- [ ] Registrar fornecedor de frete, credenciais de produção e políticas como bloqueios externos quando ainda ausentes.
+- [x] Validar persistência editorial após reprovisionamento.
+- [x] Atualizar guia administrativo, Planos 005/009/012 e `Plans/STATUS.md`.
+- [x] Registrar fornecedor de frete, credenciais de produção e políticas como bloqueios externos quando ainda ausentes.
 
 ## 5. Inventário de conteúdo administrável
 
@@ -135,7 +137,31 @@ Migrações podem provisionar estrutura inicial somente em conteúdo ainda geren
 - Metadados de rastreamento terão namespace `petshop`, escaping tardio e nenhuma exposição na Store API.
 - Eventos de funil ficarão em camada local compatível com GA4 e condicionada ao consentimento.
 
+### 6.1 Arquitetura executável
+
+- `Petshop\Core\WooCommerce\Routes`: migra IDs existentes para slugs/títulos portugueses, registra 301 somente para os quatro caminhos legados, preserva query string, evita loops e reconcilia menus sem substituir rótulos editados pelo cliente.
+- `Petshop\Core\Storefront\CatalogFilter`: torna os parâmetros da seção 6 canônicos, usa `tax_query`/`meta_query` e APIs de consulta WooCommerce, com OR dentro de atributo e AND entre grupos; nunca usa SQL direto.
+- `Petshop\Core\Storefront\SearchExperience`: renderiza estado vazio e carrega sugestões exclusivamente de `/wp-json/wc/store/v1/products`, com debounce de 250 ms, limite de resultados e navegação por teclado.
+- `Petshop\Core\WooCommerce\ProductDetails`: persiste prazo de produção, materiais, cuidados, medidas e guia no produto/variação; calcula entrega com o pacote e as taxas do WooCommerce, sem fabricar prazo ou preço.
+- `Petshop\Core\WooCommerce\CartCheckout`: preserva os blocos nativos, adiciona somente extensões suportadas pela Store API/Blocks e provisiona CTA editorial em Gutenberg sem sobrescrever edições posteriores.
+- `Petshop\Core\WooCommerce\OrderTracking`: usa `WC_Order::get_meta()`, `update_meta_data()` e `save()`, metabox compatível com HPOS e saída condicional em conta/e-mails.
+- `Petshop\Core\WooCommerce\GuestAccount`: cria conta somente mediante ação autenticada pelo `order_key`, e-mail do pedido e nonce; usa APIs WooCommerce, associa o pedido uma única vez e envia o fluxo oficial de definição de senha.
+- `Petshop\Core\Analytics\FunnelEvents`: emite eventos locais estruturados; nenhum script de terceiro é carregado pelo plugin e o despacho externo depende de consentimento fornecido por integração via filtro.
+- `StorefrontProvisioner`: sobe uma versão idempotente para rotas, páginas Gutenberg, configurações de conta e fixtures locais. Conteúdo existente só é atualizado quando a assinatura gerenciada ainda corresponde ao valor anterior.
+- `petshop-theme`: recebe apenas CSS responsivo/estados e JS progressivo; regras, migrações e dados permanecem no plugin.
+
+As APIs de referência são a [Products Store API](https://developer.woocommerce.com/docs/apis/store-api/resources-endpoints/products/), a [extensibilidade de Cart/Checkout Blocks](https://developer.woocommerce.com/docs/block-development/extensible-blocks/cart-and-checkout-blocks/) e o [recipe book de HPOS](https://developer.woocommerce.com/docs/features/orders/high-performance-order-storage/recipe-book/).
+
+### 6.2 Pré-requisitos externos e regra de aceite
+
+- O ambiente local inicia com Mercado Pago 8.9.0 ativo, mas os gateways Pix/cartão estão desabilitados e nenhuma credencial sandbox está configurada.
+- Não existe método de entrega na zona padrão. O plano pode provisionar `flat_rate` apenas em ambiente `local`/`development`; produção continua bloqueada até fornecedor, zonas e credenciais aprovados.
+- Privacidade e reembolso existentes continuam em rascunho. As cinco páginas separadas serão provisionadas como estrutura Gutenberg administrável, sem inventar texto jurídico, e permanecerão em rascunho até aprovação.
+- A implementação pode fechar código e testes automatizados sem segredos, mas o plano não muda para `Concluído` enquanto os cenários Mercado Pago sandbox e o gate humano NVDA/VoiceOver não tiverem evidência.
+
 ## 7. Matriz de validação
+
+Os comandos, fixtures, evidências e o ledger de tentativas ficam em [013-TESTING.md](./013-TESTING.md).
 
 | Superfície | Cenários obrigatórios |
 | --- | --- |
@@ -153,18 +179,18 @@ Migrações podem provisionar estrutura inicial somente em conteúdo ainda geren
 
 ## 8. Critérios globais de aceite
 
-- [ ] Todos os requisitos P0/P1 das superfícies WooCommerce listadas estão implementados ou vinculados explicitamente ao Plano 012.
-- [ ] Rotas portuguesas, redirecionamentos, canonical e menus são coerentes.
-- [ ] Catálogo e busca funcionam progressivamente em desktop/mobile e preservam contexto.
-- [ ] Produto simples/variável não permite combinação inválida e informa frete/prazos sem fabricar valores.
-- [ ] Carrinho e Checkout Blocks preservam dados pela Store API.
+- [ ] Todos os requisitos P0/P1 das superfícies WooCommerce listadas estão implementados ou vinculados explicitamente ao Plano 012 (Mercado Pago sandbox depende de credenciais externas).
+- [x] Rotas portuguesas, redirecionamentos, canonical e menus são coerentes.
+- [x] Catálogo e busca funcionam progressivamente em desktop/mobile e preservam contexto.
+- [x] Produto simples/variável não permite combinação inválida e informa frete/prazos sem fabricar valores.
+- [x] Carrinho e Checkout Blocks preservam dados pela Store API.
 - [ ] Mercado Pago sandbox cobre estados aprovado, recusado e pendente sem pedido duplicado.
-- [ ] Pedidos e rastreamento usam CRUD HPOS.
+- [x] Pedidos e rastreamento usam CRUD HPOS.
 - [ ] Checkout visitante e criação posterior de conta funcionam sem duplicar pedido.
-- [ ] Conteúdo comercial, políticas e imagens permanecem administráveis e persistentes.
-- [ ] Nenhum segredo, política jurídica inventada ou dado pessoal está versionado.
-- [ ] Testes automatizados, browser gates e gates de persistência passam.
-- [ ] `Plans/STATUS.md` e documentação operacional refletem o resultado real.
+- [x] Conteúdo comercial, políticas e imagens permanecem administráveis e persistentes.
+- [x] Nenhum segredo, política jurídica inventada ou dado pessoal está versionado.
+- [x] Testes automatizados, browser gates e gates de persistência passam.
+- [x] `Plans/STATUS.md` e documentação operacional refletem o resultado real.
 
 ## 9. Fora do escopo
 

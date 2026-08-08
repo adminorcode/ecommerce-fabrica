@@ -6,6 +6,8 @@
 **Dependências:** [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) e [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) concluídos; implementar após o [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md)
 **Relacionamento:** entrega a área `Personalize` reservada nos Planos 004 e 005; não altera o catálogo convencional nem exige plugin de personalização de terceiros.
 
+**Base entregue pelo Plano 013 (2026-08-08):** existe um slot `petshop_product_personalization_slot` junto ao CTA, fixture `PLAN012-READY`, Cart/Checkout Blocks preservados e CRUD HPOS validado. O Plano 012 deve estender esse slot e os schemas oficiais, sem reorganizar a PDP nem substituir os blocos nativos.
+
 ## 1. Objetivo
 
 Permitir que compradores personalizem produtos WooCommerce — inicialmente bandanas, laços/lacinhos e adesivos — com texto e imagem em uma prévia visual, concluam a compra pelo Carrinho e Checkout Blocks e tenham a personalização preservada no item do pedido.

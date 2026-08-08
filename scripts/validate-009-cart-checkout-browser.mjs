@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { contrast, createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { contrast, createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('009');
@@ -11,30 +11,45 @@ const browser = await launchBrowser();
 try {
   const context = await browser.newContext();
   const setupPage = await context.newPage();
-  const productId = Number(process.env.PETSHOP_TEST_PRODUCT_ID || '95');
+  await routeCanonicalNavigation(setupPage, baseUrl);
+  let productId = Number(process.env.PETSHOP_TEST_PRODUCT_ID || '0');
+  if (!productId) {
+    const productsResponse = await setupPage.request.get(`${baseUrl}/wp-json/wc/store/v1/products?sku=PLAN013-SIMPLE`);
+    const products = productsResponse.ok() ? await productsResponse.json() : [];
+    productId = Number(products[0]?.id || 95);
+  }
+  const cartResponse = await setupPage.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
   const addResponse = await setupPage.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
+    headers: { Nonce: cartResponse.headers().nonce || '' },
     data: { id: productId, quantity: 1 },
   });
   if (!addResponse.ok()) {
-    await setupPage.goto(`${baseUrl}/shop/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await setupPage.goto(`${baseUrl}/loja/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
     const addButton = setupPage.locator('a.add_to_cart_button, button.add_to_cart_button').first();
     if ((await addButton.count()) > 0) {
       await addButton.click();
       await setupPage.waitForTimeout(2000);
     }
   }
+  const sessionCookies = await context.cookies(baseUrl);
+  await context.addCookies(sessionCookies.map(({ domain, path: cookiePath, ...cookie }) => ({
+    ...cookie,
+    url: 'http://localhost:8888',
+  })));
   await setupPage.close();
 
   for (const route of [
-    { name: 'cart', path: '/cart/' },
-    { name: 'checkout', path: '/checkout/' },
+    { name: 'cart', path: '/carrinho/' },
+    { name: 'checkout', path: '/finalizar-compra/' },
   ]) {
     for (const viewport of [
       { name: 'desktop-1440', width: 1440, height: 1000 },
       { name: 'mobile-390', width: 390, height: 844 },
     ]) {
       const page = await context.newPage({ viewport });
+      await routeCanonicalNavigation(page, baseUrl);
       const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.waitForTimeout(2500);
       const status = response?.status() ?? 0;
       const overflow = await page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth));
       const primaryButton = page.locator(

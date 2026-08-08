@@ -33,6 +33,8 @@ if (-not $SkipProvision) {
     Invoke-EvalFile 'seed-storefront-placeholders.php'
     Write-Host '==> provisionando storefront'
     Invoke-WpCli eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
+    Write-Host '==> fixtures administraveis do Plano 013'
+    Invoke-EvalFile 'seed-013-catalog-samples.php'
 }
 
 Invoke-EvalFile 'validate-storefront.php'
@@ -41,6 +43,9 @@ Invoke-EvalFile 'validate-005-session-02.php'
 Invoke-EvalFile 'test-004b-persistence.php'
 Invoke-EvalFile 'test-005-session-01-persistence.php'
 Invoke-EvalFile 'test-005-session-02-persistence.php'
+Invoke-EvalFile 'test-013-persistence.php'
+Invoke-EvalFile 'validate-013-hpos.php'
+Invoke-EvalFile 'validate-013-security.php'
 
 if ($ContentAudit) {
     Invoke-EvalFile 'validate-004b.php'
@@ -74,7 +79,7 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs')) {
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs')) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }

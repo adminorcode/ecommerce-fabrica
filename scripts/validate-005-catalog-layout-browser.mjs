@@ -55,7 +55,12 @@ try {
 
     if (record.sidebar && record.main) {
       if (viewport.width >= 768 && record.sidebar.x >= record.main.x) failures.push(`${viewport.name}: sidebar nao esta a esquerda da grade`);
-      if (viewport.width < 768 && record.sidebar.y >= record.main.y) failures.push(`${viewport.name}: sidebar nao esta antes da grade`);
+      if (viewport.width < 768) {
+        const toggle = page.locator('[data-petshop-filter-open]');
+        await toggle.click();
+        if (!await sidebar.evaluate((element) => element.classList.contains('is-open'))) failures.push(`${viewport.name}: painel de filtros nao abriu`);
+        await page.keyboard.press('Escape');
+      }
     }
 
     if (viewport.name === 'desktop-1440' || viewport.name === 'mobile-390') {
@@ -68,7 +73,7 @@ try {
   await routeCanonicalNavigation(behaviorPage, baseUrl);
   await behaviorPage.goto(`${baseUrl}/product-category/conjuntos/`, { waitUntil: 'networkidle', timeout: 20000 });
   await behaviorPage.locator('.petshop-catalog-filter').evaluate((form, target) => {
-    form.action = new URL('/shop/', target).href;
+    form.action = new URL('/loja/', target).href;
   }, baseUrl);
   const categorySearch = behaviorPage.locator('#petshop-category-search');
   await categorySearch.fill('gráva');
@@ -76,36 +81,52 @@ try {
   if (visibleOptions.length !== 1 || visibleOptions[0].trim() !== 'Gravatas') failures.push(`busca textual: opcoes visiveis divergentes (${visibleOptions.join(', ')})`);
   await categorySearch.fill('');
 
-  await behaviorPage.locator('input[value="gravatas"]').check();
+  await behaviorPage.locator('input[type="checkbox"][value="gravatas"]').check();
   if (new URL(behaviorPage.url()).pathname !== '/product-category/conjuntos/') failures.push('checkbox isolado navegou antes da aplicacao explicita');
+  await behaviorPage.locator('.petshop-catalog-filter').evaluate((form) => {
+    form.querySelectorAll('input,select').forEach((control) => {
+      if (!control.value) control.disabled = true;
+    });
+  });
   await Promise.all([
-    behaviorPage.waitForURL((url) => url.pathname === '/shop/' && url.searchParams.has('petshop_categories'), { timeout: 15000 }),
+    behaviorPage.waitForURL((url) => url.pathname === '/loja/' && url.searchParams.has('product_cat[]'), { timeout: 15000 }),
     behaviorPage.locator('.petshop-catalog-filter__apply').click(),
   ]);
   const combinedUrl = new URL(behaviorPage.url());
-  const combinedSlugs = (combinedUrl.searchParams.get('petshop_categories') || '').split(',').filter(Boolean);
+  const combinedSlugs = combinedUrl.searchParams.getAll('product_cat[]');
   if (JSON.stringify(combinedSlugs) !== JSON.stringify(['conjuntos', 'gravatas'])) failures.push(`query combinada divergente: ${combinedSlugs.join(',')}`);
   if (await behaviorPage.locator('.petshop-catalog-filter input[type="checkbox"]:checked').count() !== 2) failures.push('query combinada: dois checkboxes nao permaneceram marcados');
   const combinedCategories = await behaviorPage.locator('li.product .meta-categories').allTextContents();
   if (combinedCategories.length < 2 || combinedCategories.some((text) => !/(Conjuntos|Gravatas)/i.test(text))) failures.push('query combinada: produto fora das categorias selecionadas');
 
-  await behaviorPage.locator('input[value="conjuntos"]').uncheck();
+  await behaviorPage.locator('input[type="checkbox"][value="conjuntos"]').uncheck();
+  await behaviorPage.locator('.petshop-catalog-filter').evaluate((form) => {
+    form.querySelectorAll('input,select').forEach((control) => {
+      if (!control.value) control.disabled = true;
+    });
+  });
   await Promise.all([
-    behaviorPage.waitForURL((url) => url.pathname === '/shop/' && url.searchParams.get('petshop_categories') === 'gravatas', { timeout: 15000 }),
+    behaviorPage.waitForURL((url) => {
+      const categories = url.searchParams.getAll('product_cat[]');
+      return url.pathname === '/loja/' && categories.length === 1 && categories[0] === 'gravatas';
+    }, { timeout: 15000 }),
     behaviorPage.locator('.petshop-catalog-filter__apply').click(),
   ]);
   if (await behaviorPage.locator('.petshop-catalog-filter input[type="checkbox"]:checked').count() !== 1) failures.push('query simples: checkbox de Gravatas nao permaneceu marcado');
   const gravataCategories = await behaviorPage.locator('li.product .meta-categories').allTextContents();
   if (!gravataCategories.length || gravataCategories.some((text) => !/Gravatas/i.test(text))) failures.push('query simples: resultado fora de Gravatas');
   const gravataUrl = behaviorPage.url();
-  const canonicalResponse = await behaviorPage.request.get(`${baseUrl}/product-category/gravatas/?petshop_categories=conjuntos`, {
+  const canonicalResponse = await behaviorPage.request.get(`${baseUrl}/product-category/gravatas/?product_cat%5B%5D=conjuntos`, {
     headers: { Host: new URL(baseUrl).host },
     maxRedirects: 0,
     timeout: 20000,
   });
   const canonicalLocation = canonicalResponse.headers().location || '';
   const canonicalUrl = new URL(canonicalLocation, baseUrl);
-  if (canonicalResponse.status() !== 302 || canonicalUrl.pathname !== '/shop/' || canonicalUrl.searchParams.get('petshop_categories') !== 'conjuntos') failures.push('query em arquivo de taxonomia nao foi canonicalizada para a loja');
+  const canonicalCategories = [...canonicalUrl.searchParams.entries()]
+    .filter(([key]) => /^product_cat(?:\[\d*\])?$/.test(key))
+    .map(([, value]) => value);
+  if (canonicalResponse.status() !== 302 || canonicalUrl.pathname !== '/loja/' || !canonicalCategories.includes('conjuntos')) failures.push('query em arquivo de taxonomia nao foi canonicalizada para a loja');
   results.push({
     behavior: 'catalog-filter',
     textSearch: visibleOptions.map((value) => value.trim()),

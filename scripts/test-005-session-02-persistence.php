@@ -57,7 +57,8 @@ try {
     $checks = [
         'título' => str_contains($after, 'Titulo institucional sentinela'),
         'alt' => str_contains($after, 'Alt institucional sentinela'),
-        'imagem' => str_contains($after, $newUrl),
+        'imagem' => str_contains($after, '"id":' . $otherId)
+            && str_contains($after, 'wp-image-' . $otherId),
         'CTA coleções' => str_contains($after, home_url('/colecoes/')),
         'CTA atendimento' => str_contains($after, home_url('/atendimento/')),
         'benefício' => str_contains($after, 'Beneficio sentinela'),

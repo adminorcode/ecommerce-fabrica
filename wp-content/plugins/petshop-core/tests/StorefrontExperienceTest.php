@@ -6,6 +6,7 @@ use Petshop\Core\StorefrontExperience;
 use Petshop\Core\Migration\HomeMigrator;
 use Petshop\Core\Settings\DefaultSettings;
 use Petshop\Core\Storefront\CatalogFilter;
+use Petshop\Core\WooCommerce\Routes;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -14,6 +15,7 @@ final class StorefrontExperienceTest extends TestCase
     protected function tearDown(): void
     {
         unset($_GET['petshop_categories']);
+        unset($_GET['product_cat'], $_GET['filter_pa_color'], $_GET['filter_pa_size'], $_GET['stock_status']);
     }
 
     #[DataProvider('categoryQueryProvider')]
@@ -57,6 +59,52 @@ final class StorefrontExperienceTest extends TestCase
             ],
             $query->get('tax_query')
         );
+    }
+
+    public function testCatalogFilterCombinesAttributesWithAndAndTermsWithIn(): void
+    {
+        $_GET['product_cat'] = ['bandanas', 'lacos'];
+        $_GET['filter_pa_color'] = 'azul,verde';
+        $_GET['filter_pa_size'] = 'p';
+        $_GET['stock_status'] = 'instock';
+        $query = new WP_Query(['main_query' => true, 'post_type_archive' => 'product']);
+
+        CatalogFilter::applyCatalogCategoryFilter($query);
+
+        $taxQuery = $query->get('tax_query');
+        self::assertSame('AND', $taxQuery['relation']);
+        self::assertSame(['bandanas', 'lacos'], $taxQuery[0]['terms']);
+        self::assertSame('IN', $taxQuery[1]['operator']);
+        self::assertSame(['azul', 'verde'], $taxQuery[1]['terms']);
+        self::assertSame('pa_size', $taxQuery[2]['taxonomy']);
+        self::assertSame('_stock_status', $query->get('meta_query')[0]['key']);
+    }
+
+    public function testCanonicalCatalogParametersDropUnknownAndInvalidValues(): void
+    {
+        $parameters = CatalogFilter::canonicalParametersFromRequest([
+            'petshop_categories' => 'Laços, Bandanas,laços',
+            'filter_pa_color' => ['Azul', ''],
+            'stock_status' => 'invalid',
+            'orderby' => 'price',
+            'unknown' => 'discard-me',
+        ]);
+
+        self::assertSame([
+            'product_cat' => ['lacos', 'bandanas'],
+            'filter_pa_color' => 'azul',
+            'orderby' => 'price',
+        ], $parameters);
+    }
+
+    public function testLocalizedWooCommerceRouteRegistryIsDeterministic(): void
+    {
+        self::assertSame([
+            'shop' => 'loja',
+            'cart' => 'carrinho',
+            'checkout' => 'finalizar-compra',
+            'my-account' => 'minha-conta',
+        ], Routes::slugs());
     }
 
     public function testExactSkuSearchConstrainsThePostId(): void

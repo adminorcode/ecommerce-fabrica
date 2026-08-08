@@ -6,6 +6,13 @@ namespace Petshop\Core;
 
 use Petshop\Core\Admin\Customizer;
 use Petshop\Core\Cli\MigrateCommand;
+use Petshop\Core\Storefront\SearchExperience;
+use Petshop\Core\WooCommerce\Routes;
+use Petshop\Core\WooCommerce\ProductDetails;
+use Petshop\Core\WooCommerce\CartCheckout;
+use Petshop\Core\WooCommerce\OrderTracking;
+use Petshop\Core\WooCommerce\GuestAccount;
+use Petshop\Core\Analytics\FunnelEvents;
 
 defined('ABSPATH') || exit;
 
@@ -19,6 +26,13 @@ final class Plugin
         StorefrontBreadcrumbs::bootstrap();
         StorefrontProductCard::bootstrap();
         StorefrontWishlist::bootstrap();
+        Routes::bootstrap();
+        SearchExperience::bootstrap();
+        ProductDetails::bootstrap();
+        CartCheckout::bootstrap();
+        OrderTracking::bootstrap();
+        GuestAccount::bootstrap();
+        FunnelEvents::bootstrap();
         HomeCampaignBlocks::bootstrap();
         Customizer::bootstrap();
 

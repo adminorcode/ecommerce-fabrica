@@ -84,10 +84,39 @@ function wp_unslash(mixed $value): mixed
 
 function sanitize_title(string $value): string
 {
+    $value = strtr($value, [
+        'á' => 'a', 'à' => 'a', 'ã' => 'a', 'â' => 'a', 'ä' => 'a',
+        'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+        'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+        'ó' => 'o', 'ò' => 'o', 'õ' => 'o', 'ô' => 'o', 'ö' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ç' => 'c',
+        'Á' => 'a', 'À' => 'a', 'Ã' => 'a', 'Â' => 'a', 'Ç' => 'c',
+    ]);
     $value = strtolower(trim($value));
     $value = preg_replace('/[^a-z0-9]+/', '-', $value) ?? '';
 
     return trim($value, '-');
+}
+
+function sanitize_key(string $value): string
+{
+    return strtolower((string) preg_replace('/[^a-z0-9_\-]/', '', $value));
+}
+
+function wc_format_decimal(string $value): string
+{
+    return is_numeric(str_replace(',', '.', $value)) ? str_replace(',', '.', $value) : '';
+}
+
+function taxonomy_exists(string $taxonomy): bool
+{
+    return in_array($taxonomy, ['product_cat', 'product_tag', 'pa_color', 'pa_size'], true);
+}
+
+/** @return array<string, string> */
+function wc_get_catalog_ordering_options(): array
+{
+    return ['menu_order' => 'Padrão', 'price' => 'Preço', 'price-desc' => 'Preço decrescente'];
 }
 
 function absint(mixed $value): int

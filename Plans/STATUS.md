@@ -15,7 +15,7 @@
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
 | [011-banners-gerenciaveis-home.md](./011-banners-gerenciaveis-home.md) | Concluído | Blocos `petshop/home-campaigns` e `petshop/home-campaign`; carrossel manual acessível; persistência validada |
 | [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Pendente | Editor open source no `petshop-core`, Store API/HPOS, arquivos privados e fila WooCommerce → Personalizações |
-| [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Pendente | Usabilidade WooCommerce, rotas, filtros, produto, frete, checkout e conta; depende de 008 e 007 |
+| [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código e gates automatizados entregues; aguarda Mercado Pago sandbox, frete real, jurídico e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Pendente | Tokens de marca, Nunito Sans, componentes acessíveis, footer teal e campanhas editoriais Gutenberg; depende de 009 e 011 |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
 
@@ -44,4 +44,4 @@
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-08 (Plano 008 removido do roadmap)
+**Última atualização:** 2026-08-08 (Plano 013 implementado; aceite externo pendente)
