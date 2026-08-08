@@ -17,21 +17,12 @@ defined('ABSPATH') || exit;
 
 defined('PETSHOP_CORE_FILE') || define('PETSHOP_CORE_FILE', __FILE__);
 
-require_once __DIR__ . '/includes/class-category-icons.php';
-require_once __DIR__ . '/includes/class-storefront-catalog.php';
-require_once __DIR__ . '/includes/class-storefront-experience.php';
-require_once __DIR__ . '/includes/class-storefront-breadcrumbs.php';
-require_once __DIR__ . '/includes/class-storefront-product-card.php';
-require_once __DIR__ . '/includes/class-storefront-wishlist.php';
-require_once __DIR__ . '/includes/class-home-campaign-blocks.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-\Petshop\Core\CategoryIcons::bootstrap();
-\Petshop\Core\StorefrontCatalog::bootstrap();
-\Petshop\Core\StorefrontExperience::bootstrap();
-\Petshop\Core\StorefrontBreadcrumbs::bootstrap();
-\Petshop\Core\StorefrontProductCard::bootstrap();
-\Petshop\Core\StorefrontWishlist::bootstrap();
-\Petshop\Core\HomeCampaignBlocks::bootstrap();
+register_activation_hook(__FILE__, [\Petshop\Core\Lifecycle::class, 'activate']);
+register_deactivation_hook(__FILE__, [\Petshop\Core\Lifecycle::class, 'deactivate']);
+
+\Petshop\Core\Plugin::bootstrap();
 
 add_action(
     'before_woocommerce_init',
@@ -39,6 +30,11 @@ add_action(
         if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
             \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
                 'custom_order_tables',
+                __FILE__,
+                true
+            );
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+                'cart_checkout_blocks',
                 __FILE__,
                 true
             );

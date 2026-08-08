@@ -2232,7 +2232,7 @@ footer.ct-footer .ct-footer-copyright {
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1100px) {
   .petshop-header-action__label {
     position: absolute;
     width: 1px;

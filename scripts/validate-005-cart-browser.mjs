@@ -1,6 +1,7 @@
-import { createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
+const baseOrigin = new URL(baseUrl).origin;
 const evidenceDir = createEvidenceDirectory('005/cart');
 const browser = await launchBrowser();
 const failures = [];
@@ -8,6 +9,7 @@ const failures = [];
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
+  await routeCanonicalNavigation(page, baseUrl);
   await page.goto(`${baseUrl}/product/conjunto-babador-laco-em-feltro/`, { waitUntil: 'networkidle', timeout: 20000 });
   const addToCart = page.locator('.single_add_to_cart_button').first();
   const cartButton = page.locator('.wc-block-mini-cart__button').first();
@@ -22,7 +24,7 @@ try {
       if (form) form.action = `${origin}${new URL(form.action).pathname}`;
     }, baseUrl);
     await Promise.all([
-      page.waitForResponse((response) => response.request().method() === 'POST' && response.url().startsWith(baseUrl), { timeout: 15000 }),
+      page.waitForRequest((request) => request.method() === 'POST' && request.url().startsWith(baseOrigin), { timeout: 15000 }),
       addToCart.click({ noWaitAfter: true }),
     ]);
     const confirmation = await context.newPage();

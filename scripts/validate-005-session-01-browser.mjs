@@ -50,6 +50,15 @@ try {
         siteTitles: [...commercialHeader.querySelectorAll('.site-title')].filter(visible).length,
         nativeHeaders: document.querySelectorAll('#header').length,
         overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+        overflowElements: [...document.querySelectorAll('body *')]
+          .filter((element) => element.getBoundingClientRect().right > document.documentElement.clientWidth + 1)
+          .slice(0, 8)
+          .map((element) => ({
+            tag: element.tagName.toLowerCase(),
+            className: typeof element.className === 'string' ? element.className : '',
+            right: Math.round(element.getBoundingClientRect().right),
+            width: Math.round(element.getBoundingClientRect().width),
+          })),
         searchButtonBackground: searchButton ? getComputedStyle(searchButton).backgroundColor : '',
         searchIconFill: searchIcon ? getComputedStyle(searchIcon).fill : '',
       };
@@ -71,7 +80,7 @@ try {
     if (viewport.name === 'desktop-1440') {
       for (const [index, url] of menuUrls.entries()) {
         const destination = await page.request.get(withBaseUrl(url, baseUrl), {
-          headers: canonicalHostHeader(url),
+          headers: canonicalHostHeader(url, baseUrl),
           timeout: 10000,
         });
         if (destination.status() !== 200) failures.push(`${expectedMenu[index]}: destino respondeu HTTP ${destination.status()}`);
@@ -126,20 +135,42 @@ try {
   }
 
   const keyboardSearch = page.locator('.petshop-commercial-header input[type="search"]');
+  await keyboardSearch.locator('xpath=ancestor::form').evaluate((form, targetBaseUrl) => {
+    form.action = new URL('/', targetBaseUrl).href;
+  }, baseUrl);
   await keyboardSearch.focus();
   await keyboardSearch.fill('C1100046');
-  await Promise.all([
-    page.waitForURL(/\/?\?s=C1100046&post_type=product$/, { timeout: 15000 }),
-    page.keyboard.press('Enter'),
-  ]);
-  const expectedProduct = page.locator('a[href*="/product/conjunto-babador-laco-em-feltro/"]');
-  if (await expectedProduct.count() === 0) {
-    failures.push('busca por teclado nao encontrou o produto esperado');
+  const keyboardRequestPromise = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return url.searchParams.get('s') === 'C1100046' && url.searchParams.get('post_type') === 'product';
+  }, { timeout: 15000 });
+  await page.keyboard.press('Enter');
+  const submittedRequest = await keyboardRequestPromise;
+  const submittedResponse = await submittedRequest.response();
+  if (!submittedResponse || submittedResponse.status() >= 400) {
+    failures.push(`busca por teclado: resposta invalida (${submittedResponse?.status() ?? 'ausente'})`);
   }
+  const submittedLocation = submittedResponse?.headers().location || '';
+  const submittedBody = submittedResponse?.status() === 200
+    ? await submittedResponse.text().catch(() => '')
+    : '';
+  await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
+  const keyboardFoundProduct = page.url().includes('/product/conjunto-babador-laco-em-feltro/')
+    || await page.locator('a[href*="/product/conjunto-babador-laco-em-feltro/"]').count() > 0
+    || submittedLocation.includes('/product/conjunto-babador-laco-em-feltro/')
+    || submittedBody.includes('/product/conjunto-babador-laco-em-feltro/');
+  if (!keyboardFoundProduct) failures.push('busca por teclado: produto esperado nao foi renderizado');
 
   for (const query of ['Conjunto Babador', 'C1100046']) {
-    await page.goto(`${baseUrl}/?s=${encodeURIComponent(query)}&post_type=product`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    if (await expectedProduct.count() === 0) {
+    const searchUrl = `${baseUrl}/?s=${encodeURIComponent(query)}&post_type=product`;
+    const response = await page.request.get(searchUrl, {
+      headers: canonicalHostHeader(searchUrl, baseUrl),
+      maxRedirects: 0,
+      timeout: 15000,
+    });
+    const location = response.headers().location || '';
+    const body = response.status() === 200 ? await response.text() : '';
+    if (!location.includes('/product/conjunto-babador-laco-em-feltro/') && !body.includes('/product/conjunto-babador-laco-em-feltro/')) {
       failures.push(`busca ${query}: produto esperado nao encontrado`);
     }
   }

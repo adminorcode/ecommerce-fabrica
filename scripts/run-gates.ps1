@@ -47,22 +47,53 @@ if ($ContentAudit) {
     Invoke-EvalFile 'audit-storefront-content.php'
 }
 
-if ($Browser) {
-    Write-Host '==> browser gates (container)'
-    foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs')) {
-        docker compose --profile tools run --rm node node "/workspace/scripts/$script"
-        if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
+if ($Browser -or $Pdp -or $Cart) {
+    $wordpressUrlLine = Get-Content '.env' | Where-Object { $_ -match '^WORDPRESS_URL=' } | Select-Object -First 1
+    $expectedPublicUrl = if ($wordpressUrlLine) { ($wordpressUrlLine -split '=', 2)[1].Trim() } else { 'http://localhost:8888' }
+    $expectedPublicUri = [Uri]$expectedPublicUrl
+    if (-not $expectedPublicUri.IsLoopback) {
+        throw 'WORDPRESS_URL deve ser loopback para executar os gates browser locais.'
     }
-}
+    $originalHome = (docker compose --profile tools run --rm --no-deps cli wp option get home).Trim()
+    if ($originalHome -eq 'http://wordpress') {
+        Write-Host '==> recuperando URL publica deixada por gate browser interrompido'
+        Invoke-WpCli option update home $expectedPublicUrl
+        Invoke-WpCli option update siteurl $expectedPublicUrl
+        Invoke-WpCli cache flush
+        $originalHome = $expectedPublicUrl
+    }
+    $publicUri = [Uri]$originalHome
+    if (-not $publicUri.IsLoopback) {
+        throw 'Os gates browser que isolam a URL do Compose so podem alterar uma instalacao local.'
+    }
+    $originalSiteUrl = (docker compose --profile tools run --rm --no-deps cli wp option get siteurl).Trim()
+    try {
+        Invoke-WpCli option update home 'http://wordpress'
+        Invoke-WpCli option update siteurl 'http://wordpress'
+        Invoke-WpCli cache flush
 
-if ($Pdp -or $Browser) {
-    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
-    if ($LASTEXITCODE -ne 0) { throw 'browser gate PDP falhou' }
-}
+        if ($Browser) {
+            Write-Host '==> browser gates (container)'
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs')) {
+                docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+                if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
+            }
+        }
 
-if ($Cart -or $Browser) {
-    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
-    if ($LASTEXITCODE -ne 0) { throw 'browser gate carrinho falhou' }
+        if ($Pdp -or $Browser) {
+            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+            if ($LASTEXITCODE -ne 0) { throw 'browser gate PDP falhou' }
+        }
+
+        if ($Cart -or $Browser) {
+            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+            if ($LASTEXITCODE -ne 0) { throw 'browser gate carrinho falhou' }
+        }
+    } finally {
+        Invoke-WpCli option update home $originalHome
+        Invoke-WpCli option update siteurl $originalSiteUrl
+        Invoke-WpCli cache flush
+    }
 }
 
 Write-Host 'run-gates: all PHP gates passed'

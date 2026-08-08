@@ -9,7 +9,7 @@
 | [004b-correcao-vitrine-e-catalogo.md](./004b-correcao-vitrine-e-catalogo.md) | Concluído | Catálogo demonstrável, hero full-bleed editável, densidade comercial e persistência validados |
 | [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Abandonado | Sessões 01–02 e entregas posteriores preservadas; sessões pendentes não serão continuadas neste plano |
 | [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, run-gates, CI workflow; gates PHP validados em runtime |
-| [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Pendente | Decomposição do plugin, migrador, Customizer; após baseline de testes |
+| [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Concluído | PSR-4, modularização, migrador versionado, Customizer/defaults, lifecycle/CLI e matriz PHP/browser validados |
 | [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) | Em andamento | PHPUnit e gates Playwright implementados; persistência legada integrada aos gates; auditoria editorial isolada |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
@@ -46,4 +46,4 @@
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-03 (Plano 012 adicionado)
+**Última atualização:** 2026-08-08 (Plano 007 concluído)

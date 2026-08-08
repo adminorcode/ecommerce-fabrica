@@ -79,19 +79,54 @@ if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then
   run_eval_file audit-storefront-content.php
 fi
 
-if [[ "$RUN_BROWSER" -eq 1 ]]; then
-  echo "==> browser gates (container)"
-  for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs; do
-    docker compose --profile tools run --rm node node "/workspace/scripts/$script"
-  done
-fi
+if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
+  original_home="$(run_wp option get home)"
+  expected_public_url="$(sed -n 's/^WORDPRESS_URL=//p' .env | head -n 1)"
+  expected_public_url="${expected_public_url:-http://localhost:8888}"
+  case "$expected_public_url" in
+    http://localhost:*|https://localhost:*|http://127.0.0.1:*|https://127.0.0.1:*) ;;
+    *) echo "WORDPRESS_URL deve ser loopback para executar os gates browser locais." >&2; exit 1 ;;
+  esac
+  if [[ "$original_home" == "http://wordpress" ]]; then
+    echo "==> recuperando URL publica deixada por gate browser interrompido"
+    run_wp option update home "$expected_public_url" >/dev/null
+    run_wp option update siteurl "$expected_public_url" >/dev/null
+    run_wp cache flush >/dev/null
+    original_home="$expected_public_url"
+  fi
+  case "$original_home" in
+    http://localhost:*|https://localhost:*|http://127.0.0.1:*|https://127.0.0.1:*) ;;
+    *) echo "Os gates browser que isolam a URL do Compose so podem alterar uma instalacao local." >&2; exit 1 ;;
+  esac
+  original_siteurl="$(run_wp option get siteurl)"
+  restore_urls() {
+    run_wp option update home "$original_home" >/dev/null
+    run_wp option update siteurl "$original_siteurl" >/dev/null
+    run_wp cache flush >/dev/null
+  }
+  trap restore_urls EXIT
 
-if [[ "$RUN_PDP" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
-  docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
-fi
+  run_wp option update home http://wordpress >/dev/null
+  run_wp option update siteurl http://wordpress >/dev/null
+  run_wp cache flush >/dev/null
 
-if [[ "$RUN_CART" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
-  docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+  if [[ "$RUN_BROWSER" -eq 1 ]]; then
+    echo "==> browser gates (container)"
+    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs; do
+      docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+    done
+  fi
+
+  if [[ "$RUN_PDP" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
+    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+  fi
+
+  if [[ "$RUN_CART" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
+    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+  fi
+
+  restore_urls
+  trap - EXIT
 fi
 
 echo "run-gates: all PHP gates passed"

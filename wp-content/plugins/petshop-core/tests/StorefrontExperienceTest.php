@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Petshop\Core\StorefrontExperience;
+use Petshop\Core\Migration\HomeMigrator;
+use Petshop\Core\Settings\DefaultSettings;
+use Petshop\Core\Storefront\CatalogFilter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -43,6 +46,7 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame(
             [
                 ['taxonomy' => 'visibility'],
+                'relation' => 'AND',
                 [
                     'taxonomy' => 'product_cat',
                     'field' => 'slug',
@@ -90,5 +94,30 @@ final class StorefrontExperienceTest extends TestCase
         StorefrontExperience::resolveExactSkuSearch($query);
 
         self::assertSame(42, $query->get('_petshop_exact_sku_product_id'));
+    }
+
+    public function testHomeMigratorExposesTheCanonicalSchemaRegistry(): void
+    {
+        self::assertSame(24, HomeMigrator::currentSchema());
+        self::assertSame(range(7, 24), array_keys(HomeMigrator::registry()));
+        self::assertNotContains(false, array_map('is_callable', HomeMigrator::registry()));
+        $showcase = '[petshop_product_showcase title="Sentinela"]';
+        self::assertSame($showcase, HomeMigrator::registry()[17]($showcase, '', '', 0));
+    }
+
+    public function testCustomizerDefaultsHaveASinglePluginOwnedSource(): void
+    {
+        self::assertSame('Atendimento', DefaultSettings::get('petshop_support_label'));
+        self::assertSame('Antes de adicionar ao carrinho', DefaultSettings::get('petshop_product_assurance_title'));
+    }
+
+    public function testCatalogFilterDoesNotUseAStaticLayoutFlag(): void
+    {
+        self::assertFalse((new ReflectionClass(CatalogFilter::class))->hasProperty('catalogLayoutOpen'));
+    }
+
+    public function testReviewsSectionDelegatesToTheExtractedShortcodeRenderer(): void
+    {
+        self::assertSame('', StorefrontExperience::renderReviewsSection(['limit' => 2]));
     }
 }

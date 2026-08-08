@@ -1,6 +1,6 @@
 # Plano 007 — Refatoração arquitetural do petshop-core
 
-**Status:** Pendente  
+**Status:** Concluído
 **Data:** 2026-07-31  
 **Dependências:** [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md); recomendado após baseline do [008-suite-de-testes-automatizados.md](./008-suite-de-testes-automatizados.md) Etapa 1  
 **Branch:** `007-refatoracao-petshop-core`  
@@ -108,15 +108,15 @@ Reduzir acoplamento e risco de regressão em `petshop-core`, dividindo responsab
 
 ## 7. Critérios de aceite
 
-- [ ] Nenhuma classe PHP do plugin > 400 linhas (meta; exceção documentada se inevitável)
-- [ ] PSR-4 autoload em produção
-- [ ] HomeMigrator com registry único de schemas
-- [ ] CatalogFilter sem static layout flag frágil
-- [ ] Customizer ownership unificado
-- [ ] Activation hook + `wp petshop migrate` documentados
-- [ ] uninstall.php ou doc de cleanup de options
-- [ ] Todos validators 004b/005 e persistence tests passando
-- [ ] `Plans/STATUS.md` atualizado ao concluir
+- [x] Nenhuma classe PHP do plugin > 400 linhas (meta; exceção documentada se inevitável)
+- [x] PSR-4 autoload em produção
+- [x] HomeMigrator com registry único de schemas
+- [x] CatalogFilter sem static layout flag frágil
+- [x] Customizer ownership unificado
+- [x] Activation hook + `wp petshop migrate` documentados
+- [x] uninstall.php ou doc de cleanup de options
+- [x] Todos validators 004b/005 e persistence tests passando
+- [x] `Plans/STATUS.md` atualizado ao concluir
 
 ## 8. Validação
 
@@ -128,3 +128,34 @@ Executar sequência completa do Plano 006 `run-gates` + persistence scripts + br
 - diff de linhas por arquivo;
 - logs de validators;
 - nota de breaking changes (esperado: nenhum para usuário final).
+
+## 10. Execução e evidências — 2026-08-08
+
+### Arquitetura antes/depois
+
+- Antes: `class-storefront-experience.php` concentrava 3.315 linhas e responsabilidades de migração, provisionamento, catálogo, shortcodes, SEO e administração.
+- Depois: a fachada compatível tem 133 linhas; os domínios foram distribuídos entre `Migration\HomeMigrator`, `Provisioning\StorefrontProvisioner`, `Storefront\CatalogFilter`, shortcodes/views, `Admin\Customizer`, `Admin\CategoryTermMeta`, `Settings\DefaultSettings`, `Lifecycle`, `Plugin` e `Cli\MigrateCommand`.
+- Nenhuma classe PHP resultante ultrapassa 400 linhas. Traits de implementação foram usados para manter os módulos legados extensos separados sem ampliar a API pública.
+- O mapa completo de ownership e o inventário de conteúdo administrável estão em [`docs/arquitetura-petshop-core.md`](../docs/arquitetura-petshop-core.md).
+
+### Diff e compatibilidade
+
+- `class-storefront-experience.php`: 3.315 → 133 linhas (redução aproximada de 96%).
+- Bootstrap: autoload Composer substituiu os `require_once` manuais; bridges PSR-4 mantêm os nomes públicos legados.
+- Customizer: 145 linhas de registro/defaults foram removidas do tema e centralizadas no plugin.
+- Breaking changes para usuário final: **nenhum**. Conteúdo Gutenberg, mídia, menus e `theme_mods` continuam administráveis e são preservados em reprovisionamento/uninstall.
+- Correções comportamentais deliberadas: filtro de catálogo aplicado também em taxonomias, `tax_query` com relação `AND`, canonicalização sanitizada, persistência integral/monotônica de schemas e menu gerenciado tolerante a itens extras do cliente.
+
+### Validação final
+
+- `npm run validate -- --browser`: aprovado; validators PHP 004b/005, persistência, Home, catálogo (1440/1024/390), PDP e carrinho.
+- `npm test`: **12 testes, 17 assertions**, aprovado em PHP 8.3.32.
+- `composer validate --strict`: aprovado.
+- lint PHP do plugin e tema: aprovado.
+- `wp petshop migrate`: aprovado.
+- ativação/desativação do plugin: aprovadas sem fatal; URLs públicas restauradas após os gates browser.
+- revisão técnica dedicada: dois ciclos; todos os P0/P1 corrigidos e nenhum achado bloqueante remanescente.
+
+### Nota operacional
+
+Os gates browser alteram `home`/`siteurl` apenas durante execução local e serial para resolver o WordPress pela rede interna do Compose. O runner recusa instalações não-loopback, restaura as URLs em `finally`/`trap` e recupera automaticamente uma execução local interrompida na chamada seguinte.

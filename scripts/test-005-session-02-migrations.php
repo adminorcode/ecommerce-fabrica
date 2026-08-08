@@ -5,6 +5,7 @@ if (!defined('WP_CLI') || !WP_CLI) throw new RuntimeException('Execute este test
 
 $class = new ReflectionClass(Petshop\Core\StorefrontExperience::class);
 $targetVersion = (string) $class->getReflectionConstant('VERSION')->getValue();
+$targetSchema = Petshop\Core\Migration\HomeMigrator::currentSchema();
 $invoke = static function (string $method, mixed ...$args) use ($class): mixed {
     return $class->getMethod($method)->invoke(null, ...$args);
 };
@@ -45,7 +46,7 @@ $run = static function (
     int $schema,
     string $hash,
     callable $assert
-) use ($homeId, $targetVersion, &$failures): void {
+) use ($homeId, $targetVersion, $targetSchema, &$failures): void {
     wp_update_post(['ID' => $homeId, 'post_content' => $content]);
     update_post_meta($homeId, '_petshop_managed_page', 1);
     update_post_meta($homeId, '_petshop_home_schema_version', $schema);
@@ -56,10 +57,19 @@ $run = static function (
     Petshop\Core\StorefrontExperience::maybeEnsureStorefront();
     $after = (string) get_post_field('post_content', $homeId);
     $common = get_option('petshop_storefront_version') === $targetVersion
-        && (int) get_post_meta($homeId, '_petshop_home_schema_version', true) === 9
+        && (int) get_post_meta($homeId, '_petshop_home_schema_version', true) === $targetSchema
         && get_option('petshop_storefront_migration_error', '') === '';
     if (!$common || !$assert($after, (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true))) {
-        $failures[] = $name;
+        $migrationError = (string) get_option('petshop_storefront_migration_error', '');
+        $diagnostic = sprintf(
+            '%s [schema=%d hash=%s custom_hero=%d custom_benefit=%d]',
+            $name,
+            (int) get_post_meta($homeId, '_petshop_home_schema_version', true),
+            (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true),
+            str_contains($after, 'Hero customizado sentinela') ? 1 : 0,
+            str_contains($after, 'Beneficio customizado sentinela') ? 1 : 0
+        );
+        $failures[] = $migrationError === '' ? $diagnostic : $diagnostic . ' (' . $migrationError . ')';
     }
 };
 
@@ -69,7 +79,7 @@ try {
     delete_post_meta($homeId, '_petshop_managed_hero_hash');
     $invoke('stampNewManagedHome', $homeId, $shopUrl, $heroId);
     if (
-        (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== 9
+        (int) get_post_meta($homeId, '_petshop_home_schema_version', true) !== $targetSchema
         || (string) get_post_meta($homeId, '_petshop_managed_hero_hash', true) !== hash('sha256', $newHero)
     ) {
         $failures[] = 'fresh';
@@ -79,7 +89,7 @@ try {
         str_contains($after, 'Acessórios que valorizam cada banho e tosa')
         && str_contains($after, 'Pronta entrega')
         && str_contains($after, 'Condições para volume')
-        && str_contains($after, 'Envio para todo o Brasil')
+        && str_contains($after, 'Frete para todo o Brasil')
         && substr_count($after, '"className":"petshop-benefits"') === 1
         && $hash === hash('sha256', $newHero);
     $run('legacy', $legacyHero . $tail, 6, '', $managedAssert);
@@ -121,6 +131,14 @@ try {
         7,
         '',
         static fn (string $after, string $hash): bool => str_contains($after, 'Beneficio customizado sentinela')
+            && $hash === hash('sha256', $newHero)
+    );
+    $run(
+        'current-schema-repair',
+        $newHero . "\n" . $benefits,
+        $targetSchema,
+        hash('sha256', $newHero),
+        static fn (string $after, string $hash): bool => $after !== ''
             && $hash === hash('sha256', $newHero)
     );
 } finally {

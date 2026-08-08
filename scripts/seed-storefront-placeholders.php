@@ -79,6 +79,15 @@ foreach ($manifest['products'] as $record) {
 
     $existingId = wc_get_product_id_by_sku((string) $record['sku']);
     if ($existingId > 0) {
+        $existingProduct = wc_get_product($existingId);
+        if (
+            $existingProduct instanceof WC_Product
+            && (bool) get_post_meta($existingId, '_petshop_placeholder_004b', true)
+            && $existingProduct->get_catalog_visibility() !== 'visible'
+        ) {
+            $existingProduct->set_catalog_visibility('visible');
+            $existingProduct->save();
+        }
         ++$preserved;
         continue;
     }

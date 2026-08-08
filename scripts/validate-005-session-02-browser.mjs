@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { canonicalHostHeader, contrast, createEvidenceDirectory, launchBrowser, withBaseUrl } from './lib/browser-helpers.mjs';
+import { canonicalHostHeader, contrast, createEvidenceDirectory, launchBrowser, routeCanonicalNavigation, withBaseUrl } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('005/session-02');
@@ -15,6 +15,7 @@ try {
     { name: 'mobile-390', width: 390, height: 844 },
   ]) {
     const page = await browser.newPage({ viewport });
+    await routeCanonicalNavigation(page, baseUrl);
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const response = await page.goto(baseUrl, { waitUntil: 'networkidle', timeout: 20000 });
@@ -77,7 +78,7 @@ try {
     if (viewport.name === 'desktop-1440') {
       for (const url of ctaUrls) {
         const destination = await page.request.get(withBaseUrl(url, baseUrl), {
-          headers: canonicalHostHeader(url),
+          headers: canonicalHostHeader(url, baseUrl),
           timeout: 10000,
         });
         if (destination.status() !== 200) failures.push(`CTA respondeu HTTP ${destination.status()}: ${url}`);
@@ -103,7 +104,7 @@ try {
         }
       }
       if (reached.size !== 2) failures.push('CTAs nao foram alcancados por Tab');
-      const seasonalText = (await page.locator('.petshop-seasonal').innerText()).trim();
+      const seasonalText = (await page.locator('.petshop-seasonal-section').innerText()).trim();
       if (!/dia dos pais/i.test(seasonalText)) failures.push('campanha Dia dos Pais nao aparece como conteudo secundario');
     }
     if (viewport.name === 'desktop-1440' || viewport.name === 'mobile-390') {

@@ -8,6 +8,8 @@ defined('ABSPATH') || exit;
 
 final class StorefrontWishlist
 {
+    use WishlistStorage;
+
     public const ENDPOINT = 'lista-de-desejos';
     public const PAGE_SLUG = 'lista-de-desejos';
     private const META_KEY = 'petshop_wishlist_product_ids';
@@ -313,120 +315,5 @@ final class StorefrontWishlist
     private static function heartIconSvg(): string
     {
         return '<svg class="petshop-wishlist-toggle__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20.25s-7.5-4.35-9.75-8.1C.75 9.15 2.1 5.4 5.7 4.5c2.1-.525 4.05.45 5.55 2.1 1.5-1.65 3.45-2.625 5.55-2.1 3.6.9 4.95 4.65 3.45 7.65C19.5 15.9 12 20.25 12 20.25z" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>';
-    }
-
-    /**
-     * @return list<int>
-     */
-    private static function getStoredIds(): array
-    {
-        if (!is_user_logged_in()) {
-            return [];
-        }
-
-        return self::getStoredIdsForUser(get_current_user_id());
-    }
-
-    /**
-     * @return list<int>
-     */
-    private static function getStoredIdsForUser(int $userId): array
-    {
-        $raw = get_user_meta($userId, self::META_KEY, true);
-        if (!is_array($raw)) {
-            return [];
-        }
-
-        return self::sanitizeProductIds(array_map('absint', $raw));
-    }
-
-    /**
-     * @param list<int> $ids
-     */
-    private static function persistIds(array $ids): void
-    {
-        if (!is_user_logged_in()) {
-            return;
-        }
-
-        update_user_meta(get_current_user_id(), self::META_KEY, self::sanitizeProductIds($ids));
-    }
-
-    /**
-     * @param list<int> $ids
-     * @return list<int>
-     */
-    private static function sanitizeProductIds(array $ids): array
-    {
-        $unique = [];
-
-        foreach ($ids as $id) {
-            $productId = absint($id);
-            if ($productId <= 0 || isset($unique[$productId]) || !self::isValidProduct($productId)) {
-                continue;
-            }
-
-            $unique[$productId] = $productId;
-        }
-
-        return array_values($unique);
-    }
-
-    private static function isValidProduct(int $productId): bool
-    {
-        $product = wc_get_product($productId);
-
-        return $product instanceof \WC_Product && $product->is_visible();
-    }
-
-    /**
-     * @return list<int>
-     */
-    private static function parseIdsFromRequest(bool $readPost = true): array
-    {
-        if (!$readPost) {
-            return [];
-        }
-
-        $raw = $_POST['productIds'] ?? $_POST['ids'] ?? [];
-        if (is_string($raw)) {
-            $raw = explode(',', $raw);
-        }
-
-        if (!is_array($raw)) {
-            return [];
-        }
-
-        return array_map('absint', $raw);
-    }
-
-    private static function shouldEnqueue(): bool
-    {
-        if (!function_exists('is_woocommerce')) {
-            return false;
-        }
-
-        if (is_shop() || is_product_category() || is_product_tag() || is_search() || is_front_page()) {
-            return true;
-        }
-
-        $pageId = (int) get_theme_mod('petshop_wishlist_page', 0);
-        if ($pageId > 0 && is_page($pageId)) {
-            return true;
-        }
-
-        $page = get_page_by_path(self::PAGE_SLUG);
-
-        if ($page instanceof \WP_Post && is_page((int) $page->ID)) {
-            return true;
-        }
-
-        if (function_exists('is_account_page') && is_account_page()) {
-            if (function_exists('is_wc_endpoint_url') && is_wc_endpoint_url(self::ENDPOINT)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

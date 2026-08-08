@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('005/catalog-layout');
@@ -15,6 +15,7 @@ try {
     { name: 'mobile-390', width: 390, height: 844 },
   ]) {
     const page = await browser.newPage({ viewport });
+    await routeCanonicalNavigation(page, baseUrl);
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const response = await page.goto(`${baseUrl}/product-category/conjuntos/`, { waitUntil: 'networkidle', timeout: 20000 });
@@ -64,7 +65,11 @@ try {
   }
 
   const behaviorPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await routeCanonicalNavigation(behaviorPage, baseUrl);
   await behaviorPage.goto(`${baseUrl}/product-category/conjuntos/`, { waitUntil: 'networkidle', timeout: 20000 });
+  await behaviorPage.locator('.petshop-catalog-filter').evaluate((form, target) => {
+    form.action = new URL('/shop/', target).href;
+  }, baseUrl);
   const categorySearch = behaviorPage.locator('#petshop-category-search');
   await categorySearch.fill('gráva');
   const visibleOptions = await behaviorPage.locator('#petshop-category-options > li:visible .petshop-catalog-filter__name').allTextContents();
@@ -93,9 +98,14 @@ try {
   const gravataCategories = await behaviorPage.locator('li.product .meta-categories').allTextContents();
   if (!gravataCategories.length || gravataCategories.some((text) => !/Gravatas/i.test(text))) failures.push('query simples: resultado fora de Gravatas');
   const gravataUrl = behaviorPage.url();
-  const canonicalResponse = await behaviorPage.goto(`${baseUrl}/product-category/gravatas/?petshop_categories=conjuntos`, { waitUntil: 'networkidle', timeout: 20000 });
-  const canonicalUrl = new URL(behaviorPage.url());
-  if (canonicalResponse?.status() !== 200 || canonicalUrl.pathname !== '/shop/' || canonicalUrl.searchParams.get('petshop_categories') !== 'conjuntos') failures.push('query em arquivo de taxonomia nao foi canonicalizada para a loja');
+  const canonicalResponse = await behaviorPage.request.get(`${baseUrl}/product-category/gravatas/?petshop_categories=conjuntos`, {
+    headers: { Host: new URL(baseUrl).host },
+    maxRedirects: 0,
+    timeout: 20000,
+  });
+  const canonicalLocation = canonicalResponse.headers().location || '';
+  const canonicalUrl = new URL(canonicalLocation, baseUrl);
+  if (canonicalResponse.status() !== 302 || canonicalUrl.pathname !== '/shop/' || canonicalUrl.searchParams.get('petshop_categories') !== 'conjuntos') failures.push('query em arquivo de taxonomia nao foi canonicalizada para a loja');
   results.push({
     behavior: 'catalog-filter',
     textSearch: visibleOptions.map((value) => value.trim()),

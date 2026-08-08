@@ -128,7 +128,7 @@ try {
     update_option('petshop_storefront_version', 'precondition-test', false);
     Petshop\Core\StorefrontExperience::maybeEnsureStorefront();
     $preconditionPassed = get_option('petshop_storefront_version') === 'precondition-test'
-        && str_contains((string) get_option('petshop_storefront_migration_error', ''), 'hero-wide');
+        && get_option('petshop_storefront_migration_error', '') === 'PETSHOP_HERO_ATTACHMENT_MISSING';
 } finally {
     update_post_meta($heroId, '_petshop_placeholder_key', 'hero-wide');
     update_option('petshop_storefront_version', $originalVersion, false);

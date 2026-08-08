@@ -90,6 +90,28 @@ function sanitize_title(string $value): string
     return trim($value, '-');
 }
 
+function absint(mixed $value): int
+{
+    return abs((int) $value);
+}
+
+function __(string $text, string $domain = 'default'): string
+{
+    return $text;
+}
+
+/** @param array<string, mixed> $pairs @param array<string, mixed> $attributes */
+function shortcode_atts(array $pairs, array $attributes): array
+{
+    return array_merge($pairs, array_intersect_key($attributes, $pairs));
+}
+
+/** @return array<int, object> */
+function get_comments(array $arguments = []): array
+{
+    return [];
+}
+
 function wc_get_product_id_by_sku(string $sku): int
 {
     return (int) ($GLOBALS['petshop_test_skus'][$sku] ?? 0);
@@ -104,4 +126,4 @@ $GLOBALS['wpdb'] = new PetshopTestWpdb();
 $GLOBALS['petshop_test_skus'] = [];
 $GLOBALS['petshop_test_products'] = [];
 
-require_once __DIR__ . '/../includes/class-storefront-experience.php';
+require_once __DIR__ . '/../vendor/autoload.php';

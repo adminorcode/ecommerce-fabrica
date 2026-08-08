@@ -45,147 +45,6 @@ add_action(
     }
 );
 
-add_action(
-    'customize_register',
-    static function (\WP_Customize_Manager $customizer): void {
-        $customizer->add_section('petshop_store_content', [
-            'title' => __('Conteúdo da loja', 'petshop-theme'),
-            'priority' => 35,
-            'description' => __('Textos globais exibidos em mais de uma rota da loja.', 'petshop-theme'),
-        ]);
-
-        $settings = [
-            'petshop_benefit_text' => [
-                'label' => __('Mensagem da barra superior', 'petshop-theme'),
-                'default' => 'Acabamento cuidadoso para tutores e profissionais',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_benefit_url' => [
-                'label' => __('Link da barra superior', 'petshop-theme'),
-                'default' => '',
-                'type' => 'url',
-                'sanitize' => 'esc_url_raw',
-            ],
-            'petshop_support_label' => [
-                'label' => __('Rótulo do atendimento no cabeçalho', 'petshop-theme'),
-                'default' => 'Atendimento',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_support_page' => [
-                'label' => __('Página de atendimento do cabeçalho', 'petshop-theme'),
-                'default' => 0,
-                'type' => 'dropdown-pages',
-                'sanitize' => 'absint',
-            ],
-            'petshop_account_label' => [
-                'label' => __('Rótulo da conta no cabeçalho', 'petshop-theme'),
-                'default' => 'Minha conta',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_wishlist_label' => [
-                'label' => __('Rótulo da lista de desejos no cabeçalho', 'petshop-theme'),
-                'default' => 'Lista de desejos',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_wishlist_page' => [
-                'label' => __('Página da lista de desejos', 'petshop-theme'),
-                'default' => 0,
-                'type' => 'dropdown-pages',
-                'sanitize' => 'absint',
-            ],
-            'petshop_featured_section_title' => [
-                'label' => __('Título da seção de destaques (sem vendas reais)', 'petshop-theme'),
-                'default' => 'Destaques da loja',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_product_assurance_title' => [
-                'label' => __('Título do aviso de produto', 'petshop-theme'),
-                'default' => 'Antes de adicionar ao carrinho',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_product_assurance_text' => [
-                'label' => __('Texto do aviso de produto', 'petshop-theme'),
-                'default' => 'Confira o conteúdo do pacote, material, aplicação e cuidados descritos nesta página.',
-                'type' => 'textarea',
-                'sanitize' => 'sanitize_textarea_field',
-            ],
-            'petshop_shop_description' => [
-                'label' => __('Descrição resumida da loja para buscadores', 'petshop-theme'),
-                'default' => 'Acessórios pet com acabamento cuidadoso para tutores e profissionais.',
-                'type' => 'textarea',
-                'sanitize' => 'sanitize_textarea_field',
-            ],
-            'petshop_footer_description' => [
-                'label' => __('Descrição curta no rodapé', 'petshop-theme'),
-                'default' => '',
-                'type' => 'textarea',
-                'sanitize' => 'sanitize_textarea_field',
-            ],
-            'petshop_footer_whatsapp' => [
-                'label' => __('URL do WhatsApp', 'petshop-theme'),
-                'default' => '',
-                'type' => 'url',
-                'sanitize' => 'esc_url_raw',
-            ],
-            'petshop_footer_hours' => [
-                'label' => __('Horário de atendimento', 'petshop-theme'),
-                'default' => '',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_footer_cnpj' => [
-                'label' => __('CNPJ', 'petshop-theme'),
-                'default' => '',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-            'petshop_footer_address' => [
-                'label' => __('Endereço', 'petshop-theme'),
-                'default' => '',
-                'type' => 'textarea',
-                'sanitize' => 'sanitize_textarea_field',
-            ],
-            'petshop_footer_instagram' => [
-                'label' => __('URL do Instagram', 'petshop-theme'),
-                'default' => '',
-                'type' => 'url',
-                'sanitize' => 'esc_url_raw',
-            ],
-            'petshop_footer_facebook' => [
-                'label' => __('URL do Facebook', 'petshop-theme'),
-                'default' => '',
-                'type' => 'url',
-                'sanitize' => 'esc_url_raw',
-            ],
-            'petshop_footer_payment_text' => [
-                'label' => __('Formas de pagamento (texto)', 'petshop-theme'),
-                'default' => '',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
-            ],
-        ];
-
-        foreach ($settings as $id => $config) {
-            $customizer->add_setting($id, [
-                'default' => $config['default'],
-                'sanitize_callback' => $config['sanitize'],
-                'transport' => 'refresh',
-            ]);
-            $customizer->add_control($id, [
-                'section' => 'petshop_store_content',
-                'label' => $config['label'],
-                'type' => $config['type'],
-            ]);
-        }
-    }
-);
-
 add_filter(
     'get_product_search_form',
     static function (string $form): string {
@@ -246,9 +105,12 @@ add_action(
 add_action(
     'wp_body_open',
     static function (): void {
+        $petshopDefault = static fn (string $id): mixed => class_exists(\Petshop\Core\Settings\DefaultSettings::class)
+            ? \Petshop\Core\Settings\DefaultSettings::get($id)
+            : null;
         $benefitText = (string) get_theme_mod(
             'petshop_benefit_text',
-            'Acabamento cuidadoso para tutores e profissionais'
+            $petshopDefault('petshop_benefit_text')
         );
         $benefitUrl = (string) get_theme_mod('petshop_benefit_url', '');
         $supportPageId = (int) get_theme_mod('petshop_support_page', 0);
@@ -256,12 +118,12 @@ add_action(
         $supportUrl = $supportPage instanceof \WP_Post && $supportPage->post_status === 'publish'
             ? (string) get_permalink($supportPage)
             : '';
-        $supportLabel = trim((string) get_theme_mod('petshop_support_label', 'Atendimento'));
-        $wishlistLabel = trim((string) get_theme_mod('petshop_wishlist_label', 'Lista de desejos'));
+        $supportLabel = trim((string) get_theme_mod('petshop_support_label', $petshopDefault('petshop_support_label')));
+        $wishlistLabel = trim((string) get_theme_mod('petshop_wishlist_label', $petshopDefault('petshop_wishlist_label')));
         $wishlistUrl = class_exists(\Petshop\Core\StorefrontWishlist::class)
             ? \Petshop\Core\StorefrontWishlist::getPageUrl()
             : '';
-        $accountLabel = trim((string) get_theme_mod('petshop_account_label', 'Minha conta'));
+        $accountLabel = trim((string) get_theme_mod('petshop_account_label', $petshopDefault('petshop_account_label')));
         $accountUrl = class_exists('WooCommerce')
             ? (string) wc_get_page_permalink('myaccount')
             : wp_login_url();

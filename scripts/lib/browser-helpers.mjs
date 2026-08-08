@@ -36,8 +36,8 @@ export const withBaseUrl = (url, baseUrl) => {
   return `${base.origin}${destination.pathname}${destination.search}${destination.hash}`;
 };
 
-export const canonicalHostHeader = (url) => ({
-  Host: new URL(url).host,
+export const canonicalHostHeader = (url, baseUrl = url) => ({
+  Host: new URL(baseUrl).host,
 });
 
 export const routeCanonicalNavigation = async (page, baseUrl) => {
@@ -48,6 +48,7 @@ export const routeCanonicalNavigation = async (page, baseUrl) => {
     const request = route.request();
     const url = new URL(request.url());
     const isCanonicalLocalUrl = url.hostname === 'localhost' && url.port === '8888';
+    const isBaseHostWithCanonicalPort = url.hostname === base.hostname && url.origin !== base.origin;
 
     if (url.origin === base.origin) {
       await route.continue({
@@ -56,7 +57,7 @@ export const routeCanonicalNavigation = async (page, baseUrl) => {
       return;
     }
 
-    if (!isCanonicalLocalUrl) {
+    if (!isCanonicalLocalUrl && !isBaseHostWithCanonicalPort) {
       await route.continue();
       return;
     }

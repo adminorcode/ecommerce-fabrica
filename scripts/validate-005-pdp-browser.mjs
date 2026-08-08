@@ -1,4 +1,4 @@
-import { createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('005/pdp');
@@ -7,6 +7,7 @@ const failures = [];
 
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await routeCanonicalNavigation(page, baseUrl);
   const response = await page.goto(`${baseUrl}/product/conjunto-babador-laco-em-feltro/`, {
     waitUntil: 'domcontentloaded',
     timeout: 20000,
