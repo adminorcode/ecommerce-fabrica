@@ -72,6 +72,12 @@ final class DefaultSettings
                 'type' => 'textarea',
                 'sanitize' => 'sanitize_textarea_field',
             ],
+            'petshop_order_next_steps' => [
+                'label' => __('Próximos passos após a compra', 'petshop-core'),
+                'default' => 'Você receberá as atualizações do pedido pelos canais informados na compra.',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+            ],
             'petshop_shop_description' => [
                 'label' => __('Descrição resumida da loja para buscadores', 'petshop-core'),
                 'default' => 'Acessórios pet com acabamento cuidadoso para tutores e profissionais.',

@@ -430,3 +430,5 @@ Cada sessão deve registrar:
 - limitações reais ou dependências transferidas.
 
 O Plano 005 só poderá mudar para **Concluído** quando as nove sessões estiverem aprovadas e nenhuma área comercial final depender de imagem genérica ou conteúdo editável fixo em código.
+
+**Evolução pelo Plano 013 (2026-08-08):** busca por nome/SKU, filtros completos, produto simples/variável, frete local de teste e fluxo Cart/Checkout receberam gates próprios. A amostra administrável não substitui as fotografias reais obrigatórias nem altera o status abandonado deste plano.

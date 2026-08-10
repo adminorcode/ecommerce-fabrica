@@ -65,6 +65,8 @@ if [[ "$SKIP_PROVISION" -eq 0 ]]; then
   run_eval_file seed-storefront-placeholders.php
   echo "==> provisionando storefront"
   run_wp eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
+  echo "==> fixtures administraveis do Plano 013"
+  run_eval_file seed-013-catalog-samples.php
 fi
 
 run_eval_file validate-storefront.php
@@ -73,6 +75,9 @@ run_eval_file validate-005-session-02.php
 run_eval_file test-004b-persistence.php
 run_eval_file test-005-session-01-persistence.php
 run_eval_file test-005-session-02-persistence.php
+run_eval_file test-013-persistence.php
+run_eval_file validate-013-hpos.php
+run_eval_file validate-013-security.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then
   run_eval_file validate-004b.php
@@ -112,7 +117,7 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
   if [[ "$RUN_BROWSER" -eq 1 ]]; then
     echo "==> browser gates (container)"
-    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs; do
+    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs; do
       docker compose --profile tools run --rm node node "/workspace/scripts/$script"
     done
   fi

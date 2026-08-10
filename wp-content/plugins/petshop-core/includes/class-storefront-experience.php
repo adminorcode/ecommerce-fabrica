@@ -10,7 +10,7 @@ final class StorefrontExperience
 {
     use \Petshop\Core\Compatibility\StorefrontLegacyApi;
 
-    private const VERSION = '2.4.1';
+    private const VERSION = '3.1.0';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -27,7 +27,7 @@ final class StorefrontExperience
         add_action('edited_product_cat', [self::class, 'saveCategoryFields']);
         add_filter('wp_nav_menu_objects', [self::class, 'filterSeasonalMenuItems']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueCatalogFilterAssets']);
-        add_action('template_redirect', [self::class, 'canonicalizeCatalogCategoryFilter']);
+        add_action('template_redirect', [self::class, 'canonicalizeCatalogCategoryFilter'], 0);
         add_action('woocommerce_before_shop_loop', [self::class, 'renderCatalogFilter'], 15);
         add_action('woocommerce_before_shop_loop', [self::class, 'closeCatalogToolbar'], 40);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductAssurance'], 25);

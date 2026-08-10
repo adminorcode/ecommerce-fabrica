@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontProvisioner
 {
-    private const VERSION = '2.4.1';
+    private const VERSION = '3.1.0';
     private const OPTION = 'petshop_storefront_version';
     private const COMMERCIAL_MENU_OPTION = 'petshop_commercial_menu_version';
 
@@ -32,6 +32,8 @@ final class StorefrontProvisioner
         }
 
         $isInitialInstall = get_option(self::OPTION, false) === false;
+        \Petshop\Core\WooCommerce\Routes::migratePages();
+        \Petshop\Core\WooCommerce\CartCheckout::migrate();
         $aboutId = self::ensurePage(
             'sobre-o-autelie',
             'Sobre o Auteliê',

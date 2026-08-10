@@ -137,6 +137,8 @@ bash scripts/run-gates.sh --skip-provision
 
 Manual: NVDA/VoiceOver no roteiro 004 (pendente).
 
+**Evolução pelo Plano 013 (2026-08-08):** Cart/Checkout Blocks foram preservados e revalidados em 390/1440 px com sessão real da Store API, CTAs com contraste AA e rotas localizadas. O link de salto duplicado do child theme foi removido porque o Blocksy já fornece o único skip link. A pendência humana NVDA/VoiceOver continua aberta.
+
 ## 9. Evidências obrigatórias
 
 - screenshots before/after 390 e 1440 (header, cart, checkout);

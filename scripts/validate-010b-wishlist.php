@@ -46,12 +46,28 @@ if (!isset($menuItems[$endpoint])) {
     $failures[] = 'Item Lista de desejos ausente no menu Minha conta';
 }
 
+$pageUrl = \Petshop\Core\StorefrontWishlist::getPageUrl();
+$accountMenuUrl = \Petshop\Core\StorefrontWishlist::getAccountEndpointUrl();
+if (untrailingslashit($accountMenuUrl) !== untrailingslashit($pageUrl)) {
+    $failures[] = 'Menu Minha conta e header apontam para listas de desejos diferentes';
+}
+if (!str_contains($accountMenuUrl, '/minha-conta/' . $endpoint)) {
+    $failures[] = 'Lista de desejos canonica nao esta dentro de Minha conta';
+}
+
 $emptyHtml = do_shortcode('[petshop_wishlist]');
 if (!str_contains($emptyHtml, 'petshop-wishlist-page')) {
     $failures[] = 'Shortcode nao renderiza container petshop-wishlist-page';
 }
 if (!str_contains($emptyHtml, 'petshop-wishlist-page__empty')) {
     $failures[] = 'Shortcode nao renderiza estado vazio';
+}
+
+ob_start();
+\Petshop\Core\StorefrontWishlist::renderAccountEndpoint();
+$accountHtml = (string) ob_get_clean();
+if (!str_contains($accountHtml, 'petshop-wishlist-page')) {
+    $failures[] = 'Endpoint Minha conta nao renderiza o conteudo administravel da wishlist';
 }
 
 if ($page instanceof \WP_Post && $page->post_status !== 'publish') {
@@ -77,4 +93,4 @@ if ($failures !== []) {
     WP_CLI::error('Validacao do Plano 010b reprovada.');
 }
 
-WP_CLI::success('Wishlist (Plano 010b): pagina, endpoint, shortcode e theme mods aprovados.');
+WP_CLI::success('Wishlist (Plano 010b): pagina canonica, menu da conta, shortcode e theme mods aprovados.');
