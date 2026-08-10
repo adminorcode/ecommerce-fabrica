@@ -13,6 +13,9 @@ if (-not (Test-Path '.env')) {
     Write-Error 'Arquivo .env ausente. Copie .env.example para .env.'
 }
 
+node scripts/validate-014-docs-and-tokens.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-014-docs-and-tokens falhou' }
+
 function Invoke-WpCli {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
     docker compose --profile tools run --rm --no-deps cli wp @Args
@@ -46,6 +49,7 @@ Invoke-EvalFile 'test-005-session-02-persistence.php'
 Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
+Invoke-EvalFile 'validate-014-identity-campaigns.php'
 Invoke-EvalFile 'validate-016-product-grid.php'
 
 if ($ContentAudit) {

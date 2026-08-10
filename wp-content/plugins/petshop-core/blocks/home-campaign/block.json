@@ -10,6 +10,10 @@
   "description": "Imagem de campanha com link de destino para a Home.",
   "textdomain": "petshop-core",
   "attributes": {
+    "campaignMode": {
+      "type": "string",
+      "default": "artwork"
+    },
     "desktopImageId": {
       "type": "number",
       "default": 0
@@ -35,6 +39,26 @@
       "default": ""
     },
     "editorLabel": {
+      "type": "string",
+      "default": ""
+    },
+    "eyebrow": {
+      "type": "string",
+      "default": ""
+    },
+    "title": {
+      "type": "string",
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "default": ""
+    },
+    "benefit": {
+      "type": "string",
+      "default": ""
+    },
+    "ctaLabel": {
       "type": "string",
       "default": ""
     }

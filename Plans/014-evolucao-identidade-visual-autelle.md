@@ -1,6 +1,6 @@
 # Plano 014 — Evolução da identidade visual AUTellê
 
-**Status:** Pendente
+**Status:** Concluído
 
 **Data:** 2026-08-04
 
@@ -14,6 +14,8 @@
 Evoluir o storefront para uma expressão de marca mais reconhecível, acolhedora e profissional sem perder os ganhos atuais de legibilidade, contraste, responsividade e conteúdo administrável.
 
 O plano introduz uma paleta semântica de verde-petróleo, ajusta tipografia, raios, sombras, footer e estados de componentes, e cria uma variante de campanha com copy editável no Gutenberg. Não recria o catálogo, não altera o tema pai Blocksy nem substitui conteúdo já salvo pelo cliente.
+
+**Ajuste posterior aprovado:** após validação visual, o rodapé voltou ao tom escuro anterior `#373435`; os demais tokens AUTellê permanecem disponíveis e aplicados nas superfícies de campanha/componentes.
 
 ## 2. Decisões de produto e guardrails
 
@@ -86,65 +88,65 @@ As imagens devem ser enviadas pela Biblioteca de mídia em WebP como formato pre
 
 ### Sessão 01 — Baseline e tokens semânticos
 
-- [ ] Registrar screenshots e estilos computados das rotas Home, loja, categoria, PDP, carrinho e checkout em 390, 768, 1024 e 1440 px.
-- [ ] Substituir nomes ambíguos de token por papéis semânticos, mantendo aliases temporários quando isso reduzir regressão.
-- [ ] Definir `teal-900`, `teal-700`, `teal-500`, `aqua-400`, `orange-600`, `orange-500`, `orange-action`, neutros, cream, superfícies, foco, erro, raios e sombras.
-- [ ] Registrar no guia de mídia as dimensões, proporções, áreas seguras, formatos, peso-alvo e ponto focal de hero, campanhas, produto, categoria e fotografia editorial.
-- [ ] Ajustar a renderização dos banners para respeitar a proporção 3:1 sem corte destrutivo; usar `<picture>` e fonte mobile quando cadastrada.
-- [ ] Aplicar `teal-900` no rodapé e superfícies institucionais; manter laranja como exceção de alta prioridade.
-- [ ] Ajustar raios para 10/16/24 px e usar sombra teal suave apenas em cards e campanhas de destaque.
+- [x] Registrar screenshots e estilos computados das rotas Home, loja, categoria, PDP, carrinho e checkout em 390, 768, 1024 e 1440 px.
+- [x] Substituir nomes ambíguos de token por papéis semânticos, mantendo aliases temporários quando isso reduzir regressão.
+- [x] Definir `teal-900`, `teal-700`, `teal-500`, `aqua-400`, `orange-600`, `orange-500`, `orange-action`, neutros, cream, superfícies, foco, erro, raios e sombras.
+- [x] Registrar no guia de mídia as dimensões, proporções, áreas seguras, formatos, peso-alvo e ponto focal de hero, campanhas, produto, categoria e fotografia editorial.
+- [x] Ajustar a renderização dos banners para respeitar a proporção 3:1 sem corte destrutivo; usar `<picture>` e fonte mobile quando cadastrada.
+- [x] Aplicar `teal-900` no rodapé e superfícies institucionais; manter laranja como exceção de alta prioridade.
+- [x] Ajustar raios para 10/16/24 px e usar sombra teal suave apenas em cards e campanhas de destaque.
 
 **Gate verificável**
 
-- [ ] Não há hex de marca solto fora da declaração de tokens e exceções documentadas.
-- [ ] Header, footer, botões, cards, campos, badges e controles usam tokens semânticos.
-- [ ] A proporção visual preserva maioria clara/neutra e laranja abaixo de 10% nas superfícies de interface.
-- [ ] Hero, banners e mídia de produto preservam ponto focal e área segura nas quatro larguras de validação.
-- [ ] A Home não perde overflow, hierarquia ou comportamento responsivo.
+- [x] Não há hex de marca solto fora da declaração de tokens e exceções documentadas.
+- [x] Header, footer, botões, cards, campos, badges e controles usam tokens semânticos.
+- [x] A proporção visual preserva maioria clara/neutra e laranja abaixo de 10% nas superfícies de interface.
+- [x] Hero, banners e mídia de produto preservam ponto focal e área segura nas quatro larguras de validação.
+- [x] A Home não perde overflow, hierarquia ou comportamento responsivo.
 
 ### Sessão 02 — Tipografia e acessibilidade de componentes
 
-- [ ] Carregar Nunito Sans com pesos estritamente necessários e fallback de sistema; medir ausência de bloqueio de renderização.
-- [ ] Aplicar pesos e entrelinhas da hierarquia a H1, títulos de seção, copy, microtexto e botões.
-- [ ] Atualizar estados normal, hover, ativo, disabled e foco de links, botões, inputs, checkbox, controles do carrossel e componentes WooCommerce.
-- [ ] Garantir que ações principais tenham contraste mínimo AA; usar `orange-action`, e não `orange-600`, quando texto branco exigir 4,5:1.
-- [ ] Manter o foco azul funcional até que uma alternativa de marca seja comprovadamente equivalente em contraste e visibilidade.
+- [x] Carregar Nunito Sans com pesos estritamente necessários e fallback de sistema; medir ausência de bloqueio de renderização.
+- [x] Aplicar pesos e entrelinhas da hierarquia a H1, títulos de seção, copy, microtexto e botões.
+- [x] Atualizar estados normal, hover, ativo, disabled e foco de links, botões, inputs, checkbox, controles do carrossel e componentes WooCommerce.
+- [x] Garantir que ações principais tenham contraste mínimo AA; usar `orange-action`, e não `orange-600`, quando texto branco exigir 4,5:1.
+- [x] Manter o foco azul funcional até que uma alternativa de marca seja comprovadamente equivalente em contraste e visibilidade.
 
 **Gate verificável**
 
-- [ ] Texto normal e CTAs passam em 4,5:1; texto grande e componentes não textuais passam nos limiares aplicáveis da WCAG AA.
-- [ ] Nenhuma informação depende exclusivamente de cor.
-- [ ] Fontes, fallbacks, layout e foco permanecem legíveis sem JavaScript e durante o carregamento da fonte.
+- [x] Texto normal e CTAs passam em 4,5:1; texto grande e componentes não textuais passam nos limiares aplicáveis da WCAG AA.
+- [x] Nenhuma informação depende exclusivamente de cor.
+- [x] Fontes, fallbacks, layout e foco permanecem legíveis sem JavaScript e durante o carregamento da fonte.
 
 ### Sessão 03 — Campanhas Gutenberg com copy administrável
 
-- [ ] Manter a modalidade atual “arte final” para banners com texto incorporado, sem alterar seus atributos ou HTML salvo.
-- [ ] Adicionar uma modalidade “campanha editorial” ao `petshop/home-campaign`, com mídia de apoio e campos de copy/CTA visíveis no canvas e editáveis no inspector.
-- [ ] Garantir que imagem, alt, textos, link e rótulo de CTA sejam salvos em `post_content`, não em opções opacas ou strings PHP.
-- [ ] Para markup/atributos alterados, adicionar entrada `deprecated` com `save` da versão anterior e fixtures de conteúdo legado; não alterar o nome do bloco.
-- [ ] Reutilizar `useInnerBlocksProps` apenas se a composição exigir blocos-filho. Caso campos do próprio bloco ofereçam UX mais estável, documentar a decisão e manter preview visual equivalente ao storefront.
-- [ ] Exibir no front somente campanhas completas, com HTML semântico, link/CTA único e alt contextual.
+- [x] Manter a modalidade atual “arte final” para banners com texto incorporado, sem alterar seus atributos ou HTML salvo.
+- [x] Adicionar uma modalidade “campanha editorial” ao `petshop/home-campaign`, com mídia de apoio e campos de copy/CTA visíveis no canvas e editáveis no inspector.
+- [x] Garantir que imagem, alt, textos, link e rótulo de CTA sejam salvos em `post_content`, não em opções opacas ou strings PHP.
+- [x] Para markup/atributos alterados, adicionar entrada `deprecated` com `save` da versão anterior e fixtures de conteúdo legado; não alterar o nome do bloco.
+- [x] Reutilizar `useInnerBlocksProps` apenas se a composição exigir blocos-filho. Caso campos do próprio bloco ofereçam UX mais estável, documentar a decisão e manter preview visual equivalente ao storefront.
+- [x] Exibir no front somente campanhas completas, com HTML semântico, link/CTA único e alt contextual.
 
 **Gate verificável**
 
-- [ ] Uma campanha legada salva/recarrega sem “bloco inválido” e renderiza como antes.
-- [ ] O cliente cria uma campanha editorial em **Páginas → Home** sem shortcode, código ou tela paralela.
-- [ ] Copy, imagem, alt e CTA persistem após salvar, recarregar e reprovisionar.
-- [ ] Desktop e mobile mantêm área segura para copy e não cortam elementos essenciais.
+- [x] Uma campanha legada salva/recarrega sem “bloco inválido” e renderiza como antes.
+- [x] O cliente cria uma campanha editorial em **Páginas → Home** sem shortcode, código ou tela paralela.
+- [x] Copy, imagem, alt e CTA persistem após salvar, recarregar e reprovisionar.
+- [x] Desktop e mobile mantêm área segura para copy e não cortam elementos essenciais.
 
 ### Sessão 04 — Documentação, regressão e aceite
 
-- [ ] Versionar uma cópia do guia oficial em `docs/`, mantendo o arquivo original fornecido pelo cliente intacto fora do repositório.
-- [ ] Atualizar `docs/guia-edicao-home.md` com a escolha entre arte final e campanha editorial, incluindo edição de alt e imagem mobile.
-- [ ] Criar/atualizar gates para tokens, contraste, blocos novos/legados, conteúdo salvo e ausência de sobrescrita editorial.
-- [ ] Executar `npm run validate`, os gates específicos do plano e a matriz manual desktop/mobile.
-- [ ] Verificar logs de PHP/console e atualizar `Plans/STATUS.md` somente após evidência completa.
+- [x] Versionar uma cópia do guia oficial em `docs/`, mantendo o arquivo original fornecido pelo cliente intacto fora do repositório.
+- [x] Atualizar `docs/guia-edicao-home.md` com a escolha entre arte final e campanha editorial, incluindo edição de alt e imagem mobile.
+- [x] Criar/atualizar gates para tokens, contraste, blocos novos/legados, conteúdo salvo e ausência de sobrescrita editorial.
+- [x] Executar `npm run validate`, os gates específicos do plano e a matriz manual desktop/mobile.
+- [x] Verificar logs de PHP/console e atualizar `Plans/STATUS.md` somente após evidência completa.
 
 **Gate verificável**
 
-- [ ] O guia e a documentação de edição descrevem as interfaces finais e a origem de cada conteúdo.
-- [ ] Nenhuma atualização de código sobrescreve alteração editorial do cliente.
-- [ ] Home, loja, categoria, PDP, carrinho e checkout não têm regressão de contraste, foco, overflow ou layout.
+- [x] O guia e a documentação de edição descrevem as interfaces finais e a origem de cada conteúdo.
+- [x] Nenhuma atualização de código sobrescreve alteração editorial do cliente.
+- [x] Home, loja, categoria, PDP, carrinho e checkout não têm regressão de contraste, foco, overflow ou layout.
 
 ## 7. Riscos e mitigação
 

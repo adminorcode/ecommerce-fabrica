@@ -99,6 +99,7 @@ final class HomeCampaignBlocks
     private static function campaignAttributes(): array
     {
         return [
+            'campaignMode' => ['type' => 'string', 'default' => 'artwork'],
             'desktopImageId' => ['type' => 'number', 'default' => 0],
             'desktopImageUrl' => ['type' => 'string', 'default' => ''],
             'mobileImageId' => ['type' => 'number', 'default' => 0],
@@ -106,6 +107,11 @@ final class HomeCampaignBlocks
             'imageAlt' => ['type' => 'string', 'default' => ''],
             'linkUrl' => ['type' => 'string', 'default' => ''],
             'editorLabel' => ['type' => 'string', 'default' => ''],
+            'eyebrow' => ['type' => 'string', 'default' => ''],
+            'title' => ['type' => 'string', 'default' => ''],
+            'text' => ['type' => 'string', 'default' => ''],
+            'benefit' => ['type' => 'string', 'default' => ''],
+            'ctaLabel' => ['type' => 'string', 'default' => ''],
         ];
     }
 
@@ -187,9 +193,17 @@ final class HomeCampaignBlocks
      */
     private static function isValidCampaign(array $attributes): bool
     {
+        $mode = self::campaignMode($attributes);
         $desktopId = (int) ($attributes['desktopImageId'] ?? 0);
         $alt = trim((string) ($attributes['imageAlt'] ?? ''));
         $link = esc_url_raw((string) ($attributes['linkUrl'] ?? ''));
+
+        if ($mode === 'editorial') {
+            $title = trim((string) ($attributes['title'] ?? ''));
+            $ctaLabel = trim((string) ($attributes['ctaLabel'] ?? ''));
+
+            return $desktopId > 0 && $alt !== '' && $title !== '' && $ctaLabel !== '' && $link !== '';
+        }
 
         return $desktopId > 0 && $alt !== '' && $link !== '';
     }
@@ -208,11 +222,25 @@ final class HomeCampaignBlocks
             : '';
 
         return [
+            'mode' => self::campaignMode($attributes),
             'desktopUrl' => $desktopUrl,
             'mobileUrl' => $mobileUrl,
             'alt' => sanitize_text_field((string) ($attributes['imageAlt'] ?? '')),
             'link' => esc_url((string) ($attributes['linkUrl'] ?? '')),
+            'eyebrow' => sanitize_text_field((string) ($attributes['eyebrow'] ?? '')),
+            'title' => sanitize_text_field((string) ($attributes['title'] ?? '')),
+            'text' => sanitize_textarea_field((string) ($attributes['text'] ?? '')),
+            'benefit' => sanitize_text_field((string) ($attributes['benefit'] ?? '')),
+            'ctaLabel' => sanitize_text_field((string) ($attributes['ctaLabel'] ?? '')),
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    private static function campaignMode(array $attributes): string
+    {
+        return ($attributes['campaignMode'] ?? 'artwork') === 'editorial' ? 'editorial' : 'artwork';
     }
 
     private static function resolveImageUrl(int $attachmentId, string $fallbackUrl): string
@@ -243,6 +271,10 @@ final class HomeCampaignBlocks
             return '';
         }
 
+        if (($campaign['mode'] ?? 'artwork') === 'editorial') {
+            return self::renderEditorialSlide($campaign, $hidden, $index);
+        }
+
         $picture = self::renderPicture($desktopUrl, $mobileUrl, $alt, $index > 0);
         $hiddenAttribute = $hidden ? ' hidden' : '';
 
@@ -250,6 +282,46 @@ final class HomeCampaignBlocks
             '<div class="petshop-home-campaigns__slide"%1$s><a class="petshop-home-campaigns__link" href="%2$s">%3$s</a></div>',
             $hiddenAttribute,
             esc_url($link),
+            $picture
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $campaign
+     */
+    private static function renderEditorialSlide(array $campaign, bool $hidden, int $index): string
+    {
+        $desktopUrl = (string) ($campaign['desktopUrl'] ?? '');
+        $mobileUrl = (string) ($campaign['mobileUrl'] ?? '');
+        $alt = (string) ($campaign['alt'] ?? '');
+        $link = (string) ($campaign['link'] ?? '');
+        $title = (string) ($campaign['title'] ?? '');
+        $ctaLabel = (string) ($campaign['ctaLabel'] ?? '');
+
+        if ($desktopUrl === '' || $alt === '' || $link === '' || $title === '' || $ctaLabel === '') {
+            return '';
+        }
+
+        $eyebrow = trim((string) ($campaign['eyebrow'] ?? ''));
+        $text = trim((string) ($campaign['text'] ?? ''));
+        $benefit = trim((string) ($campaign['benefit'] ?? ''));
+        $picture = self::renderPicture($desktopUrl, $mobileUrl, $alt, $index > 0);
+        $hiddenAttribute = $hidden ? ' hidden' : '';
+
+        return sprintf(
+            '<div class="petshop-home-campaigns__slide petshop-home-campaigns__slide--editorial"%1$s>'
+            . '<article class="petshop-home-campaigns__editorial">'
+            . '<div class="petshop-home-campaigns__content">%2$s<h2 class="petshop-home-campaigns__title">%3$s</h2>%4$s%5$s'
+            . '<a class="petshop-home-campaigns__cta" href="%6$s">%7$s</a></div>'
+            . '<figure class="petshop-home-campaigns__media">%8$s</figure>'
+            . '</article></div>',
+            $hiddenAttribute,
+            $eyebrow !== '' ? '<p class="petshop-home-campaigns__eyebrow">' . esc_html($eyebrow) . '</p>' : '',
+            esc_html($title),
+            $text !== '' ? '<p class="petshop-home-campaigns__text">' . esc_html($text) . '</p>' : '',
+            $benefit !== '' ? '<p class="petshop-home-campaigns__benefit">' . esc_html($benefit) . '</p>' : '',
+            esc_url($link),
+            esc_html($ctaLabel),
             $picture
         );
     }
@@ -338,6 +410,7 @@ final class HomeCampaignBlocks
 
         $attrs = wp_json_encode(
             [
+                'campaignMode' => 'artwork',
                 'desktopImageId' => $imageId,
                 'desktopImageUrl' => $imageUrl,
                 'mobileImageId' => 0,

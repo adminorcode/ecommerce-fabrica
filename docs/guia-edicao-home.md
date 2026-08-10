@@ -88,17 +88,23 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 | --- | --- |
 | Inserir a faixa | No editor da Home → **+** → categoria **Petshop** → **Banners de campanha** |
 | Adicionar campanha | Dentro do bloco → **Adicionar banner** |
+| Tipo de campanha | Bloco-filho **Banner de campanha** → painel lateral → **Tipo de campanha** |
 | Imagem desktop | Bloco-filho **Banner de campanha** → painel lateral → **Imagem desktop** |
 | Imagem mobile | Mesmo bloco → **Imagem mobile** (opcional; se vazia, usa a desktop) |
 | Texto alternativo | Painel lateral → **Texto alternativo contextual** |
-| Link de destino | Painel lateral → campo de URL (produto, categoria, página ou link externo) |
+| Copy editorial | Modo **Campanha editorial** → campos de eyebrow, título, texto, benefício e CTA no canvas ou painel lateral |
+| Link de destino | Painel lateral → campo de URL (produto, categoria, página ou link externo). Em campanha editorial, é o destino do CTA |
 | Ordem | Arraste os blocos-filho no editor |
 | Remover campanha | Selecione o bloco-filho → **Opções** → **Remover** |
 | Rótulo interno | Painel lateral → **Rótulo interno** (somente para identificar no editor) |
 
 
 
-Com **uma** campanha completa (imagem desktop, alt e link), a loja exibe um banner estático clicável. Com **duas ou mais**, aparecem setas e indicadores para navegação manual — sem troca automática.
+Use **Arte final** quando a peça já vier fechada com texto incorporado. Nesse caso, cadastre imagem desktop, imagem mobile quando a arte horizontal não servir no celular, texto alternativo contextual e link.
+
+Use **Campanha editorial** para campanhas recorrentes. A imagem vira apoio visual e a oferta fica em texto real no Gutenberg: eyebrow, título, texto, benefício, rótulo do CTA e destino. Essa modalidade é a recomendada quando a equipe precisa atualizar copy, SEO, acessibilidade ou CTA sem criar nova arte.
+
+Com **uma** campanha completa, a loja exibe um banner estático. Com **duas ou mais**, aparecem setas e indicadores para navegação manual — sem troca automática.
 
 
 

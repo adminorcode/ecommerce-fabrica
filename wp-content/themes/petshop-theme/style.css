@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.5.12
+Version: 0.6.0
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -11,27 +11,45 @@ Text Domain: petshop-theme
 */
 
 :root {
-  --color-brand-teal: #5bc1c3;
-  --color-brand-teal-dark: #17676a;
-  --color-brand-orange: #f37d35;
-  --color-brand-orange-dark: #9f3e0a;
-  --color-brand-orange-hover: #7f3008; /* token-exception: derived from brand palette */
-  --color-brand-orange-active: #652505; /* token-exception: derived from brand palette */
-  --color-surface-soft: #e6e7e9;
-  --color-surface: #ffffff;
-  --color-ink: #373435;
-  --color-muted: #625f60;
-  --color-border: #d1d3d4;
-  --color-neutral-border: #747172;
+  --brand-teal-900: #004f50;
+  --brand-teal-700: #126e70;
+  --brand-teal-500: #2b9292;
+  --brand-aqua-400: #58c2c7;
+  --brand-orange-600: #e9530d;
+  --brand-orange-500: #f47721;
+  --brand-orange-action: #c94b0b;
+  --neutral-950: #252426;
+  --neutral-700: #5e5d61;
+  --neutral-300: #d8d9db;
+  --neutral-100: #f2f3f4;
+  --cream-50: #faf7f1;
+  --white: #ffffff;
+  --whatsapp: #25d366;
+  --focus-ring: #005fcc;
+  --color-brand-teal: var(--brand-aqua-400);
+  --color-brand-teal-dark: var(--brand-teal-700);
+  --color-brand-orange: var(--brand-orange-500);
+  --color-brand-orange-dark: var(--brand-orange-action);
+  --color-brand-orange-hover: #a83f08; /* token-exception: accessible hover from brand-orange-action */
+  --color-brand-orange-active: #853106; /* token-exception: accessible active from brand-orange-action */
+  --color-surface-soft: var(--neutral-100);
+  --color-surface-warm: var(--cream-50);
+  --color-surface: var(--white);
+  --color-ink: var(--neutral-950);
+  --color-muted: var(--neutral-700);
+  --color-border: var(--neutral-300);
+  --color-neutral-border: var(--neutral-700);
   --color-focus: #005fcc;
   --color-disabled: #747172;
   --color-error: #b42318;
-  --color-on-teal: #ffffff;
-  --color-on-orange: #ffffff;
-  --shadow-card: 0 8px 24px rgb(55 52 53 / 12%);
-  --shadow-soft: 0 6px 20px rgb(55 52 53 / 8%);
-  --radius-sm: .5rem;
+  --color-on-teal: var(--white);
+  --color-on-orange: var(--white);
+  --shadow-card: 0 8px 24px rgb(0 79 80 / 10%);
+  --shadow-soft: 0 8px 24px rgb(0 79 80 / 8%);
+  --shadow-featured: 0 8px 24px rgb(0 79 80 / 14%);
+  --radius-sm: .625rem;
   --radius-md: 1rem;
+  --radius-lg: 1.5rem;
   --radius-pill: 999px;
   --space-1: .5rem;
   --space-2: .75rem;
@@ -42,11 +60,13 @@ Text Domain: petshop-theme
   --space-section: 2.5rem;
   --container-max: 1280px;
   --font-heading-weight: 700;
+  --font-family-base: "Nunito Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 body {
   background: var(--color-surface);
   color: var(--color-ink);
+  font-family: var(--font-family-base);
   line-height: 1.55;
 }
 
@@ -1541,7 +1561,7 @@ figure.petshop-support-banner__image a {
   border-radius: var(--radius-md);
   overflow: hidden;
   line-height: 0;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-featured);
 }
 
 .petshop-home-campaigns__link:focus-visible {
@@ -1557,7 +1577,105 @@ figure.petshop-support-banner__image a {
 }
 
 .petshop-home-campaigns__link img {
+  aspect-ratio: 3 / 1;
   max-height: 320px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.petshop-home-campaigns__slide--editorial {
+  overflow: hidden;
+  border: 1px solid rgb(88 194 199 / 20%);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--brand-teal-900), var(--brand-teal-700));
+  box-shadow: var(--shadow-featured);
+  color: var(--color-on-teal);
+}
+
+.petshop-home-campaigns__editorial {
+  display: grid;
+  grid-template-columns: minmax(0, .42fr) minmax(0, .58fr);
+  min-height: clamp(18rem, 30vw, 24rem);
+}
+
+.petshop-home-campaigns__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .85rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.petshop-home-campaigns__eyebrow,
+.petshop-home-campaigns__benefit {
+  margin: 0;
+  color: var(--brand-aqua-400);
+  font-size: .875rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.petshop-home-campaigns__eyebrow {
+  letter-spacing: .02em;
+}
+
+.petshop-home-campaigns__title {
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.petshop-home-campaigns__text {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--neutral-100);
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  line-height: 1.55;
+}
+
+.petshop-home-campaigns__cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-block-start: .35rem;
+  padding: .7rem 1.2rem;
+  border: 2px solid var(--brand-orange-action);
+  border-radius: var(--radius-pill);
+  background: var(--brand-orange-action);
+  color: var(--white);
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.petshop-home-campaigns__cta:hover,
+.petshop-home-campaigns__cta:focus-visible {
+  border-color: var(--color-brand-orange-hover);
+  background: var(--color-brand-orange-hover);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.petshop-home-campaigns__media {
+  min-height: 100%;
+  margin: 0;
+  line-height: 0;
+}
+
+.petshop-home-campaigns__media picture,
+.petshop-home-campaigns__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.petshop-home-campaigns__media img {
+  aspect-ratio: 3 / 1;
   object-fit: cover;
   object-position: center;
 }
@@ -1660,6 +1778,45 @@ figure.petshop-support-banner__image a {
   width: 100%;
   height: auto;
   border-radius: var(--radius-sm);
+}
+
+.petshop-home-campaign-editor__mode {
+  display: inline-flex;
+  margin-block-end: var(--space-2);
+  padding: .25rem .55rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+  font-size: .8125rem;
+  font-weight: 700;
+}
+
+.petshop-home-campaign-editor__editorial-preview {
+  display: grid;
+  grid-template-columns: minmax(0, .42fr) minmax(0, .58fr);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--brand-teal-900), var(--brand-teal-700));
+  color: var(--white);
+}
+
+.petshop-home-campaign-editor__editorial-copy {
+  display: grid;
+  gap: .55rem;
+  align-content: center;
+  padding: var(--space-4);
+}
+
+.petshop-home-campaign-editor__editorial-copy :where(input, textarea) {
+  min-height: 40px;
+}
+
+.petshop-home-campaign-editor__editorial-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
 }
 
 .petshop-home-campaign-editor__mobile-preview {
@@ -2220,7 +2377,7 @@ html.petshop-reduced-motion .petshop-home-campaigns__link {
 .petshop-institutional-footer {
   margin-top: var(--space-section);
   padding-block: var(--space-6) var(--space-4);
-  background: var(--color-ink);
+  background: #373435; /* token-exception: footer voltou ao tom anterior por ajuste visual aprovado */
   color: var(--color-on-teal);
 }
 
@@ -2801,6 +2958,38 @@ footer.ct-footer .ct-footer-copyright {
 
   .woocommerce ul.products.columns-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .petshop-home-campaigns__link img {
+    aspect-ratio: 4 / 5;
+    max-height: none;
+  }
+
+  .petshop-home-campaigns__editorial,
+  .petshop-home-campaign-editor__editorial-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .petshop-home-campaigns__content {
+    order: 1;
+    padding: var(--space-4);
+  }
+
+  .petshop-home-campaigns__media {
+    order: 2;
+  }
+
+  .petshop-home-campaigns__media img {
+    aspect-ratio: 4 / 5;
+    min-height: 0;
+  }
+
+  .petshop-home-campaigns__title {
+    font-size: clamp(1.55rem, 8vw, 2.2rem);
+  }
+
+  .petshop-home-campaigns__cta {
+    width: 100%;
   }
 }
 

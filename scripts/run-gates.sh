@@ -48,6 +48,8 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
+node scripts/validate-014-docs-and-tokens.mjs
+
 run_wp() {
   "${COMPOSE[@]}" wp "$@"
 }
@@ -78,6 +80,7 @@ run_eval_file test-005-session-02-persistence.php
 run_eval_file test-013-persistence.php
 run_eval_file validate-013-hpos.php
 run_eval_file validate-013-security.php
+run_eval_file validate-014-identity-campaigns.php
 run_eval_file validate-016-product-grid.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then

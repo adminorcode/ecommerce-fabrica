@@ -321,10 +321,29 @@ add_action(
     'wp_enqueue_scripts',
     static function (): void {
         wp_enqueue_style(
+            'petshop-theme-fonts',
+            'https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap',
+            [],
+            null
+        );
+
+        wp_enqueue_style(
             'petshop-theme',
             get_stylesheet_uri(),
-            [],
+            ['petshop-theme-fonts'],
             wp_get_theme()->get('Version')
+        );
+    }
+);
+
+add_action(
+    'enqueue_block_editor_assets',
+    static function (): void {
+        wp_enqueue_style(
+            'petshop-theme-fonts',
+            'https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap',
+            [],
+            null
         );
     }
 );
