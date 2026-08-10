@@ -18,6 +18,7 @@
 | [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código e gates automatizados entregues; aguarda Mercado Pago sandbox, frete real, jurídico e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Pendente | Tokens de marca, Nunito Sans, componentes acessíveis, footer teal e campanhas editoriais Gutenberg; depende de 009 e 011 |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
+| [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Pendente | Bloco único de vitrine com variações por seleção manual, categoria, popularidade e sazonalidade; migra os shortcodes da Home |
 
 ## Ordem recomendada de execução
 
@@ -28,7 +29,8 @@
 
 005 (storefront comercial — sessões 03–08, conteúdo e produto)
   └── Sessão 03 bloqueada por fotos reais; 04–08 após ou em paralelo com 009
-      └── 010 (layout vitrines Home — especializa 005 Sessões 04–06)
+      ├── 010 (layout vitrines Home — especializa 005 Sessões 04–06)
+      │   └── 016 (bloco Gutenberg único para seleção das vitrines)
       └── 011 (banners gerenciáveis na Home via Gutenberg)
 
 007 (PSR-4, ciclo de vida e modularização do petshop-core)
@@ -44,4 +46,4 @@
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-08 (Plano 013 implementado; aceite externo pendente)
+**Última atualização:** 2026-08-09 (Plano 016 criado; implementação pendente)
