@@ -8,12 +8,14 @@
 
 ## 1. Objetivo
 
-Permitir que clientes **vejam e gerenciem** produtos salvos na wishlist: página pública administrável, rota em **Minha conta**, link no header e sincronização visitante → conta logada.
+Permitir que clientes **vejam e gerenciem** produtos salvos na wishlist dentro de **Minha conta**, com conteúdo administrável, link no header e sincronização visitante → conta logada.
 
 ## 2. Resultado esperado
 
-- página **`/lista-de-desejos/`** com shortcode `[petshop_wishlist]`;
-- endpoint **`/minha-conta/lista-de-desejos/`** (logado) com a mesma grade;
+- endpoint canônico **`/minha-conta/lista-de-desejos/`** com a grade de produtos salvos;
+- item **Lista de desejos** em Minha conta e link do header apontando para esse mesmo endpoint;
+- página legada **`/lista-de-desejos/`** redirecionada para Minha conta;
+- conteúdo cadastrado em **Páginas → Lista de desejos** renderizado dentro do endpoint canônico;
 - link **Lista de desejos** no header (rótulo editável no Customizer);
 - visitante: lista via `localStorage`; ao logar, merge para user meta;
 - logado: lista persistida em `petshop_wishlist_product_ids`;
@@ -32,7 +34,7 @@ Permitir que clientes **vejam e gerenciem** produtos salvos na wishlist: página
 ## 4. Escopo
 
 - shortcode `[petshop_wishlist empty="…"]`;
-- endpoint WooCommerce `lista-de-desejos`;
+- endpoint WooCommerce `lista-de-desejos` como destino canônico;
 - provisionamento da página via `petshop-core`;
 - merge `localStorage` → conta no login;
 - CSS da página vazia + link no header;
@@ -47,8 +49,8 @@ Permitir que clientes **vejam e gerenciem** produtos salvos na wishlist: página
 
 ## 6. Critérios de aceite
 
-- [x] Página `/lista-de-desejos/` HTTP 200 com shortcode
-- [x] Minha conta exibe item **Lista de desejos** e renderiza produtos salvos
+- [x] Página legada `/lista-de-desejos/` redireciona para Minha conta
+- [x] Minha conta exibe item **Lista de desejos** apontando para `/minha-conta/lista-de-desejos/`
 - [x] Header exibe link configurável para a página
 - [x] Visitante vê produtos salvos no browser na página
 - [x] Login preserva itens do `localStorage` na conta

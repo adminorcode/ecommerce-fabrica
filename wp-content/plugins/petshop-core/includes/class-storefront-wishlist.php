@@ -20,6 +20,7 @@ final class StorefrontWishlist
         add_action('init', [self::class, 'registerEndpoint'], 20);
         add_filter('woocommerce_get_query_vars', [self::class, 'registerQueryVar']);
         add_filter('woocommerce_account_menu_items', [self::class, 'registerAccountMenuItem']);
+        add_action('template_redirect', [self::class, 'redirectLegacyPage'], 1);
         add_action('woocommerce_account_' . self::ENDPOINT . '_endpoint', [self::class, 'renderAccountEndpoint']);
         add_filter(
             'blocksy:options:woocommerce:archive:card-type:output_product_toolbar',
@@ -72,7 +73,38 @@ final class StorefrontWishlist
 
     public static function renderAccountEndpoint(): void
     {
+        $pageId = (int) get_theme_mod('petshop_wishlist_page', 0);
+        $page = $pageId > 0 ? get_post($pageId) : get_page_by_path(self::PAGE_SLUG);
+
+        if (
+            $page instanceof \WP_Post
+            && $page->post_status === 'publish'
+            && has_shortcode((string) $page->post_content, 'petshop_wishlist')
+        ) {
+            echo apply_filters('the_content', (string) $page->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            return;
+        }
+
         echo self::renderWishlistSection(false);
+    }
+
+    public static function redirectLegacyPage(): void
+    {
+        $pageId = (int) get_theme_mod('petshop_wishlist_page', 0);
+        $isLegacyPage = $pageId > 0 ? is_page($pageId) : is_page(self::PAGE_SLUG);
+
+        if (!$isLegacyPage) {
+            return;
+        }
+
+        $requestMethod = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (!in_array($requestMethod, ['GET', 'HEAD'], true)) {
+            return;
+        }
+
+        if (wp_safe_redirect(self::getAccountEndpointUrl(), 301, 'Petshop canonical wishlist')) {
+            exit;
+        }
     }
 
     /**
@@ -96,26 +128,13 @@ final class StorefrontWishlist
 
     public static function getPageUrl(): string
     {
-        $pageId = (int) get_theme_mod('petshop_wishlist_page', 0);
-        if ($pageId > 0) {
-            $url = get_permalink($pageId);
-            if (is_string($url) && $url !== '') {
-                return $url;
-            }
-        }
-
-        $page = get_page_by_path(self::PAGE_SLUG);
-        if ($page instanceof \WP_Post && $page->post_status === 'publish') {
-            return (string) get_permalink($page);
-        }
-
-        return home_url('/' . self::PAGE_SLUG . '/');
+        return self::getAccountEndpointUrl();
     }
 
     public static function getAccountEndpointUrl(): string
     {
         if (!function_exists('wc_get_account_endpoint_url')) {
-            return self::getPageUrl();
+            return home_url('/minha-conta/' . self::ENDPOINT . '/');
         }
 
         return (string) wc_get_account_endpoint_url(self::ENDPOINT);
