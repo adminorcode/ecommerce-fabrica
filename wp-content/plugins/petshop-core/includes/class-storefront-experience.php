@@ -57,10 +57,11 @@ final class StorefrontExperience
     {
         $isCli = defined('WP_CLI') && WP_CLI;
         $isScheduled = get_option(\Petshop\Core\Lifecycle::SCHEDULED_OPTION, false) !== false;
+        $needsHomeMigration = self::needsManagedHomeMigration();
         if (
             (!$isCli && !current_user_can('manage_woocommerce') && !current_user_can('manage_options'))
             || !class_exists('WooCommerce')
-            || (get_option(self::OPTION) === self::VERSION && !$isScheduled)
+            || (get_option(self::OPTION) === self::VERSION && !$isScheduled && !$needsHomeMigration)
         ) {
             return;
         }
@@ -130,4 +131,18 @@ final class StorefrontExperience
         \Petshop\Core\Provisioning\StorefrontProvisioner::ensureStorefront();
     }
 
+    private static function needsManagedHomeMigration(): bool
+    {
+        $homeId = (int) get_option('page_on_front');
+        if ($homeId <= 0 || !(bool) get_post_meta($homeId, '_petshop_managed_page', true)) {
+            return false;
+        }
+
+        $content = (string) get_post_field('post_content', $homeId);
+        $shopUrl = (string) wc_get_page_permalink('shop');
+
+        return (int) get_post_meta($homeId, '_petshop_home_schema_version', true)
+            < \Petshop\Core\Migration\HomeMigrator::currentSchema()
+            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+    }
 }

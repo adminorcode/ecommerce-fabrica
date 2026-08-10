@@ -34,6 +34,7 @@ final class Plugin
         GuestAccount::bootstrap();
         FunnelEvents::bootstrap();
         HomeCampaignBlocks::bootstrap();
+        ProductGridBlock::bootstrap();
         Customizer::bootstrap();
 
         add_action('init', [self::class, 'loadTextdomain'], 1);

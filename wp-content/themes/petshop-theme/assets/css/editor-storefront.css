@@ -78,3 +78,73 @@
   max-height: 280px;
   object-fit: cover;
 }
+
+.editor-styles-wrapper .petshop-product-grid-editor {
+  max-width: var(--container-max);
+  margin-inline: auto;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .components-placeholder {
+  margin: 0;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products {
+  display: grid;
+  grid-template-columns: repeat(var(--petshop-product-grid-editor-columns, 4), minmax(0, 1fr));
+  gap: var(--space-2, 1rem);
+  margin: 0;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products li.product {
+  min-width: 0;
+  min-height: 100%;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products li.product img {
+  aspect-ratio: 4 / 3 !important;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products li.product .woocommerce-loop-product__title {
+  font-size: .95rem;
+}
+
+.editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products li.product .button {
+  width: calc(100% - (var(--space-2, 1rem) * 2));
+  margin-bottom: var(--space-2, 1rem);
+}
+
+@media (max-width: 1100px) {
+  .editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+}
+
+@media (max-width: 782px) {
+  .editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products {
+    grid-template-columns: 1fr;
+  }
+}
+
+.petshop-product-grid-editor__selected {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.petshop-product-grid-editor__selected li {
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 8px;
+}

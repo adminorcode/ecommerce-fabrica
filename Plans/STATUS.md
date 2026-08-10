@@ -18,7 +18,7 @@
 | [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código e gates automatizados entregues; aguarda Mercado Pago sandbox, frete real, jurídico e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Pendente | Tokens de marca, Nunito Sans, componentes acessíveis, footer teal e campanhas editoriais Gutenberg; depende de 009 e 011 |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
-| [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Pendente | Bloco único de vitrine com variações por seleção manual, categoria, popularidade e sazonalidade; migra os shortcodes da Home |
+| [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
 
 ## Ordem recomendada de execução
 

@@ -71,9 +71,14 @@ echo "taxonomia: passed\n";
 $home = get_page_by_path('inicio');
 petshop_assert($home instanceof WP_Post, 'Página inicial ausente.');
 petshop_assert((int) get_option('page_on_front') === (int) $home->ID, 'Página inicial não configurada.');
-foreach (['petshop-hero', '[petshop_categories', '[petshop_featured_products_grid', '[petshop_seasonal_products_grid', '[petshop_reviews'] as $fragment) {
+foreach (['petshop-hero', '[petshop_categories', 'wp:petshop/product-grid', '[petshop_reviews'] as $fragment) {
     petshop_assert(str_contains($home->post_content, $fragment), "Home sem bloco obrigatório: {$fragment}");
 }
+petshop_assert(substr_count($home->post_content, 'wp:petshop/product-grid') >= 4, 'Home deve conter ao menos quatro vitrines petshop/product-grid.');
+petshop_assert(
+    !preg_match('/\[petshop_(featured_products|kits_section|seasonal_products|product_showcase)_grid\b/', $home->post_content),
+    'Home ainda contém shortcodes de grade migráveis.'
+);
 echo "home: passed\n";
 
 $locations = get_theme_mod('nav_menu_locations', []);

@@ -1,6 +1,6 @@
 # Plano 016 — Vitrine de produtos selecionável no Gutenberg
 
-**Status:** Pendente  
+**Status:** Concluído
 **Data:** 2026-08-09  
 **Branch sugerida:** `016-vitrine-produtos-gutenberg`  
 **Dependências:** Planos 010 e 011 concluídos; infraestrutura de blocos do `petshop-core` disponível.  
@@ -134,68 +134,68 @@ Regras obrigatórias da migração:
 
 ### Sessão 01 — Contrato, registro e renderização dinâmica
 
-- [ ] Criar `petshop/product-grid` com `block.json` em API v3 e atributos tipados.
-- [ ] Registrar um único bloco e suas quatro variações, sem duplicar renderizadores.
-- [ ] Implementar sanitização e consulta para os modos manual, categoria, popular e sazonal.
-- [ ] Reutilizar os cards e hooks oficiais do loop WooCommerce.
-- [ ] Garantir saída vazia segura e ordem determinística.
+- [x] Criar `petshop/product-grid` com `block.json` em API v3 e atributos tipados.
+- [x] Registrar um único bloco e suas quatro variações, sem duplicar renderizadores.
+- [x] Implementar sanitização e consulta para os modos manual, categoria, popular e sazonal.
+- [x] Reutilizar os cards e hooks oficiais do loop WooCommerce.
+- [x] Garantir saída vazia segura e ordem determinística.
 
 **Gate verificável**
 
-- [ ] Há exatamente um tipo de bloco `petshop/product-grid` registrado.
-- [ ] As quatro variações inserem o mesmo bloco com atributos iniciais diferentes.
-- [ ] Cada modo retorna apenas produtos publicados e visíveis.
-- [ ] Seleção manual respeita a ordem dos IDs válidos.
-- [ ] Consulta vazia não produz espaço residual nem erro PHP.
+- [x] Há exatamente um tipo de bloco `petshop/product-grid` registrado.
+- [x] As quatro variações inserem o mesmo bloco com atributos iniciais diferentes.
+- [x] Cada modo retorna apenas produtos publicados e visíveis.
+- [x] Seleção manual respeita a ordem dos IDs válidos.
+- [x] Consulta vazia não produz espaço residual nem erro PHP.
 
 ### Sessão 02 — Controles editoriais e prévia
 
-- [ ] Criar escolha visual do modo de seleção.
-- [ ] Implementar busca por nome/SKU, seleção, remoção e reordenação manual.
-- [ ] Implementar seletor de categorias por nome e hierarquia.
-- [ ] Adicionar quantidade, colunas e ordenação com opções válidas para cada modo.
-- [ ] Exibir prévia, carregamento, vazio e erro no canvas.
-- [ ] Garantir rótulos, instruções, foco e operação por teclado nos controles próprios.
+- [x] Criar escolha visual do modo de seleção.
+- [x] Implementar busca por nome/SKU, seleção, remoção e reordenação manual.
+- [x] Implementar seletor de categorias por nome e hierarquia.
+- [x] Adicionar quantidade, colunas e ordenação com opções válidas para cada modo.
+- [x] Exibir prévia, carregamento, vazio e erro no canvas.
+- [x] Garantir rótulos, instruções, foco e operação por teclado nos controles próprios.
 
 **Gate verificável**
 
-- [ ] O cliente configura a vitrine sem visualizar ou editar IDs, slugs ou shortcode.
-- [ ] Produtos podem ser encontrados por nome e SKU.
-- [ ] A ordem manual persiste após salvar e recarregar.
-- [ ] Categorias e demais atributos persistem após salvar e recarregar.
-- [ ] Não aparece aviso de bloco inválido nem erro no console.
+- [x] O cliente configura a vitrine sem visualizar ou editar IDs, slugs ou shortcode.
+- [x] Produtos podem ser encontrados por nome e SKU.
+- [x] A ordem manual persiste após salvar e recarregar.
+- [x] Categorias e demais atributos persistem após salvar e recarregar.
+- [x] Não aparece aviso de bloco inválido nem erro no console.
 
 ### Sessão 03 — Migração segura da Home
 
-- [ ] Adicionar o próximo schema da Home ao registro do migrador.
-- [ ] Converter os quatro shortcodes reconhecidos em instâncias do bloco único.
-- [ ] Preservar cabeçalhos, introduções, CTAs, classes e ordem existentes.
-- [ ] Manter shortcodes legados registrados para conteúdo fora da Home.
-- [ ] Criar fixtures para Home padrão, Home customizada e conteúdo já migrado.
+- [x] Adicionar o próximo schema da Home ao registro do migrador.
+- [x] Converter os quatro shortcodes reconhecidos em instâncias do bloco único.
+- [x] Preservar cabeçalhos, introduções, CTAs, classes e ordem existentes.
+- [x] Manter shortcodes legados registrados para conteúdo fora da Home.
+- [x] Criar fixtures para Home padrão, Home customizada e conteúdo já migrado.
 
 **Gate verificável**
 
-- [ ] A Home atual passa a conter quatro instâncias de `petshop/product-grid`.
-- [ ] O HTML funcional das quatro vitrines permanece equivalente antes e depois da migração.
-- [ ] Texto ou link alterado pelo cliente ao redor das grades não é sobrescrito.
-- [ ] Segunda execução da migração não modifica `post_content`.
-- [ ] Shortcode desconhecido ou fora do padrão seguro permanece intacto.
+- [x] A Home atual passa a conter quatro instâncias de `petshop/product-grid`.
+- [x] O HTML funcional das quatro vitrines permanece equivalente antes e depois da migração.
+- [x] Texto ou link alterado pelo cliente ao redor das grades não é sobrescrito.
+- [x] Segunda execução da migração não modifica `post_content`.
+- [x] Shortcode desconhecido ou fora do padrão seguro permanece intacto.
 
 ### Sessão 04 — Documentação, regressão e aceite
 
-- [ ] Atualizar `docs/guia-edicao-home.md` com instruções não técnicas e screenshots quando disponíveis.
-- [ ] Criar gates PHP para registro, sanitização, consultas e migração.
-- [ ] Criar gate de navegador para inserção, configuração, salvamento, recarga e preview.
-- [ ] Validar Home em 390, 768, 1024 e 1440 px, incluindo grades vazias e incompletas.
-- [ ] Executar build, PHPUnit, `npm run validate` e revisar logs PHP/console.
+- [x] Atualizar `docs/guia-edicao-home.md` com instruções não técnicas e screenshots quando disponíveis.
+- [x] Criar gates PHP para registro, sanitização, consultas e migração.
+- [x] Criar gate de navegador para inserção, configuração, salvamento, recarga e preview.
+- [x] Validar Home em 390, 768, 1024 e 1440 px, incluindo grades vazias e incompletas.
+- [x] Executar build, PHPUnit, `npm run validate` e revisar logs PHP/console.
 
 **Gate verificável**
 
-- [ ] Cliente consegue configurar as quatro vitrines inteiramente em **Páginas → Home**.
-- [ ] Editor e storefront exibem os mesmos produtos e a mesma ordem para a seleção manual.
-- [ ] Cards mantêm preço, estoque, badge, compra e wishlist existentes.
-- [ ] Reprovisionamento não desfaz escolhas, ordem, categorias ou conteúdo editorial.
-- [ ] Guia administrativo descreve os quatro modos e a origem dos dados dos cards.
+- [x] Cliente consegue configurar as quatro vitrines inteiramente em **Páginas → Home**.
+- [x] Editor e storefront exibem os mesmos produtos e a mesma ordem para a seleção manual.
+- [x] Cards mantêm preço, estoque, badge, compra e wishlist existentes.
+- [x] Reprovisionamento não desfaz escolhas, ordem, categorias ou conteúdo editorial.
+- [x] Guia administrativo descreve os quatro modos e a origem dos dados dos cards.
 
 ## 8. Riscos e mitigação
 

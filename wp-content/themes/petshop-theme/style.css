@@ -535,15 +535,11 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .woocommerce ul.products li.product .button {
   align-self: stretch;
-  width: 100%;
+  width: calc(100% - (var(--space-2) * 2));
   min-height: 44px;
   margin: var(--space-2);
   margin-top: var(--space-2);
   text-align: center;
-}
-
-.woocommerce ul.products li.product .button:only-child {
-  width: calc(100% - (var(--space-2) * 2));
 }
 
 .woocommerce ul.products li.product .onsale,

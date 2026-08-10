@@ -27,7 +27,10 @@ final class StorefrontProvisioner
     public static function ensureStorefront(): void
     {
         $isScheduled = get_option(\Petshop\Core\Lifecycle::SCHEDULED_OPTION, false) !== false;
-        if (!class_exists('WooCommerce') || (get_option(self::OPTION) === self::VERSION && !$isScheduled)) {
+        if (
+            !class_exists('WooCommerce')
+            || (get_option(self::OPTION) === self::VERSION && !$isScheduled && !self::needsManagedHomeMigration())
+        ) {
             return;
         }
 
@@ -124,6 +127,20 @@ final class StorefrontProvisioner
         flush_rewrite_rules(false);
 
         update_option(self::OPTION, self::VERSION, false);
+    }
+
+    private static function needsManagedHomeMigration(): bool
+    {
+        $homeId = (int) get_option('page_on_front');
+        if ($homeId <= 0 || !(bool) get_post_meta($homeId, '_petshop_managed_page', true)) {
+            return false;
+        }
+
+        $content = (string) get_post_field('post_content', $homeId);
+        $shopUrl = (string) wc_get_page_permalink('shop');
+
+        return (int) get_post_meta($homeId, '_petshop_home_schema_version', true) < HomeMigrator::currentSchema()
+            || HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
     }
 
     public static function stampManagedHome(int $homeId, string $shopUrl, int $heroId): void

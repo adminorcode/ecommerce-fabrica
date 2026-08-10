@@ -4,10 +4,85 @@ declare(strict_types=1);
 
 namespace Petshop\Core\Migration;
 
+use Petshop\Core\ProductGridBlock;
+
 defined('ABSPATH') || exit;
 
 trait HomeEditorialSchemas
 {
+    private static function applyHomeSchemaTwentyFive(string $content, string $shopUrl): string
+    {
+        $blocks = parse_blocks($content);
+        $blocks = self::replaceLegacyProductGridShortcodeBlocks($blocks, $shopUrl);
+
+        return serialize_blocks($blocks);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     * @return array<int, array<string, mixed>>
+     */
+    private static function replaceLegacyProductGridShortcodeBlocks(array $blocks, string $shopUrl): array
+    {
+        $updated = [];
+
+        foreach ($blocks as $block) {
+            if (($block['blockName'] ?? '') === 'core/shortcode') {
+                $shortcode = trim(strip_tags((string) ($block['innerHTML'] ?? '')));
+                $replacement = ProductGridBlock::blockMarkupFromLegacyShortcode($shortcode);
+                if ($replacement !== null) {
+                    foreach (parse_blocks($replacement) as $parsedBlock) {
+                        $updated[] = $parsedBlock;
+                    }
+                    continue;
+                }
+
+                $editableShowcase = self::editableShowcaseMarkupFromShortcode($shortcode, $shopUrl);
+                if ($editableShowcase !== null) {
+                    foreach (self::replaceLegacyProductGridShortcodeBlocks(parse_blocks($editableShowcase), $shopUrl) as $parsedBlock) {
+                        $updated[] = $parsedBlock;
+                    }
+                    continue;
+                }
+            }
+
+            if (!empty($block['innerBlocks'])) {
+                $block['innerBlocks'] = self::replaceLegacyProductGridShortcodeBlocks($block['innerBlocks'], $shopUrl);
+            }
+
+            $updated[] = $block;
+        }
+
+        return $updated;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     */
+    private static function hasLegacyProductGridShortcodeBlocks(array $blocks, string $shopUrl): bool
+    {
+        foreach ($blocks as $block) {
+            if (($block['blockName'] ?? '') === 'core/shortcode') {
+                $shortcode = trim(strip_tags((string) ($block['innerHTML'] ?? '')));
+                if (
+                    ProductGridBlock::blockMarkupFromLegacyShortcode($shortcode) !== null
+                    || self::editableShowcaseMarkupFromShortcode($shortcode, $shopUrl) !== null
+                ) {
+                    return true;
+                }
+            }
+
+            if (
+                !empty($block['innerBlocks'])
+                && self::hasLegacyProductGridShortcodeBlocks($block['innerBlocks'], $shopUrl)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static function applyHomeSchemaThirteen(string $content): string
     {
         if (str_contains($content, 'petshop-benefits__item')) {

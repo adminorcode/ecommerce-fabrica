@@ -138,18 +138,22 @@ A Home usa ícones compactos da galeria do projeto. No desktop, ao passar o mous
 
 
 
-## 5. Destaques / Mais vendidos
+## 5. Vitrines de produtos
 
-**Onde:** seção com classe `petshop-featured-section` na Home (título + link visíveis no editor).
+**Onde:** cada seção de produtos da Home mantém título, texto e link em blocos nativos. A grade é o bloco **Vitrine de produtos** (`petshop/product-grid`) dentro da mesma seção.
 
 | Item | Onde editar |
 | --- | --- |
-| Título da seção | Bloco **Título** no topo da seção |
-| Link “Ver todos” | Clique no link ao lado do título → painel lateral → URL |
-| Produtos (imagem, nome, preço) | **Produtos** → editar cada produto |
-| Quantidade na grade | Shortcode interno `[petshop_featured_products_grid …]` (atributos `limit`, `columns`) |
+| Título, texto introdutório e link “Ver todos” | Blocos **Título**, **Parágrafo** e link/botão no cabeçalho da seção |
+| Modo da grade | Selecione **Vitrine de produtos** → painel lateral → **Modo de seleção** |
+| Produtos específicos | Modo **Seleção manual** → busque por nome ou SKU, adicione, remova e reordene |
+| Categorias | Modo **Por categoria** → busque categorias por nome |
+| Mais vendidos | Modo **Mais vendidos** usa vendas reais do WooCommerce |
+| Coleção sazonal | Modo **Coleção sazonal** usa categorias marcadas como **Categoria sazonal** e **Exibir na navegação** |
+| Quantidade e colunas | Painel lateral do bloco **Vitrine de produtos** |
+| Imagem, nome, preço, estoque e categoria dos cards | **Produtos** e **Produtos → Categorias** |
 
-A seção **some por completo** se não houver produtos para exibir.
+Uma vitrine sem produtos válidos não aparece na loja. A seção externa também pode sumir quando não houver nenhum card, sem deixar espaço vazio.
 
 ---
 
@@ -161,7 +165,7 @@ A seção **some por completo** se não houver produtos para exibir.
 | --- | --- |
 | Título, intro e link “Ver todos” | Blocos **Título**, **Parágrafo** e link no cabeçalho da seção |
 | Produtos exibidos | Categoria **Conjuntos** e produtos vinculados |
-| Categoria da grade | Shortcode `[petshop_kits_section_grid …]` → atributo `category` |
+| Categoria da grade | Bloco **Vitrine de produtos** em modo **Por categoria** |
 
 A seção **some por completo** se não houver produtos publicados na categoria.
 
@@ -186,7 +190,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 | Item | Onde editar |
 | --- | --- |
 | Título, parágrafo introdutório e link “Ver todos” | Blocos no cabeçalho e parágrafo introdutório da seção |
-| Produtos / categorias | Shortcode `[petshop_product_showcase_grid …]` → atributo `category` |
+| Produtos / categorias | Bloco **Vitrine de produtos** em modo **Seleção manual** ou **Por categoria** |
 | Destino padrão do “Ver todos” | URL do link no cabeçalho; várias categorias usam filtro `petshop_categories` |
 
 ---
@@ -254,6 +258,8 @@ O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_b
 | Textos e imagens do hero, benefícios e seções editoriais | **Páginas → Home** (Gutenberg) |
 
 | Título, intro e “Ver todos” das vitrines | Cabeçalho Gutenberg de cada seção (`petshop-section-head`) |
+
+| Seleção, ordem, categoria, quantidade e colunas das vitrines | Bloco **Vitrine de produtos** em cada seção |
 
 | Imagens e nomes de categorias | **Produtos → Categorias** |
 

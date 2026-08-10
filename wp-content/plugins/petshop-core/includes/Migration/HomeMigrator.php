@@ -13,7 +13,7 @@ defined('ABSPATH') || exit;
 
 final class HomeMigrator
 {
-    public const CURRENT_SCHEMA = 24;
+    public const CURRENT_SCHEMA = 25;
 
     use ManagedHomeMigration;
     use HomeHeroContent;
@@ -28,6 +28,11 @@ final class HomeMigrator
     public static function currentSchema(): int
     {
         return self::CURRENT_SCHEMA;
+    }
+
+    public static function needsProductGridShortcodeRepair(string $content, string $shopUrl): bool
+    {
+        return self::hasLegacyProductGridShortcodeBlocks(parse_blocks($content), $shopUrl);
     }
 
     public static function legacyHeroMarkup(string $shopUrl, int $heroId): string
@@ -81,6 +86,7 @@ final class HomeMigrator
             22 => static fn (string $content): string => self::applyHomeSchemaTwentyTwo($content),
             23 => static fn (string $content): string => self::applyHomeSchemaTwentyThree($content),
             24 => static fn (string $content, string $shopUrl, string $supportUrl, int $heroId): string => self::applyHomeSchemaTwentyFour($content, $shopUrl, $heroId),
+            25 => static fn (string $content, string $shopUrl): string => self::applyHomeSchemaTwentyFive($content, $shopUrl),
         ];
     }
 
@@ -99,7 +105,8 @@ final class HomeMigrator
             if ($schema < 10) {
                 continue;
             }
-            $requiresRepair = $schema === 17 && !str_contains($content, '[petshop_product_showcase');
+            $requiresRepair = ($schema === 17 && !str_contains($content, '[petshop_product_showcase'))
+                || ($schema === 25 && self::needsProductGridShortcodeRepair($content, $shopUrl));
             if ($currentSchema >= $schema && !$requiresRepair) {
                 continue;
             }

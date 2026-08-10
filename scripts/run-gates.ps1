@@ -46,6 +46,7 @@ Invoke-EvalFile 'test-005-session-02-persistence.php'
 Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
+Invoke-EvalFile 'validate-016-product-grid.php'
 
 if ($ContentAudit) {
     Invoke-EvalFile 'validate-004b.php'
@@ -79,10 +80,12 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs')) {
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs')) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }
+            docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
+            if ($LASTEXITCODE -ne 0) { throw 'editor gate Plano 016 falhou' }
         }
 
         if ($Pdp -or $Browser) {
