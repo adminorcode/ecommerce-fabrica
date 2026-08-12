@@ -17,12 +17,12 @@
 | [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Pendente | Editor open source no `petshop-core`, Store API/HPOS, arquivos privados e fila WooCommerce → Personalizações |
 | [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código, gates automatizados e Virtuaria Correios local validados; aguarda Mercado Pago sandbox, jurídico, origem/contrato reais e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Concluído | Tokens AUTellê, Nunito Sans, campanha editorial Gutenberg e rodapé no tom escuro anterior validados em PHP/browser |
-| [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
+| [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Secao de atendimento Gutenberg na Home com CTA preferencial para WhatsApp, imagens 1920 x 640 e 1080 x 1350, em substituicao ao banner-imagem; depende do 014 |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
 | [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
 | [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Pendente | Eventos Pet, Animal Republik, premium, Por Raça, bandanas/adesivos e capas de chuva com conteúdo administrável e produtos reais |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
-| [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Pendente | Refina a navegação reduzida do checkout para parecer um header intencional de compra segura, sem voltar com a navbar comercial completa |
+| [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
 
 ## Ordem recomendada de execução
 

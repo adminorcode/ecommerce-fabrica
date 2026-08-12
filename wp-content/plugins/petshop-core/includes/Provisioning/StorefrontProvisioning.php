@@ -132,6 +132,9 @@ trait StorefrontProvisioning
         if (get_theme_mod('petshop_support_label', null) === null) {
             set_theme_mod('petshop_support_label', \Petshop\Core\Settings\DefaultSettings::get('petshop_support_label'));
         }
+        if (get_theme_mod('petshop_checkout_assurance_text', null) === null) {
+            set_theme_mod('petshop_checkout_assurance_text', \Petshop\Core\Settings\DefaultSettings::get('petshop_checkout_assurance_text'));
+        }
         if (get_theme_mod('petshop_account_label', null) === null) {
             set_theme_mod('petshop_account_label', \Petshop\Core\Settings\DefaultSettings::get('petshop_account_label'));
         }

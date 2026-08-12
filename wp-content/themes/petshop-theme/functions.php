@@ -109,6 +109,10 @@ add_action(
             ? (string) get_permalink($supportPage)
             : '';
         $supportLabel = trim((string) get_theme_mod('petshop_support_label', $petshopDefault('petshop_support_label')));
+        $checkoutAssuranceText = trim((string) get_theme_mod(
+            'petshop_checkout_assurance_text',
+            $petshopDefault('petshop_checkout_assurance_text')
+        ));
         $wishlistLabel = trim((string) get_theme_mod('petshop_wishlist_label', $petshopDefault('petshop_wishlist_label')));
         $wishlistUrl = class_exists(\Petshop\Core\StorefrontWishlist::class)
             ? \Petshop\Core\StorefrontWishlist::getPageUrl()
@@ -138,6 +142,12 @@ add_action(
                         <a href="<?php echo esc_url(home_url('/')); ?>" rel="home"><?php echo esc_html(get_bloginfo('name')); ?></a>
                     <?php endif; ?>
                 </div>
+                <?php if ($checkoutAssuranceText !== '') : ?>
+                    <div class="petshop-checkout-header__assurance" data-petshop-checkout-assurance aria-label="<?php esc_attr_e('Status do checkout', 'petshop-theme'); ?>">
+                        <span class="petshop-checkout-header__assurance-mark" aria-hidden="true"></span>
+                        <span><?php echo esc_html($checkoutAssuranceText); ?></span>
+                    </div>
+                <?php endif; ?>
                 <?php if (class_exists('WooCommerce')) : ?>
                     <div class="petshop-commercial-header__search">
                         <?php get_product_search_form(); ?>

@@ -36,6 +36,12 @@ final class DefaultSettings
                 'type' => 'dropdown-pages',
                 'sanitize' => 'absint',
             ],
+            'petshop_checkout_assurance_text' => [
+                'label' => __('Mensagem de segurança no checkout', 'petshop-core'),
+                'default' => 'Compra segura',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+            ],
             'petshop_account_label' => [
                 'label' => __('Rótulo da conta no cabeçalho', 'petshop-core'),
                 'default' => 'Minha conta',

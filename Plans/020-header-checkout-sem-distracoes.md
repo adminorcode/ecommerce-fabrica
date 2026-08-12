@@ -1,6 +1,6 @@
 # Plano 020 - Header de checkout sem distracoes
 
-**Status:** Pendente
+**Status:** Concluido
 
 **Data:** 2026-08-12
 
@@ -45,58 +45,58 @@ Substituir a navbar "amputada" atual por um header de checkout com composicao pr
 
 ### Sessao 01 - Inventario e arquitetura do header
 
-- [ ] Identificar como o header comercial atual renderiza logo, atendimento, busca, conta, wishlist e minicarrinho.
-- [ ] Confirmar se a reducao do checkout deve ser feita por hooks/classes do child theme ou por markup especifico no plugin.
-- [ ] Evitar sobrescrever template do Blocksy sem necessidade comprovada.
-- [ ] Documentar quais textos, links e imagens do header sao globais e onde o cliente edita cada um.
+- [x] Identificar como o header comercial atual renderiza logo, atendimento, busca, conta, wishlist e minicarrinho.
+- [x] Confirmar se a reducao do checkout deve ser feita por hooks/classes do child theme ou por markup especifico no plugin.
+- [x] Evitar sobrescrever template do Blocksy sem necessidade comprovada.
+- [x] Documentar quais textos, links e imagens do header sao globais e onde o cliente edita cada um.
 
 **Gate verificavel**
 
-- [ ] Nenhum texto comercial novo do header depende de alterar PHP, CSS ou JavaScript.
-- [ ] Logo e canal de atendimento reutilizam origens administrativas existentes ou criam configuracao global administravel.
+- [x] Nenhum texto comercial novo do header depende de alterar PHP, CSS ou JavaScript.
+- [x] Logo e canal de atendimento reutilizam origens administrativas existentes ou criam configuracao global administravel.
 
 ### Sessao 02 - Design do header de checkout
 
-- [ ] Criar header compacto e intencional para checkout.
-- [ ] Manter logo com area clicavel previsivel.
-- [ ] Exibir "Compra segura" ou equivalente curto, sem competir com o H1.
-- [ ] Manter atendimento acessivel por link/botao claro.
-- [ ] Manter altura estavel em desktop e mobile.
-- [ ] Remover aparencia de navbar incompleta: sem buracos de grid, alinhamentos estranhos ou icones soltos.
+- [x] Criar header compacto e intencional para checkout.
+- [x] Manter logo com area clicavel previsivel.
+- [x] Exibir "Compra segura" ou equivalente curto, sem competir com o H1.
+- [x] Manter atendimento acessivel por link/botao claro.
+- [x] Manter altura estavel em desktop e mobile.
+- [x] Remover aparencia de navbar incompleta: sem buracos de grid, alinhamentos estranhos ou icones soltos.
 
 **Gate verificavel**
 
-- [ ] Em desktop, o header cabe em uma linha, alinha com o frame do checkout e nao parece uma navbar comercial incompleta.
-- [ ] Em mobile, logo, seguranca e atendimento nao sobrepoem nem quebram texto.
-- [ ] O header nao causa layout shift durante hidratacao dos WooCommerce Blocks.
+- [x] Em desktop, o header cabe em uma linha, alinha com o frame do checkout e nao parece uma navbar comercial incompleta.
+- [x] Em mobile, logo, seguranca e atendimento nao sobrepoem nem quebram texto.
+- [x] O header nao causa layout shift durante hidratacao dos WooCommerce Blocks.
 
 ### Sessao 03 - Integracao com o checkout existente
 
-- [ ] Preservar a classe `petshop-distraction-free-checkout`.
-- [ ] Preservar Checkout Block oficial e Store API.
-- [ ] Preservar link "Voltar ao carrinho".
-- [ ] Garantir que a regra de frete local nao reaparece quando Virtuaria/Correios retorna metodo real.
-- [ ] Garantir que a ausencia de pagamento continua sendo exibida como bloqueio real do Plano 017, sem esconder erro.
+- [x] Preservar a classe `petshop-distraction-free-checkout`.
+- [x] Preservar Checkout Block oficial e Store API.
+- [x] Preservar link "Voltar ao carrinho".
+- [x] Garantir que a regra de frete local nao reaparece quando Virtuaria/Correios retorna metodo real.
+- [x] Garantir que a ausencia de pagamento continua sendo exibida como bloqueio real do Plano 017, sem esconder erro.
 
 **Gate verificavel**
 
-- [ ] Checkout com produto no carrinho mostra somente metodo real de frete quando disponivel.
-- [ ] Sem duplicacao de header, breadcrumb ou skip link.
-- [ ] Sem regressao no resumo do pedido sticky/estavel.
+- [x] Checkout com produto no carrinho mostra somente metodo real de frete quando disponivel.
+- [x] Sem duplicacao de header, breadcrumb ou skip link.
+- [x] Sem regressao no resumo do pedido sticky/estavel.
 
 ### Sessao 04 - Acessibilidade e responsividade
 
-- [ ] Validar navegacao por teclado pelo header, link de retorno, formulario, opcoes de entrega e CTA.
-- [ ] Garantir foco visivel em logo, atendimento e retorno ao carrinho.
-- [ ] Garantir nomes acessiveis para os elementos novos.
-- [ ] Validar contraste de textos e icones.
-- [ ] Validar screenshots em 390, 768, 1024, 1440 e viewport largo de referencia.
+- [x] Validar navegacao por teclado pelo header, link de retorno, formulario, opcoes de entrega e CTA.
+- [x] Garantir foco visivel em logo, atendimento e retorno ao carrinho.
+- [x] Garantir nomes acessiveis para os elementos novos.
+- [x] Validar contraste de textos e icones.
+- [x] Validar screenshots em 390, 768, 1024, 1440 e viewport largo de referencia.
 
 **Gate verificavel**
 
-- [ ] Nenhum texto fica cortado ou sobreposto.
-- [ ] Nao ha overflow horizontal.
-- [ ] Nao ha mudanca repetida de posicao do resumo durante 5 segundos apos carregamento.
+- [x] Nenhum texto fica cortado ou sobreposto.
+- [x] Nao ha overflow horizontal.
+- [x] Nao ha mudanca repetida de posicao do resumo durante 5 segundos apos carregamento.
 
 ## 5. Inventario de conteudo administravel
 
@@ -112,13 +112,21 @@ Nenhum texto editorial, comercial ou imagem de conteudo deve ficar fixo em CSS. 
 
 ## 6. Validacao obrigatoria
 
-- [ ] `node scripts/validate-009-cart-checkout-browser.mjs`
-- [ ] `node scripts/validate-013-browser.mjs`
-- [ ] Gate novo ou ampliado medindo estabilidade do header/resumo por pelo menos 5 segundos.
-- [ ] Screenshot desktop 1440 e viewport largo semelhante a 1850.
-- [ ] Screenshot mobile 390.
-- [ ] `git diff --check`
-- [ ] Logs WordPress sem fatal error recente.
+- [x] `node scripts/validate-009-cart-checkout-browser.mjs`
+- [x] `node scripts/validate-013-browser.mjs`
+- [x] Gate novo ou ampliado medindo estabilidade do header/resumo por pelo menos 5 segundos.
+- [x] Screenshot desktop 1440 e viewport largo semelhante a 1850.
+- [x] Screenshot mobile 390.
+- [x] `git diff --check`
+- [x] Logs WordPress sem fatal error recente.
+
+## 9. Evidencia de conclusao
+
+- Header de checkout implementado no child theme, sem template override do Blocksy.
+- Logo reutiliza `custom_logo`; atendimento reutiliza `petshop_support_label` e `petshop_support_page`.
+- Mensagem de seguranca usa `petshop_checkout_assurance_text`, editavel em Aparencia -> Personalizar -> Conteudo da loja, provisionada uma vez sem sobrescrever alteracoes.
+- Evidencias visuais geradas em `.local/evidence/009/checkout-mobile-390.png`, `checkout-tablet-768.png`, `checkout-desktop-1024.png`, `checkout-desktop-1440.png` e `checkout-wide-1850.png`.
+- Validado em 2026-08-12 com `validate-009`, `validate-013`, teste de persistencia, PHPUnit, `git diff --check` e logs WordPress sem fatal recente.
 
 ## 7. Fora de escopo
 
@@ -131,4 +139,3 @@ Nenhum texto editorial, comercial ou imagem de conteudo deve ficar fixo em CSS. 
 ## 8. Criterio de conclusao
 
 O Plano 020 so podera ser concluido quando o checkout tiver um header reduzido com aparencia deliberada de compra segura, consistente com a marca, responsivo, acessivel, sem layout shift, sem navegacao comercial desnecessaria e com todo conteudo proprio editavel ou traduzivel conforme sua natureza.
-

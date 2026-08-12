@@ -20,6 +20,7 @@ $original = [
     'logo' => get_theme_mod('custom_logo', null),
     'support_label' => get_theme_mod('petshop_support_label', null),
     'support_page' => get_theme_mod('petshop_support_page', null),
+    'checkout_assurance_text' => get_theme_mod('petshop_checkout_assurance_text', null),
     'account_label' => get_theme_mod('petshop_account_label', null),
     'locations' => $locations,
     'item_title' => (string) $item->title,
@@ -45,6 +46,7 @@ $sentinelText = 'Promocao sentinela da Sessao 01';
 $sentinelUrl = home_url('/atendimento/');
 $sentinelMenuTitle = 'Lacos sentinela';
 $sentinelSupportLabel = 'Ajuda sentinela';
+$sentinelCheckoutAssuranceText = 'Checkout sentinela';
 $sentinelAccountLabel = 'Conta sentinela';
 $sentinelSupportPage = 0;
 $targetVersion = (string) (new ReflectionClass(Petshop\Core\StorefrontExperience::class))
@@ -64,6 +66,7 @@ try {
     set_theme_mod('custom_logo', $sentinelLogo);
     set_theme_mod('petshop_support_label', $sentinelSupportLabel);
     set_theme_mod('petshop_support_page', $sentinelSupportPage);
+    set_theme_mod('petshop_checkout_assurance_text', $sentinelCheckoutAssuranceText);
     set_theme_mod('petshop_account_label', $sentinelAccountLabel);
     wp_update_post(['ID' => (int) $item->ID, 'post_title' => $sentinelMenuTitle]);
     update_option('petshop_storefront_version', 'session-01-persistence-test', false);
@@ -78,6 +81,7 @@ try {
         && (int) get_theme_mod('custom_logo') === $sentinelLogo
         && get_theme_mod('petshop_support_label') === $sentinelSupportLabel
         && (int) get_theme_mod('petshop_support_page') === $sentinelSupportPage
+        && get_theme_mod('petshop_checkout_assurance_text') === $sentinelCheckoutAssuranceText
         && get_theme_mod('petshop_account_label') === $sentinelAccountLabel
         && (string) get_post_field('post_title', (int) $item->ID) === $sentinelMenuTitle
         && (int) ($afterLocations['petshop-primary'] ?? 0) === $menuId
@@ -101,7 +105,7 @@ try {
     } else {
         set_theme_mod('custom_logo', $original['logo']);
     }
-    foreach (['support_label', 'support_page', 'account_label'] as $key) {
+    foreach (['support_label', 'support_page', 'checkout_assurance_text', 'account_label'] as $key) {
         $themeMod = 'petshop_' . $key;
         if ($original[$key] === null) {
             remove_theme_mod($themeMod);
@@ -128,4 +132,4 @@ if (!$passed || !$emptyPromoPassed) {
     WP_CLI::error('Persistencia ou estado vazio falhou para o conteudo administravel do cabecalho.');
 }
 
-WP_CLI::success('Persistencia aprovada para promocao, link, logo, rotulo e localizacao do menu.');
+WP_CLI::success('Persistencia aprovada para promocao, link, logo, rotulos e localizacao do menu.');
