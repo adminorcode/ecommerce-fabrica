@@ -137,7 +137,7 @@ try {
   const customerBeforeShipping = await page.evaluate(async () => (await (await fetch('/wp-json/wc/store/v1/cart')).json()).shipping_address?.postcode || '');
   await page.locator('[data-petshop-shipping-form] input[name="postcode"]').fill('01001-000');
   await page.locator('[data-petshop-shipping-form] button[type="submit"]').click();
-  await page.waitForFunction(() => /Entrega local de teste/i.test(document.querySelector('[data-petshop-shipping-result]')?.textContent || ''), null, { timeout: 15000 });
+  await page.waitForFunction(() => /Entrega local de teste|Correios/i.test(document.querySelector('[data-petshop-shipping-result]')?.textContent || ''), null, { timeout: 15000 });
   recordFailure(/Producao|Produção/i.test(await page.locator('[data-petshop-shipping-result]').innerText()), 'PDP: calculo valido nao separou prazo de producao');
   const customerAfterShipping = await page.evaluate(async () => (await (await fetch('/wp-json/wc/store/v1/cart')).json()).shipping_address?.postcode || '');
   recordFailure(customerAfterShipping === customerBeforeShipping, 'PDP: simulacao de frete alterou o CEP persistente do cliente');

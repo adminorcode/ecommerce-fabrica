@@ -15,10 +15,14 @@
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
 | [011-banners-gerenciaveis-home.md](./011-banners-gerenciaveis-home.md) | Concluído | Blocos `petshop/home-campaigns` e `petshop/home-campaign`; carrossel manual acessível; persistência validada |
 | [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Pendente | Editor open source no `petshop-core`, Store API/HPOS, arquivos privados e fila WooCommerce → Personalizações |
-| [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código e gates automatizados entregues; aguarda Mercado Pago sandbox, frete real, jurídico e NVDA/VoiceOver |
+| [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código, gates automatizados e Virtuaria Correios local validados; aguarda Mercado Pago sandbox, jurídico, origem/contrato reais e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Concluído | Tokens AUTellê, Nunito Sans, campanha editorial Gutenberg e rodapé no tom escuro anterior validados em PHP/browser |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Seção de atendimento Gutenberg na Home, em substituição ao banner-imagem; depende do 014 |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
+| [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
+| [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Pendente | Eventos Pet, Animal Republik, premium, Por Raça, bandanas/adesivos e capas de chuva com conteúdo administrável e produtos reais |
+| [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
+| [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Pendente | Refina a navegação reduzida do checkout para parecer um header intencional de compra segura, sem voltar com a navbar comercial completa |
 
 ## Ordem recomendada de execução
 
@@ -40,10 +44,20 @@
 009 + 011 (base visual e campanhas)
   └── 014 (evolução da identidade visual e campanhas editoriais)
       └── 015 (seção de atendimento editorial da Home)
+
+013 (fluxo WooCommerce implementado)
+  └── 017 (fechamento P0 para publicação: pagamento, frete, políticas, SEO, CWV, backup e a11y)
+      ├── 018 (páginas comerciais P1 quando houver conteúdo e materiais aprovados)
+      ├── 019 (profissionais/laceiros como entrega institucional P2)
+      └── 020 (header de checkout sem distrações e com aparência intencional)
 ```
 
 ## Origem
 
 Planos 006–009 derivados da review técnica do repositório (2026-07-31): arquitetura, testes, infraestrutura, UI/UX e documentação.
 
-**Última atualização:** 2026-08-10 (Plano 014 concluído; próximo recomendado: Plano 015)
+Planos 017–019 derivados da análise de lacunas do `Orcode_Requisitos_Website_Loja_Pet_v2.pdf` em 2026-08-11, cruzada com o estado dos Planos 012, 013, 015 e 016.
+
+Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação reduzida, mas redesenhar o header para comunicar fluxo de compra seguro e não parecer navbar quebrada.
+
+**Última atualização:** 2026-08-12 (Plano 020 criado para header de checkout sem distrações; próximos recomendados: 015, 017 e 020)

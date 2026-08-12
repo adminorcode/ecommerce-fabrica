@@ -70,6 +70,29 @@ $baseData = static function (WC_Product $product, string $name, string $sku, int
     $product->update_meta_data('_petshop_measurements', 'Confira as medidas cadastradas antes da compra.');
 };
 
+$ensureShippingData = static function (string $sku): void {
+    $product = wc_get_product(wc_get_product_id_by_sku($sku));
+    if (!$product instanceof WC_Product) return;
+    $changed = false;
+    if ($product->get_weight() === '') {
+        $product->set_weight('0.100');
+        $changed = true;
+    }
+    if ($product->get_length() === '') {
+        $product->set_length('16');
+        $changed = true;
+    }
+    if ($product->get_width() === '') {
+        $product->set_width('11');
+        $changed = true;
+    }
+    if ($product->get_height() === '') {
+        $product->set_height('2');
+        $changed = true;
+    }
+    if ($changed) $product->save();
+};
+
 $created = [];
 if (wc_get_product_id_by_sku('PLAN013-SIMPLE') <= 0) {
     $simple = new WC_Product_Simple();
@@ -118,6 +141,10 @@ if (wc_get_product_id_by_sku('PLAN012-READY') <= 0) {
     $prepared->update_meta_data('_petshop_personalization_ready', 'yes');
     $prepared->save();
     $created[] = $prepared->get_id();
+}
+
+foreach (['PLAN013-SIMPLE', 'PLAN013-VARIABLE', 'PLAN013-VAR-AZUL-P', 'PLAN013-VAR-CORAL-M', 'PLAN012-READY'] as $sku) {
+    $ensureShippingData($sku);
 }
 
 WP_CLI::success('Amostras do Plano 013 disponíveis. Criadas nesta execução: ' . count($created) . '.');

@@ -32,6 +32,8 @@
 | Gates PHP/persistência/HPOS/segurança | persistência e HPOS verdes | suíte integrada verde | verde |
 | Browser 013 | foco do drawer e host absoluto da Store API falharam | 390/768/1024/1440, busca, filtros, PDP/CEP, cart/checkout e conta verdes | verde |
 | Browser integrado legado + 013 | loop canonical e sessão Store API corrigidos | `npm run validate -- --browser` concluído | verde |
+| Virtuaria Correios local | plugin 1.13.5 instalado no runtime, zona Brasil com `virtuaria-correios-sedex`, origem `01001000`, serviço `03220`, modo fácil sem credenciais versionadas; CEP `01310000` retornou tarifa `Correios` R$ 20,48, CEP `123` e `00000000` não retornaram método Virtuaria | n/a | verde para validação local; produção ainda exige origem/contrato reais |
+| Browser integrado após Virtuaria | primeira execução falhou de forma transitória em `validate-005-catalog-layout-browser.mjs` por timeout aguardando `.petshop-catalog-filter`; gate isolado passou em seguida | `npm run validate -- --browser` repetido e concluído | verde |
 | Revisão crítica | 1 P0 e P1 em analytics, políticas, frete, conta, foco e persistência | correções aplicadas e gates ampliados | rechecagem sem P0/P1 remanescente |
 
 ## Persistência editorial
@@ -59,3 +61,12 @@ Nenhum teste pode considerar como sucesso um valor restaurado pelo código sobre
 - `npm run validate -- --browser`: provisionamento, gates legados, persistência 004b/005/013, segurança de `order_key`, metabox HPOS, Home, catálogo, busca, PDP, CEP, carrinho e checkout verdes.
 - Evidências PNG/JSON locais em `.local/evidence/013`, `.local/evidence/005` e `.local/evidence/009` (não versionadas).
 - Avisos `sendmail: not found` ocorreram apenas nos pedidos temporários de teste; não houve fatal/uncaught no WordPress.
+
+## Resultado adicional de 2026-08-11
+
+- Virtuaria Correios 1.13.5 instalado e ativado no runtime local, sem arquivos de plugin de terceiro versionados.
+- Zona `Brasil (desenvolvimento)` recebeu `virtuaria-correios-sedex` com origem `01001000`, serviço `03220`, pacote, dimensões mínimas e modo fácil local sem credenciais.
+- Cálculo WooCommerce por CEP retornou `virtuaria-correios-sedex:2|Correios|20.48` para `01310000`, `sem-virtuaria` para `123` e `sem-virtuaria` para `00000000`.
+- `scripts/seed-013-catalog-samples.php` passou a preencher peso/dimensões apenas quando vazios nas fixtures locais, preservando edições administrativas existentes.
+- `npm test`: 15 testes, 25 asserções, verde.
+- `npm run validate -- --browser`: primeira tentativa falhou transitoriamente no gate legado de catálogo; o gate isolado passou e a segunda execução integrada concluiu verde.

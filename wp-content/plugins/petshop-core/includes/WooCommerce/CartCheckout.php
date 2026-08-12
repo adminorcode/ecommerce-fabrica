@@ -13,6 +13,7 @@ final class CartCheckout
     public static function bootstrap(): void
     {
         add_filter('body_class', [self::class, 'bodyClasses']);
+        add_filter('woocommerce_package_rates', [self::class, 'filterLocalFallbackRates'], 999);
     }
 
     public static function migrate(): void
@@ -28,6 +29,27 @@ final class CartCheckout
     {
         if (is_checkout() && !is_order_received_page()) $classes[] = 'petshop-distraction-free-checkout';
         return $classes;
+    }
+
+    /**
+     * @param array<string, \WC_Shipping_Rate> $rates
+     * @return array<string, \WC_Shipping_Rate>
+     */
+    public static function filterLocalFallbackRates(array $rates): array
+    {
+        if (!in_array(wp_get_environment_type(), ['local', 'development'], true)) return $rates;
+
+        $localRateIds = [];
+        foreach ($rates as $rateId => $rate) {
+            if (!$rate instanceof \WC_Shipping_Rate) continue;
+            if ($rate->get_method_id() === 'flat_rate' && $rate->get_label() === 'Entrega local de teste') {
+                $localRateIds[] = $rateId;
+            }
+        }
+        if ($localRateIds === [] || count($localRateIds) >= count($rates)) return $rates;
+
+        foreach ($localRateIds as $rateId) unset($rates[$rateId]);
+        return $rates;
     }
 
     private static function migrateBlockPages(): void

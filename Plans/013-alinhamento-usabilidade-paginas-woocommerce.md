@@ -27,7 +27,7 @@ Este plano complementa o visual entregue pelo Plano 009, assume os requisitos Wo
 
 - Entrega conjunta dos requisitos P0 e P1 das páginas WooCommerce.
 - Mercado Pago será o gateway principal, com Pix e cartão em sandbox; Stripe permanece desabilitado em produção e coberto por compatibilidade.
-- O contrato de frete permanecerá desacoplado do fornecedor; desenvolvimento usa zona/método de teste e publicação aguarda transportadora e credenciais reais.
+- Virtuaria Correios será a integração de frete escolhida para validação com Correios. A publicação continua condicionada a configurar origem, serviços, contrato/credenciais quando aplicável, zonas, embalagens e contingência de falha sem versionar segredos.
 - Rotas em português com redirecionamento 301 das rotas antigas.
 - Cadastro em Minha Conta e após a compra; checkout continua aceitando visitante.
 - Saneamento de uma amostra representativa mais checklist operacional, sem reescrita automática de todo o catálogo.
@@ -81,6 +81,7 @@ Este plano complementa o visual entregue pelo Plano 009, assume os requisitos Wo
 - [x] Exibir no carrinho imagem, variação, personalização futura, quantidade, preços, economia real, CEP, frete e total.
 - [x] Adicionar “Continuar comprando” e estados de carregamento/erro junto à ação afetada.
 - [x] Validar contrato de frete com zona brasileira e método local de teste.
+- [x] Instalar/configurar Virtuaria Correios em ambiente de validação, sem versionar credenciais, e validar cálculo real por CEP.
 - [ ] Configurar Mercado Pago Pix/cartão em sandbox sem versionar credenciais.
 - [x] Manter checkout visitante, dados mínimos e proteção contra envio duplicado.
 - [x] Aplicar checkout sem distrações, mantendo logo, suporte e retorno ao carrinho.
@@ -155,7 +156,7 @@ As APIs de referência são a [Products Store API](https://developer.woocommerce
 ### 6.2 Pré-requisitos externos e regra de aceite
 
 - O ambiente local inicia com Mercado Pago 8.9.0 ativo, mas os gateways Pix/cartão estão desabilitados e nenhuma credencial sandbox está configurada.
-- Não existe método de entrega na zona padrão. O plano pode provisionar `flat_rate` apenas em ambiente `local`/`development`; produção continua bloqueada até fornecedor, zonas e credenciais aprovados.
+- Virtuaria Correios foi escolhido como integração de frete para validação. Em 2026-08-11, o runtime local validou `virtuaria-correios-sedex` com origem `01001000`, serviço `03220`, modo fácil sem credenciais versionadas, tarifa para CEP `01310000` e ausência do método para CEP inválido/sem retorno. O `flat_rate` permanece permitido apenas como fallback local/desenvolvimento; produção continua bloqueada até origem real, zonas, serviços, embalagem, contrato/credenciais e contingência do Virtuaria estarem aprovados.
 - Privacidade e reembolso existentes continuam em rascunho. As cinco páginas separadas serão provisionadas como estrutura Gutenberg administrável, sem inventar texto jurídico, e permanecerão em rascunho até aprovação.
 - A implementação pode fechar código e testes automatizados sem segredos, mas o plano não muda para `Concluído` enquanto os cenários Mercado Pago sandbox e o gate humano NVDA/VoiceOver não tiverem evidência.
 
@@ -169,7 +170,7 @@ Os comandos, fixtures, evidências e o ledger de tentativas ficam em [013-TESTIN
 | Catálogo | 390/768/1024/1440, filtros combinados, limpar, paginação, retorno da PDP |
 | Busca | nome, SKU, sugestão, acento, plural/erro simples quando suportado e estado vazio |
 | Produto | simples, variável, indisponível, atributos obrigatórios, CEP e prazos |
-| Carrinho | quantidade, remoção, continuar comprando, CEP válido/inválido/sem cobertura |
+| Carrinho | quantidade, remoção, continuar comprando, Virtuaria Correios com CEP válido/inválido/sem cobertura |
 | Checkout | visitante, logado, validação sem perda, políticas e envio duplicado |
 | Mercado Pago | Pix/cartão aprovado, recusado e pendente em sandbox, sem duplicidade |
 | Pedido/conta | confirmação, e-mail, rastreamento, cadastro posterior e vínculo único |
@@ -197,12 +198,12 @@ Os comandos, fixtures, evidências e o ledger de tentativas ficam em [013-TESTIN
 - páginas Eventos, Por Raça, Animal Republik, premium e profissionais;
 - editor visual, arquivos e fila de produção do Plano 012;
 - ativação de Stripe em produção;
-- escolha unilateral do fornecedor definitivo de frete;
+- implementação de fornecedor alternativo ao Virtuaria Correios sem novo registro de decisão;
 - saneamento automático de todo o catálogo;
 - publicação de políticas não aprovadas pelo cliente/jurídico.
 
 ## 10. Critério de conclusão
 
-O Plano 013 somente poderá ser concluído depois que um comprador localizar um produto, aplicar filtros, selecionar uma combinação válida, calcular entrega, adicionar ao carrinho, concluir como visitante pelo Mercado Pago sandbox, consultar o pedido e criar sua conta sem perder ou duplicar dados; e quando todas as edições administrativas sobreviverem ao reprovisionamento.
+O Plano 013 somente poderá ser concluído depois que um comprador localizar um produto, aplicar filtros, selecionar uma combinação válida, calcular entrega pelo Virtuaria Correios, adicionar ao carrinho, concluir como visitante pelo Mercado Pago sandbox, consultar o pedido e criar sua conta sem perder ou duplicar dados; e quando todas as edições administrativas sobreviverem ao reprovisionamento.
 
 Sua execução deve respeitar as dependências declaradas no cabeçalho, sem incorporar o escopo dos Planos 008, 007 ou 012 ao Plano 013.

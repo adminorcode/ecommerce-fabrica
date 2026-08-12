@@ -32,7 +32,9 @@ Use `scripts/seed-013-catalog-samples.php` somente no ambiente local para criar,
 
 ## Frete e pagamento
 
-O ambiente local possui a zona **Brasil (desenvolvimento)** com tarifa fixa de teste. Não reutilize essa tarifa em produção. Cadastre fornecedor, zonas, serviços e credenciais reais antes da publicação.
+O ambiente local possui a zona **Brasil (desenvolvimento)** com tarifa fixa de teste como fallback. Não reutilize essa tarifa em produção.
+
+Para validação de frete real, o runtime local usa **Virtuaria Correios** com o método `virtuaria-correios-sedex`. Configure no painel em **Virtuaria Correios** e em **WooCommerce → Configurações → Entrega → Áreas de entrega**. A validação local registrada em 2026-08-11 usou origem `01001000`, serviço `03220` e modo fácil sem credenciais versionadas; produção ainda exige origem real, zonas aprovadas, serviços Correios, embalagem, contrato/credenciais quando aplicável e contingência de indisponibilidade.
 
 O Mercado Pago deve ser configurado no painel com credenciais sandbox não versionadas. Valide Pix e cartão nos estados aprovado, recusado e pendente antes de liberar a loja. Enquanto isso, o plano permanece em andamento.
 
