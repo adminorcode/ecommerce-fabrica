@@ -6,155 +6,162 @@
 
 **Branch sugerida:** `018-paginas-comerciais-p1`
 
-**Dependencias:** [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) concluido; [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) para produtos com personalizacao real; [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para publicacao comercial segura.
+**Dependencias:** [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) concluido; [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para publicacao comercial segura.
 
-**Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2.pdf`, secoes 3, 5, 12, 14.1, 14.2, 16.4, 17.2, 18.1, 19 e 20.
+**Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2.pdf`, secoes 3, 5, 12, 14.1, 14.2, 16.4, 17.2, 18.1, 19 e 20; alinhamento de produto em 2026-08-12.
 
 ## 1. Objetivo
 
-Criar a camada de paginas comerciais P1 prevista no documento da Orcode: Eventos Pet, Animal Republik, Produtos premium, Por Raca, Bandanas e adesivos personalizados, e Capa de chuva personalizada.
+Criar as primeiras paginas comerciais P1 para compradores, com foco em **Animal Republik** e **Produtos premium**.
 
-Essas paginas devem ser paginas de descoberta e inspiracao que apontam para produtos reais do catalogo, sem criar ilhas fora do fluxo WooCommerce. Todo texto, imagem, composicao, CTA e relacao com produtos deve ser administravel no WordPress.
+Essas paginas nao serao fluxos paralelos nem landing pages isoladas. Elas combinam conteudo editorial editavel no Gutenberg com vitrines de produtos reais usando o bloco `petshop/product-grid` ja utilizado na Home. O cliente final edita textos, imagens, CTAs e selecao de produtos no painel, mas nao precisa criar novas paginas desse tipo sem suporte tecnico.
 
-## 2. Lacunas que este plano cobre
+## 2. Decisoes fechadas
 
-| Requisito | Lacuna atual | Tratamento |
-| --- | --- | --- |
-| RF-HOME-006/RF-HOME-007 | Home pode destacar frentes, mas as paginas de destino ainda nao existem como sistema comercial | Criar paginas/rotas e links contextuais administraveis. |
-| RF-EVT-001 a RF-EVT-005 | Eventos Pet sem pagina de entrada, composicoes e produtos relacionados | Pagina Gutenberg + relacoes com produtos/categorias/atributos. |
-| RF-ARP-001 a RF-ARP-004 | Animal Republik depende de materiais aprovados | Pagina bloqueada ate identidade/catalogo aprovado; sem publicar placeholder comercial enganoso. |
-| RF-PRM-001 a RF-PRM-004 | Produtos premium precisam de contexto visual sem esconder compra | Landing/categoria com detalhes e produtos reais. |
-| RF-BRD-001 a RF-BRD-004 | Por Raca precisa diferenciar inspiracao de recomendacao de tamanho | Indice e paginas de raca com composicoes compraveis e aviso baseado em medidas. |
-| RF-BAN-001 a RF-BAN-004 | Bandanas/adesivos personalizados precisam de pagina propria | Landing/categoria alinhada ao Plano 012 e sem alegacoes sem evidencia. |
-| RF-RCO-001 a RF-RCO-004 | Capa de chuva personalizada precisa de guia, variacoes, personalizacao e frete | Pagina/categoria ligada a produtos configurados. |
-| RC-ADM-005 | Equipe precisa relacionar produtos a racas, eventos, composicoes e marca pelo painel | Usar taxonomias, atributos, categorias, blocos e metadados administraveis. |
+- O corte inicial do plano cobre **Animal Republik** e **Premium**.
+- **Por Raca fica fora deste plano** para evitar recomendacao indevida de tamanho e reduzir escopo.
+- Eventos Pet, Bandanas/Adesivos e Capas de Chuva permanecem como evolucoes posteriores ou rascunhos, caso haja material aprovado, sem bloquear a entrega inicial.
+- As paginas serao uma mistura de conteudo Gutenberg e vitrine de produtos.
+- A vitrine de produtos deve reutilizar `petshop/product-grid`, com selecao feita pelo cliente no Gutenberg.
+- Animal Republik e fornecedor oficial; a pagina deve ter tratamento editorial proprio e hero editavel.
+- Premium tambem deve receber pagina propria, com curadoria visual e produtos selecionados.
+- Links dessas paginas devem entrar na navegacao principal ou em uma evolucao da navbar, conforme a solucao de menu definida na implementacao.
+- Nenhum texto, imagem, CTA ou relacao de produto deve ficar hardcoded em PHP, CSS ou JavaScript.
+- O cliente final edita paginas existentes; criacao de novas paginas comerciais fica fora do escopo.
 
-## 3. Decisoes de arquitetura
+## 3. Modelo editorial
 
-- Conteudo editorial das paginas deve usar Gutenberg nativo ou padroes estruturados salvos em `post_content`.
-- Grades e vitrines de produtos devem reutilizar o bloco `petshop/product-grid` sempre que possivel.
-- Relacoes comerciais devem usar entidades administraveis: categorias, tags, atributos, produtos, taxonomias ou metadados no painel.
-- O codigo pode provisionar paginas e blocos iniciais, mas nao pode sobrescrever edicoes posteriores.
-- Paginas sem materiais aprovados devem permanecer como rascunho ou bloqueadas para publicacao.
-- Alegacoes como exclusividade, fixacao, seguranca, conforto ou adequacao precisam de evidencia registrada antes de aparecer em pagina publicada.
-- Nenhum produto dessas frentes deve usar checkout, carrinho ou pagina de produto paralelos.
+Cada pagina publicada deve conter, no minimo:
 
-## 4. Inventario de conteudo administravel
+| Area | Regra |
+| --- | --- |
+| Hero | Gutenberg editavel; imagem substituivel pela Biblioteca de midia; alt editavel. |
+| Intro | Titulo, texto curto e CTA editaveis no canvas. |
+| Vitrine | Bloco `petshop/product-grid`, com produtos escolhidos manualmente pelo cliente. |
+| Prova/contexto | Texto ou bloco editorial explicando a colecao sem promessa nao validada. |
+| Navegacao | Link na navbar, menu agrupador ou entrada contextual, sem pagina orfa. |
 
-| Rota | Conteudo e midia | Origem de edicao |
-| --- | --- | --- |
-| `/eventos-pet/` | titulo, intro, ocasioes, exemplos visuais, CTAs, composicoes e produtos usados | Pagina Gutenberg; imagens na Biblioteca de midia; produtos via WooCommerce/bloco `petshop/product-grid`. |
-| `/animal-republik/` | introducao, identidade aprovada, imagens de marca, catalogo relacionado e avisos de disponibilidade | Pagina Gutenberg; Biblioteca de midia; produtos/categorias/tags WooCommerce; publicacao bloqueada ate aprovacao. |
-| `/premium/` ou categoria equivalente | narrativa visual, acabamentos, galerias, combinacoes e produtos premium | Pagina Gutenberg + produtos/categorias; imagens e alt editaveis. |
-| `/por-raca/` | indice, busca/navegacao alfabetica quando houver volume, cards de racas/perfis | Pagina Gutenberg ou bloco proprio somente se necessario; relacoes administraveis. |
-| `/por-raca/{raca}/` | composicoes visuais, produtos utilizados, orientacao por medidas | Pagina/termo editavel; produtos relacionados pelo painel. |
-| `/bandanas-e-adesivos-personalizados/` | aplicacoes, opcoes, materiais, dimensoes, instrucoes, CTAs | Pagina Gutenberg; produtos configurados no WooCommerce; dependencias do Plano 012 quando houver personalizacao. |
-| `/capas-de-chuva-personalizadas/` | guia de medidas, tamanhos, materiais, cuidados, imagens, personalizacao e frete | Pagina Gutenberg + produtos variaveis/personalizaveis WooCommerce. |
-| Home | modulos de entrada para essas frentes | Blocos Gutenberg/`petshop/home-campaigns`; links para paginas publicadas. |
-| Menu principal | nomes finais e ordem | Aparencia -> Menus ou editor equivalente; sem menu fixo em PHP. |
+O layout deve favorecer compra: conteudo editorial suficiente para orientar, mas preco, produto e acesso a PDP devem continuar visiveis rapidamente.
 
-## 5. Sessoes de implementacao
+## 4. Referencia visual e midia inicial
 
-### Sessao 01 - Modelo editorial e relacoes administraveis
+### Animal Republik
 
-- [ ] Definir slugs finais, titulos, ordem de menu e estado de publicacao de cada frente.
-- [ ] Mapear quais relacoes usam categorias, tags, atributos, produtos, paginas ou taxonomias novas.
-- [ ] Criar padroes Gutenberg iniciais com areas claras para hero, texto, composicao visual, produtos e CTA.
-- [ ] Reutilizar `petshop/product-grid` para vitrines e selecionar produtos por IDs/categorias quando aplicavel.
-- [ ] Criar validacao contra paginas orfas e links para produtos indisponiveis.
+Pesquisa rapida em 2026-08-12 identificou a presenca publica da Animal Republik como marca de **cosmeticos pet** com foco em cuidados profissionais e diarios. Referencias encontradas:
+
+- Instagram Animal Republik: `https://www.instagram.com/animalrepublik/`
+- Facebook Animal Republik: `https://www.facebook.com/animalrepublik/`
+- Exemplo de produto em marketplace: `https://www.mercadolivre.com.br/shampoo-de-nutricao-e-reconstrucao-pet-animal-republik-1l/up/MLBU2649551065`
+
+Enquanto o fornecedor/cliente nao entregar banner oficial, usar imagem temporaria coerente com banho, tosa, cosmeticos pet ou cuidado profissional. A imagem deve ser importada para a Biblioteca de midia, sem depender de hotlink externo, e marcada como substituivel pelo cliente.
+
+Fontes aceitaveis para placeholder com licenca de uso livre/comercial, a validar no momento da implementacao:
+
+- Unsplash - dog shampoo: `https://unsplash.com/s/photos/dog-shampoo`
+- Unsplash - pet grooming: `https://unsplash.com/s/photos/pet-grooming`
+- Pexels - dog grooming: `https://www.pexels.com/search/dog%20grooming/`
+- Pexels - dog shampoo: `https://www.pexels.com/search/dog%20shampoo/`
+
+Nao usar logo, slogan, banner oficial ou fotografia de produto do fornecedor sem aprovacao. Placeholder nao pode sugerir parceria visual oficial alem do texto editavel informado pelo cliente.
+
+### Premium
+
+Premium deve usar imagem de produto, acabamento, embalagem, detalhe de material ou composicao de catalogo. Evitar imagem generica escura ou aspiracional que nao mostre produto.
+
+## 5. Inventario de conteudo administravel
+
+| Rota | Conteudo e midia | Origem de edicao | Estado inicial |
+| --- | --- | --- | --- |
+| `/animal-republik/` | hero, titulo, intro, imagem, CTA, texto sobre fornecedor oficial, produtos selecionados | Pagina Gutenberg; Biblioteca de midia; bloco `petshop/product-grid` | Publicavel com placeholder apenas se texto deixar claro que imagem e temporaria/editavel e produtos reais estiverem selecionados. |
+| `/premium/` ou `/produtos-premium/` | hero/intro, criterios de curadoria, imagens, CTA e produtos premium | Pagina Gutenberg; Biblioteca de midia; bloco `petshop/product-grid` | Publicavel quando houver produtos reais escolhidos. |
+| Navbar | links para Animal Republik e Premium, ou agrupador comercial | Aparencia -> Menus/editor equivalente | Implementar sem menu fixo em PHP. |
+| Home | entrada opcional para paginas publicadas | Blocos Gutenberg/`petshop/home-campaigns` | Somente se nao degradar foco de compra da Home. |
+
+## 6. Arquitetura
+
+- Reutilizar o bloco `petshop/product-grid` para todas as vitrines.
+- Produtos relacionados serao selecionados manualmente pelo cliente no Gutenberg.
+- Provisionamento pode criar paginas e markup inicial, mas deve preservar qualquer edicao posterior.
+- Slugs, titulos e links de menu devem ser reconciliados sem sobrescrever labels alterados pelo cliente.
+- Validacao deve falhar se uma pagina publicada nao tiver caminho de navegacao, CTA ou produtos ativos quando a proposta for venda.
+- Paginas nao publicadas podem existir como rascunho, mas nao devem aparecer na navbar.
+
+## 7. Sessoes de implementacao
+
+### Sessao 01 - Base Gutenberg e navegacao
+
+- [ ] Definir slugs finais de Animal Republik e Premium.
+- [ ] Criar padrao Gutenberg comum para paginas comerciais com hero, intro, CTA e vitrine.
+- [ ] Reutilizar `petshop/product-grid` com selecao manual de produtos.
+- [ ] Evoluir a navbar para incluir Animal Republik e Premium, diretamente ou em agrupador comercial.
+- [ ] Garantir que paginas em rascunho nao entrem no menu.
 
 **Gate verificavel**
 
-- [ ] A equipe consegue editar texto, imagem, alt, CTA e produtos relacionados pelo painel.
-- [ ] Cada pagina publicada tem caminho de navegacao pela Home, menu, categoria ou link contextual.
+- [ ] Cliente edita texto, imagem, alt, CTA e produtos relacionados no painel.
 - [ ] Reprovisionamento nao sobrescreve conteudo editado.
+- [ ] Nenhuma pagina publicada fica orfa.
 
-### Sessao 02 - Eventos Pet e composicoes compraveis
+### Sessao 02 - Animal Republik
 
-- [ ] Criar pagina de entrada para Eventos Pet.
-- [ ] Permitir listar ocasioes/eventos quando houver catalogo suficiente.
-- [ ] Modelar composicoes visuais com produtos explicitamente identificados.
-- [ ] Exibir personalizacao, prazo, quantidade minima e entrega somente a partir de regras cadastradas.
-
-**Gate verificavel**
-
-- [ ] Cada composicao publicada linka produtos ativos e compraveis.
-- [ ] Sem produto ativo, a composicao nao promete compra indisponivel.
-- [ ] Conteudo de evento tem valor proprio e nao e apenas uma grade repetida.
-
-### Sessao 03 - Animal Republik e materiais aprovados
-
-- [ ] Criar estrutura da pagina dedicada a Animal Republik.
-- [ ] Bloquear publicacao ate receber identidade, imagens, catalogo e regras aprovadas.
-- [ ] Garantir coexistencia da marca com header, footer, acessibilidade e fluxo comum da loja.
-- [ ] Relacionar produtos sem duplicar paginas de catalogo, carrinho ou checkout.
+- [ ] Criar pagina `/animal-republik/` com hero editavel.
+- [ ] Registrar Animal Republik como fornecedor oficial em texto editavel.
+- [ ] Usar imagem temporaria coerente com cosmeticos pet/cuidados profissionais quando nao houver banner oficial.
+- [ ] Selecionar produtos reais via `petshop/product-grid`.
+- [ ] Preparar substituicao posterior de logo/banner/fotos pelo cliente, sem codigo.
 
 **Gate verificavel**
 
-- [ ] Conteudo nao aprovado permanece em rascunho ou visivelmente bloqueado para publicacao.
-- [ ] Produtos Animal Republik usam o fluxo WooCommerce comum.
-- [ ] A pagina nao altera marca parceira sem material aprovado.
+- [ ] A pagina nao usa material de marca nao aprovado como se fosse oficial.
+- [ ] Produtos Animal Republik levam para PDPs WooCommerce comuns.
+- [ ] Hero, imagem, alt e copy sao editaveis em Gutenberg.
 
-### Sessao 04 - Premium, bandanas/adesivos e capas de chuva
+### Sessao 03 - Premium
 
-- [ ] Criar landing/categoria para Produtos premium com imagens de alta qualidade e dados de compra visiveis.
-- [ ] Criar pagina para Bandanas e adesivos personalizados com materiais, dimensoes e instrucoes.
-- [ ] Criar pagina para Capas de chuva personalizadas com guia de medidas, tamanhos, materiais, cuidados e frete.
-- [ ] Integrar personalizacao ao Plano 012 quando o produto exigir campos, upload, previa, aprovacao ou prazo adicional.
-- [ ] Bloquear alegacoes de fixacao, exclusividade, seguranca ou conforto sem evidencia aprovada.
-
-**Gate verificavel**
-
-- [ ] Preco, prazo, variacoes e compra permanecem visiveis e consistentes.
-- [ ] Frete por CEP continua disponivel antes da compra nas paginas/produtos aplicaveis.
-- [ ] Alegacoes sensiveis possuem fonte registrada ou nao sao publicadas.
-
-### Sessao 05 - Por Raca e inspiracao sem promessa indevida
-
-- [ ] Criar indice Por Raca com busca/navegacao alfabetica somente se o volume justificar.
-- [ ] Criar paginas ou termos para racas/perfis com composicoes de produtos existentes.
-- [ ] Diferenciar inspiracao visual de recomendacao de tamanho.
-- [ ] Linkar guia de medidas e produto como fonte da decisao de tamanho.
-- [ ] Planejar evolucao RF-BRD-005 apenas se a operacao precisar publicar novas racas sem suporte tecnico.
+- [ ] Criar pagina `/premium/` ou `/produtos-premium/`, conforme slug aprovado.
+- [ ] Definir criterio editorial de premium sem alegacoes sensiveis nao comprovadas.
+- [ ] Selecionar produtos premium manualmente pelo bloco de vitrine.
+- [ ] Exibir CTA para compra sem esconder preco, variacoes ou acesso a PDP.
 
 **Gate verificavel**
 
-- [ ] Pagina de raca nao promete adequacao sem medidas aprovadas.
-- [ ] Cada composicao lista produtos utilizados e leva a PDPs reais.
-- [ ] Conteudo proprio evita paginas finas compostas somente por grade.
+- [ ] Pagina Premium tem conteudo proprio alem da grade de produto.
+- [ ] Produtos selecionados estao ativos e compraveis.
+- [ ] Nenhuma alegacao como exclusividade, resistencia ou conforto e publicada sem fonte aprovada.
 
-### Sessao 06 - Home, navegacao, SEO e regressao
+### Sessao 04 - Regressao, SEO e documentacao
 
-- [ ] Adicionar modulos de entrada na Home somente para frentes com pagina publicavel.
-- [ ] Atualizar menu principal conforme nomes aprovados.
-- [ ] Validar breadcrumbs, canonical, titulos, descriptions e sitemap.
-- [ ] Testar mobile, teclado, leitor de tela basico, links quebrados, console e layout.
-- [ ] Atualizar `docs/guia-edicao-home.md` e guia administrativo das paginas comerciais.
+- [ ] Validar mobile, teclado, foco, contraste, overflow e console.
+- [ ] Validar breadcrumbs, canonical, titulos e sitemap das paginas publicadas.
+- [ ] Atualizar guia administrativo com como editar hero, imagens, CTA e vitrine.
+- [ ] Registrar o fluxo para substituir o banner placeholder por material aprovado.
 
 **Gate verificavel**
 
-- [ ] Nenhuma pagina comercial publicada fica orfa.
-- [ ] Paginas Eventos e Por Raca possuem conteudo proprio util para SEO.
-- [ ] Home nao vira uma sequencia excessiva de banners e preserva foco em compra.
+- [ ] Animal Republik e Premium aparecem na navegacao definida.
+- [ ] Paginas publicadas possuem metadados, conteudo proprio e produtos reais.
+- [ ] Home nao vira sequencia excessiva de banners.
 
-## 6. Fora de escopo
+## 8. Fora de escopo
 
-- Implementar pagamentos, frete real, politicas e backup de publicacao, cobertos pelo Plano 017.
+- Por Raca.
+- Criacao pelo cliente de novas paginas comerciais semelhantes.
 - Implementar editor visual, uploads, arquivos privados e fila de producao, cobertos pelo Plano 012.
-- Criar area profissional/laceiros, coberta pelo Plano 019.
-- Publicar materiais Animal Republik sem aprovacao.
-- Criar recomendacao automatica de tamanho por raca sem regras e medidas aprovadas.
+- Implementar pagamentos, frete real, politicas e backup de publicacao, cobertos pelo Plano 017.
+- Publicar materiais oficiais Animal Republik sem aprovacao do cliente/fornecedor.
+- Criar fluxo de checkout, carrinho ou PDP paralelo.
 
-## 7. Criterios de aceite globais
+## 9. Criterios de aceite globais
 
-- [ ] Eventos Pet, Animal Republik, Premium, Por Raca, Bandanas/Adesivos e Capas de Chuva possuem plano de publicacao claro: publicado com conteudo aprovado ou bloqueado como rascunho.
-- [ ] Cada pagina publicada possui titulo, conteudo, CTA, caminho de navegacao, metadados e links para produtos ativos.
-- [ ] Textos, imagens, alt, CTAs, composicoes e produtos relacionados sao administraveis no WordPress.
+- [ ] Animal Republik e Premium possuem paginas comerciais editaveis no Gutenberg.
+- [ ] Cada pagina publicada possui hero/intro, CTA, caminho de navegacao, metadados e vitrine com produtos ativos.
+- [ ] Textos, imagens, alt, CTAs e produtos relacionados sao administraveis no WordPress.
+- [ ] Navbar ou menu equivalente leva as paginas publicadas sem hardcode.
 - [ ] Nenhuma alegacao sensivel e publicada sem evidencia ou aprovacao comercial registrada.
-- [ ] Produtos dessas frentes usam o catalogo, PDP, carrinho e checkout comuns.
+- [ ] Produtos usam catalogo, PDP, carrinho e checkout comuns.
 - [ ] Mobile, teclado, foco, contraste e ausencia de overflow foram verificados.
 - [ ] Reprovisionamento nao sobrescreve edicoes editoriais.
 
-## 8. Criterio de conclusao
+## 10. Criterio de conclusao
 
-O Plano 018 so podera ser concluido quando as paginas comerciais P1 estiverem publicadas com materiais aprovados ou formalmente bloqueadas, e quando cada frente publicada apontar para produtos reais do catalogo, sem conteudo hardcoded, paginas orfas, promessas nao validadas ou fluxo de compra paralelo.
+O Plano 018 so podera ser concluido quando Animal Republik e Premium estiverem publicadas ou formalmente bloqueadas como rascunho, com conteudo editavel no Gutenberg, vitrines alimentadas por produtos reais selecionados pelo cliente, navegacao coerente e nenhum texto, imagem, CTA, relacao de produto ou promessa comercial dependendo de alteracao de codigo.
