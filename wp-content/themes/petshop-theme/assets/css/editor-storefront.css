@@ -171,8 +171,18 @@
 }
 
 .editor-styles-wrapper .petshop-product-grid-editor__preview .woocommerce ul.products li.product .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   width: calc(100% - (var(--space-2, 1rem) * 2));
-  margin-bottom: var(--space-2, 1rem);
+  max-width: calc(100% - (var(--space-2, 1rem) * 2));
+  min-height: 44px;
+  margin: var(--space-2, 1rem);
+  border-radius: var(--radius-pill);
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
 }
 
 @media (max-width: 1100px) {

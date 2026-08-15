@@ -171,10 +171,16 @@ add_action(
             <?php if (has_nav_menu('petshop-primary')) : ?>
                 <div class="petshop-commercial-header__navigation">
                     <div class="ct-container">
+                        <button class="petshop-commercial-header__menu-toggle" type="button" aria-expanded="false" aria-controls="petshop-commercial-menu-panel">
+                            <span class="petshop-commercial-header__menu-icon" aria-hidden="true"></span>
+                            <span><?php esc_html_e('Categorias', 'petshop-theme'); ?></span>
+                        </button>
                         <?php
                         wp_nav_menu([
                             'theme_location' => 'petshop-primary',
                             'container' => 'nav',
+                            'container_id' => 'petshop-commercial-menu-panel',
+                            'container_class' => 'petshop-commercial-header__menu-panel',
                             'container_aria_label' => __('Categorias e coleções', 'petshop-theme'),
                             'menu_class' => 'petshop-commercial-menu',
                             'depth' => 2,
@@ -188,6 +194,51 @@ add_action(
         <?php
     },
     5
+);
+
+add_action(
+    'wp_footer',
+    static function (): void {
+        ?>
+        <script>
+            (() => {
+                const header = document.querySelector('.petshop-commercial-header');
+                const toggle = header?.querySelector('.petshop-commercial-header__menu-toggle');
+                const panel = header?.querySelector('#petshop-commercial-menu-panel');
+
+                if (!header || !toggle || !panel) {
+                    return;
+                }
+
+                const close = () => {
+                    toggle.setAttribute('aria-expanded', 'false');
+                    header.classList.remove('is-menu-open');
+                };
+
+                toggle.addEventListener('click', () => {
+                    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                    toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                    header.classList.toggle('is-menu-open', !expanded);
+                });
+
+                panel.addEventListener('click', (event) => {
+                    if (event.target instanceof HTMLAnchorElement) {
+                        close();
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        close();
+                    }
+                });
+
+                window.matchMedia('(min-width: 768px)').addEventListener('change', close);
+            })();
+        </script>
+        <?php
+    },
+    20
 );
 
 add_action(
