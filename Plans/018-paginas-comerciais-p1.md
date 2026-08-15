@@ -6,7 +6,9 @@
 
 **Branch sugerida:** `018-paginas-comerciais-p1`
 
-**Dependencias:** [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) concluido; [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para publicacao comercial segura.
+**Dependencias:** [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) concluido.
+
+**Relacao com o Plano 017:** o Plano 018 nao depende da conclusao integral do [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para criar, revisar ou publicar paginas comerciais com produtos reais, desde que o escopo nao prometa go-live completo da loja. O Plano 017 continua sendo gate para publicacao operacional completa quando houver compra real ponta a ponta com pagamento, frete, emails, politicas, monitoramento, backup e acessibilidade manual validados.
 
 **Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2.pdf`, secoes 3, 5, 12, 14.1, 14.2, 16.4, 17.2, 18.1, 19 e 20; alinhamento de produto em 2026-08-12.
 
