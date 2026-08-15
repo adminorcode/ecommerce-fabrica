@@ -235,17 +235,23 @@ Exibidas automaticamente a partir de **avaliações aprovadas** nos produtos (**
 
 
 
-## 11. Banner de atendimento (final)
+## 11. Secao de atendimento (final)
 
-**Onde:** bloco **Imagem** dentro do grupo `petshop-support-banner`, no final da Home — igual ao hero, editável direto no Gutenberg.
+**Onde:** grupo `petshop-support-banner`, no final da Home, editavel direto no Gutenberg.
 
 | Item | Como editar |
 | --- | --- |
-| Imagem | Clique no bloco **Imagem** → **Substituir** → Biblioteca de mídia |
-| Link de destino | Com a imagem selecionada → painel lateral → **Link** → informe a URL (ex.: WhatsApp) |
-| Texto alternativo | Painel lateral da imagem → **Texto alternativo** |
+| Eyebrow, titulo, texto e beneficio | Edite os blocos **Paragrafo** e **Titulo** dentro do grupo. |
+| CTA | Bloco **Botoes** -> **Botao**. Edite o rotulo e a URL. Use preferencialmente `https://wa.me/<numero>` com DDI e DDD, sem espacos. |
+| Imagem desktop | Bloco **Imagem** com classe `petshop-support-banner__image--desktop` -> **Substituir** -> Biblioteca de midia. Tamanho utilizado/sugerido: 1920 x 640 px. |
+| Imagem mobile | Bloco **Imagem** com classe `petshop-support-banner__image--mobile` -> **Substituir** -> Biblioteca de midia. Tamanho utilizado/sugerido: 1080 x 1350 px. |
+| Texto alternativo | Painel lateral de cada imagem -> **Texto alternativo**. |
 
-O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_banner]` na Home — ele foi substituído por blocos nativos para permitir edição visual.
+A imagem e apenas apoio visual; nao coloque texto, telefone, preco, CTA ou logo do WhatsApp dentro da arte. O conteudo deve continuar legivel sem a foto.
+
+O provisionamento inicial usa WhatsApp global valido em formato `https://wa.me/<numero>` quando existir. Sem URL valida, o botao aponta para a pagina de atendimento como fallback editavel; depois de configurar o canal oficial, edite o botao na Home para usar o link de WhatsApp.
+
+Se uma atualizacao preservar o banner antigo como imagem unica, substitua manualmente pelo padrao novo: adicione um **Grupo** com classe `petshop-support-banner`, inclua os textos, um unico botao e as duas imagens acima. Nao use o shortcode `[petshop_support_banner]` na Home.
 
 
 
@@ -273,7 +279,6 @@ O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_b
 
 | Título alternativo de destaques (sem vendas) | **Personalizar → Conteúdo da loja** |
 
-| Banner de atendimento da Home | **Páginas → Home** (bloco Imagem no grupo `petshop-support-banner`) |
+| Secao de atendimento da Home | **Páginas → Home** (grupo `petshop-support-banner`, textos, botao e imagens nativas) |
 
 | Logo | **Personalizar → Identidade do site** |
-

@@ -143,6 +143,7 @@ final class StorefrontExperience
 
         return (int) get_post_meta($homeId, '_petshop_home_schema_version', true)
             < \Petshop\Core\Migration\HomeMigrator::currentSchema()
-            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl)
+            || \Petshop\Core\Migration\HomeMigrator::needsSupportSectionRepair($content);
     }
 }

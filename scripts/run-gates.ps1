@@ -50,6 +50,7 @@ Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
 Invoke-EvalFile 'validate-014-identity-campaigns.php'
+Invoke-EvalFile 'validate-015-support-section.php'
 Invoke-EvalFile 'validate-016-product-grid.php'
 
 if ($ContentAudit) {

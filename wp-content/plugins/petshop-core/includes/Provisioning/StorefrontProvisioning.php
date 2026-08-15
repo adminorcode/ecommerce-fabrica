@@ -260,6 +260,27 @@ trait StorefrontProvisioning
         return self::ensureSupportBannerAttachment();
     }
 
+    /**
+     * @return array{desktop: int, mobile: int}
+     */
+    public static function supportSectionAttachments(): array
+    {
+        return [
+            'desktop' => self::ensureSupportSectionAttachment(
+                'support-section-desktop-v2',
+                'atendimento-home-desktop.png',
+                __('Atendimento da Home - imagem desktop', 'petshop-core'),
+                __('Atendimento por mensagem junto a acessórios pet e embalagem de pedido.', 'petshop-core')
+            ),
+            'mobile' => self::ensureSupportSectionAttachment(
+                'support-section-mobile-v2',
+                'atendimento-home-mobile.png',
+                __('Atendimento da Home - imagem mobile', 'petshop-core'),
+                __('Celular com conversa de atendimento ao lado de acessórios pet e cachorro.', 'petshop-core')
+            ),
+        ];
+    }
+
     private static function ensureSupportBannerAttachment(): int
     {
         $existingId = (int) get_option('petshop_support_banner_attachment_id');
@@ -301,6 +322,50 @@ trait StorefrontProvisioning
             __('Precisa de ajuda para escolher? Fale com nossa equipe no WhatsApp.', 'petshop-core')
         );
         update_option('petshop_support_banner_attachment_id', (int) $attachmentId, false);
+
+        return (int) $attachmentId;
+    }
+
+    private static function ensureSupportSectionAttachment(string $key, string $filename, string $title, string $alt): int
+    {
+        $option = 'petshop_' . str_replace('-', '_', $key) . '_attachment_id';
+        $existingId = (int) get_option($option);
+        if ($existingId > 0 && get_post($existingId) instanceof \WP_Post) {
+            return $existingId;
+        }
+
+        $placeholder = self::placeholderAttachment($key);
+        if ($placeholder > 0) {
+            update_option($option, $placeholder, false);
+
+            return $placeholder;
+        }
+
+        $source = get_stylesheet_directory() . '/assets/images/' . $filename;
+        if (!is_readable($source)) {
+            return 0;
+        }
+
+        $upload = wp_upload_bits($filename, null, (string) file_get_contents($source));
+        if (!empty($upload['error'])) {
+            return 0;
+        }
+
+        $attachmentId = wp_insert_attachment([
+            'post_mime_type' => 'image/png',
+            'post_title' => $title,
+            'post_status' => 'inherit',
+        ], $upload['file']);
+
+        if (is_wp_error($attachmentId)) {
+            return 0;
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        wp_update_attachment_metadata($attachmentId, wp_generate_attachment_metadata($attachmentId, $upload['file']));
+        update_post_meta($attachmentId, '_petshop_placeholder_key', $key);
+        update_post_meta($attachmentId, '_wp_attachment_image_alt', $alt);
+        update_option($option, (int) $attachmentId, false);
 
         return (int) $attachmentId;
     }

@@ -59,13 +59,75 @@
 }
 
 .editor-styles-wrapper .petshop-support-banner.petshop-section {
-  padding-block-start: var(--space-3);
+  width: 100%;
+  padding-block: var(--space-3);
+}
+
+.editor-styles-wrapper .petshop-support-banner__inner {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(18rem, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--brand-teal-900), var(--brand-teal-700));
+  color: var(--white);
+}
+
+.editor-styles-wrapper .petshop-support-banner__inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='.16'%3E%3Cellipse cx='36' cy='28' rx='5' ry='7' transform='rotate(-18 36 28)'/%3E%3Cellipse cx='50' cy='25' rx='5' ry='7'/%3E%3Cellipse cx='64' cy='29' rx='5' ry='7' transform='rotate(18 64 29)'/%3E%3Cellipse cx='30' cy='42' rx='5' ry='7' transform='rotate(-36 30 42)'/%3E%3Cellipse cx='70' cy='43' rx='5' ry='7' transform='rotate(36 70 43)'/%3E%3Cpath d='M50 39c10 0 19 10 19 19 0 7-5 10-11 7-4-2-6-3-8-3s-4 1-8 3c-6 3-11 0-11-7 0-9 9-19 19-19z'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: 18px 12px;
+  background-size: 112px 112px;
+  opacity: .22;
+  pointer-events: none;
+}
+
+.editor-styles-wrapper .petshop-support-banner__content {
+  position: relative;
+  max-width: 28rem;
+}
+
+.editor-styles-wrapper .petshop-support-banner__title {
+  color: var(--white);
+  font-size: 2.4rem;
+  line-height: 1.08;
+}
+
+.editor-styles-wrapper .petshop-support-banner__eyebrow,
+.editor-styles-wrapper .petshop-support-banner__text,
+.editor-styles-wrapper .petshop-support-banner__benefit {
+  color: var(--neutral-100);
+}
+
+.editor-styles-wrapper .petshop-support-banner__media {
+  position: relative;
+  width: 100%;
 }
 
 .editor-styles-wrapper .petshop-support-banner__image img {
-  max-height: 400px;
+  width: 100%;
+  aspect-ratio: 3 / 1;
   object-fit: cover;
   object-position: center;
+  border-radius: var(--radius-md);
+}
+
+.editor-styles-wrapper .petshop-support-banner__image--mobile img {
+  aspect-ratio: 4 / 5;
+}
+
+.editor-styles-wrapper .petshop-support-banner__button .wp-block-button__link {
+  min-height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-orange-action);
+  color: var(--white);
+  font-weight: 800;
 }
 
 .editor-styles-wrapper .petshop-home-campaigns-editor,

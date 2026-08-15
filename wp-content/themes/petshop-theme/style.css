@@ -1660,6 +1660,106 @@ a:hover { color: var(--color-brand-orange-dark); }
   margin-inline: auto;
 }
 
+.petshop-support-banner.petshop-section {
+  width: min(100% - 2rem, var(--container-max));
+  padding: var(--space-4) 0 var(--space-5);
+}
+
+.petshop-support-banner__inner {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(18rem, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 320px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--brand-teal-900), var(--brand-teal-700));
+  color: var(--white);
+  overflow: hidden;
+}
+
+.petshop-support-banner__inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='.16'%3E%3Cellipse cx='36' cy='28' rx='5' ry='7' transform='rotate(-18 36 28)'/%3E%3Cellipse cx='50' cy='25' rx='5' ry='7'/%3E%3Cellipse cx='64' cy='29' rx='5' ry='7' transform='rotate(18 64 29)'/%3E%3Cellipse cx='30' cy='42' rx='5' ry='7' transform='rotate(-36 30 42)'/%3E%3Cellipse cx='70' cy='43' rx='5' ry='7' transform='rotate(36 70 43)'/%3E%3Cpath d='M50 39c10 0 19 10 19 19 0 7-5 10-11 7-4-2-6-3-8-3s-4 1-8 3c-6 3-11 0-11-7 0-9 9-19 19-19z'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: 18px 12px;
+  background-size: 112px 112px;
+  opacity: .22;
+  pointer-events: none;
+}
+
+.petshop-support-banner__content {
+  position: relative;
+  max-width: 28rem;
+}
+
+.petshop-support-banner__eyebrow,
+.petshop-support-banner__benefit {
+  margin: 0;
+  color: var(--neutral-100);
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.petshop-support-banner__eyebrow {
+  color: color-mix(in srgb, var(--brand-aqua-400) 72%, var(--white));
+}
+
+.petshop-support-banner h2.petshop-support-banner__title {
+  margin: var(--space-1) 0 0;
+  color: var(--white);
+  font-size: 3rem;
+  line-height: 1.05;
+}
+
+.petshop-support-banner__text {
+  margin: var(--space-2) 0 0;
+  color: var(--neutral-100);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.petshop-support-banner__benefit {
+  margin-top: var(--space-2);
+}
+
+.petshop-support-banner__actions {
+  margin-top: var(--space-3);
+}
+
+.petshop-support-banner__button .wp-block-button__link {
+  min-height: 44px;
+  padding: .85rem 1.35rem;
+  border: 2px solid var(--brand-orange-action);
+  border-radius: var(--radius-pill);
+  background: var(--brand-orange-action);
+  color: var(--white);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.petshop-support-banner__button .wp-block-button__link:hover,
+.petshop-support-banner__button .wp-block-button__link:focus-visible {
+  border-color: var(--color-brand-orange-hover);
+  background: var(--color-brand-orange-hover);
+  color: var(--white);
+}
+
+.petshop-support-banner__button .wp-block-button__link:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.petshop-support-banner__media {
+  position: relative;
+  width: 100%;
+}
+
 .petshop-support-banner .wp-block-image,
 figure.petshop-support-banner__image {
   margin: 0;
@@ -1667,46 +1767,25 @@ figure.petshop-support-banner__image {
   line-height: 0;
 }
 
-.petshop-support-banner .wp-block-image a,
-figure.petshop-support-banner__image a {
-  display: block;
-  max-height: 400px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  line-height: 0;
-}
-
-.petshop-support-banner .wp-block-image a:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 4px;
-}
-
 .petshop-support-banner .wp-block-image img,
 .petshop-support-banner__image img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 400px;
+  height: 100%;
+  min-height: 280px;
+  aspect-ratio: 3 / 1;
+  border-radius: var(--radius-md);
   object-fit: cover;
   object-position: center;
-}
-
-.petshop-support-banner__link {
-  display: block;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  line-height: 0;
-}
-
-.petshop-support-banner__link:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 4px;
 }
 
 .petshop-support-banner__image {
   display: block;
   width: 100%;
-  max-height: 400px;
+}
+
+.petshop-support-banner__image--mobile {
+  display: none;
 }
 
 .petshop-home-campaigns {
@@ -3207,6 +3286,50 @@ footer.ct-footer .ct-footer-copyright {
 
   .petshop-home-campaigns__cta {
     width: 100%;
+  }
+
+  .petshop-support-banner.petshop-section {
+    width: min(100% - 1rem, var(--container-max));
+    padding-block: var(--space-3);
+  }
+
+  .petshop-support-banner__inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    min-height: 0;
+    padding: var(--space-4);
+  }
+
+  .petshop-support-banner__content {
+    max-width: none;
+    order: 1;
+  }
+
+  .petshop-support-banner h2.petshop-support-banner__title {
+    font-size: 2rem;
+  }
+
+  .petshop-support-banner__media {
+    order: 2;
+  }
+
+  .petshop-support-banner__button,
+  .petshop-support-banner__button .wp-block-button__link {
+    width: 100%;
+  }
+
+  .petshop-support-banner__image--desktop {
+    display: none;
+  }
+
+  .petshop-support-banner__image--mobile {
+    display: block;
+  }
+
+  .petshop-support-banner .wp-block-image img,
+  .petshop-support-banner__image img {
+    aspect-ratio: 4 / 5;
+    min-height: 0;
   }
 }
 

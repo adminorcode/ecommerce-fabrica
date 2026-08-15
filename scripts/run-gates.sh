@@ -81,6 +81,7 @@ run_eval_file test-013-persistence.php
 run_eval_file validate-013-hpos.php
 run_eval_file validate-013-security.php
 run_eval_file validate-014-identity-campaigns.php
+run_eval_file validate-015-support-section.php
 run_eval_file validate-016-product-grid.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then

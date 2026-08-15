@@ -140,7 +140,8 @@ final class StorefrontProvisioner
         $shopUrl = (string) wc_get_page_permalink('shop');
 
         return (int) get_post_meta($homeId, '_petshop_home_schema_version', true) < HomeMigrator::currentSchema()
-            || HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+            || HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl)
+            || HomeMigrator::needsSupportSectionRepair($content);
     }
 
     public static function stampManagedHome(int $homeId, string $shopUrl, int $heroId): void
