@@ -249,6 +249,16 @@ Exibidas automaticamente a partir de **avaliações aprovadas** nos produtos (**
 
 A imagem e apenas apoio visual; nao coloque texto, telefone, preco, CTA ou logo do WhatsApp dentro da arte. O conteudo deve continuar legivel sem a foto.
 
+Alturas esperadas no storefront:
+
+| Breakpoint | Midia exibida | Proporcao renderizada |
+| --- | --- | --- |
+| Desktop amplo | Desktop | 3:1 dentro do painel de midia. |
+| Tablet | Desktop | 3:1, com a secao empilhada para evitar painel estreito. |
+| Mobile (< 768 px) | Mobile | 4:5. |
+
+Nao use imagem desktop com area vazia reservada para texto. A copy fica nos blocos da coluna de conteudo; a imagem deve preencher o quadro.
+
 O provisionamento inicial usa WhatsApp global valido em formato `https://wa.me/<numero>` quando existir. Sem URL valida, o botao aponta para a pagina de atendimento como fallback editavel; depois de configurar o canal oficial, edite o botao na Home para usar o link de WhatsApp.
 
 Se uma atualizacao preservar o banner antigo como imagem unica, substitua manualmente pelo padrao novo: adicione um **Grupo** com classe `petshop-support-banner`, inclua os textos, um unico botao e as duas imagens acima. Nao use o shortcode `[petshop_support_banner]` na Home.

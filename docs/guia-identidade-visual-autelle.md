@@ -182,6 +182,7 @@ Evitar animais artificiais, anatomia incorreta, saturação excessiva, cenários
 
 | Mídia | Desktop | Mobile | Uso e composição |
 |---|---:|---:|---|
+| Secao de atendimento da Home | 1920 x 640 px (3:1) | 1080 x 1350 px (4:5) | Usar no grupo `petshop-support-banner`. O CSS coloca copy em coluna propria e a imagem ocupa somente o painel de midia. Em desktop largo a imagem renderiza em 3:1; em tablet a secao empilha e preserva 3:1; em mobile renderiza 4:5. |
 | Hero institucional | 2400 × 900 px (8:3) | 1080 × 1350 px (4:5) | Copy é HTML/Gutenberg: ocupar até 40% da largura no desktop, à esquerda. Pet/pessoa/produto ocupa o lado direito. Nunca gerar texto ou CTA na foto. |
 | Banner promocional ou sazonal editorial | 1920 × 640 px (3:1) | 1080 × 1350 px (4:5) | Reservar cerca de 40% para copy da interface e 60% para foto/produto. Usar uma ação principal. |
 | Banner de arte final | 1920 × 640 px (3:1) | 1080 × 1350 px (4:5) | Permitido para peça fechada com texto incorporado; exigir as duas versões e área segura de 8% em todos os lados. |
@@ -200,6 +201,10 @@ As dimensões são de entrega, não de exibição literal. O WordPress gera vers
 - Hero e banner editorial mobile: usar arte vertical própria. Manter o assunto na faixa central/superior e deixar a copy fora da imagem, em blocos Gutenberg.
 - Arte final: manter texto, logo, preço e CTA a pelo menos 8% das quatro bordas; não presumir que o corte desktop funciona em mobile.
 - Produto: enquadrar o item inteiro, sem corte em laços, gravatas, fechos ou acabamento. Usar o mesmo ângulo/fundo na imagem principal de uma mesma variação.
+- Secao de atendimento da Home: nao aplicar a regra de reservar 40% para copy dentro da imagem. Essa secao usa o CSS `petshop-support-banner`: copy em coluna separada, midia em painel proprio, desktop 3:1 e mobile 4:5 com `object-fit: cover`.
+- Secao de atendimento da Home desktop: preencher o quadro 1920 x 640 px com assunto no centro ou levemente a direita; nao usar faixa vazia, degrade reservado para texto, telefone, CTA, logo do WhatsApp ou copy dentro da arte.
+- Secao de atendimento da Home mobile: criar arte vertical propria em 1080 x 1350 px; nao reaproveitar corte horizontal.
+- Banner promocional/sazonal full-width: a altura renderizada deve seguir 3:1. Em container de 1280 px, a altura esperada e aproximadamente 427 px; nao limitar para 320 px quando a fonte for 1920 x 640 px.
 - Antes de publicar, revisar o ponto focal no Gutenberg e nos breakpoints de 390, 768, 1024 e 1440 px.
 
 ### Formatos, otimização e acessibilidade

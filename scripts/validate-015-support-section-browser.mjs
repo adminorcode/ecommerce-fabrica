@@ -7,6 +7,7 @@ const canonicalHost = process.env.PETSHOP_CANONICAL_HOST || new URL(publicUrl).h
 const evidenceDir = createEvidenceDirectory('015');
 const failures = [];
 const browser = await launchBrowser();
+const ratioWithin = (actual, expected, tolerance = 0.03) => Math.abs(actual - expected) <= tolerance;
 
 try {
   for (const viewport of [
@@ -73,6 +74,17 @@ try {
       const desktopImage = section.querySelector('.petshop-support-banner__image--desktop img');
       const mobileImage = section.querySelector('.petshop-support-banner__image--mobile img');
       const visibleImages = [desktopImage, mobileImage].filter(visible);
+      const visibleImageRatios = visibleImages.map((image) => {
+        const rect = image.getBoundingClientRect();
+
+        return rect.height > 0 ? Number((rect.width / rect.height).toFixed(3)) : 0;
+      });
+      const visibleFigureRatios = visibleImages.map((image) => {
+        const figure = image.closest('.petshop-support-banner__image');
+        const rect = figure?.getBoundingClientRect();
+
+        return rect && rect.height > 0 ? Number((rect.width / rect.height).toFixed(3)) : 0;
+      });
       const order = [
         section.querySelector('.petshop-support-banner__eyebrow'),
         title,
@@ -108,6 +120,8 @@ try {
         desktopVisible: visible(desktopImage),
         mobileVisible: visible(mobileImage),
         visibleImageCount: visibleImages.length,
+        visibleImageRatios,
+        visibleFigureRatios,
         imageBroken: [desktopImage, mobileImage].some((image) => image && image.naturalWidth === 0),
         imageHasAlt: [desktopImage, mobileImage].every((image) => image && image.hasAttribute('alt')),
         overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
@@ -152,6 +166,19 @@ try {
     }
     if (viewport.width >= 768 && (!metrics.desktopVisible || metrics.mobileVisible)) {
       failures.push(`${viewport.name}: desktop/tablet deveria exibir somente imagem horizontal`);
+    }
+    if (metrics.visibleImageCount > 0) {
+      const expectedRatio = viewport.width < 768 ? 0.8 : 3;
+      metrics.visibleImageRatios.forEach((ratio, index) => {
+        if (!ratioWithin(ratio, expectedRatio)) {
+          failures.push(`${viewport.name}: imagem de atendimento ${index + 1} deveria renderizar proporcao ${expectedRatio}: recebido ${ratio}`);
+        }
+      });
+      metrics.visibleFigureRatios.forEach((ratio, index) => {
+        if (!ratioWithin(ratio, expectedRatio)) {
+          failures.push(`${viewport.name}: frame de atendimento ${index + 1} deveria renderizar proporcao ${expectedRatio}: recebido ${ratio}`);
+        }
+      });
     }
     if (metrics.contrast < 4.5) {
       failures.push(`${viewport.name}: contraste do titulo abaixo de AA (${metrics.contrast})`);
