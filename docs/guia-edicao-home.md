@@ -201,7 +201,27 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 9. Badges nos cards (promoção e mais pedido)
+## 9. Páginas comerciais P1
+
+**Onde:** **Páginas → Animal Republik** e **Páginas → Produtos premium**.
+
+| Item | Onde editar |
+| --- | --- |
+| Hero, título, texto, CTA e contexto editorial | Blocos nativos da própria página, no Gutenberg |
+| Imagem do hero | Selecione o bloco **Capa** → **Substituir** → Biblioteca de mídia |
+| Texto alternativo da imagem | Biblioteca de mídia ou painel lateral do bloco de imagem/capa |
+| Produtos exibidos em Animal Republik | Produtos publicados na categoria **Animal Republik**; os lançamentos importados também recebem a tag **Lançamentos Animal Republik** |
+| Produtos exibidos em Premium | Produtos publicados na categoria **Premium** |
+| Ordem, adição e remoção de produtos | Cadastro/categoria do produto em **Produtos**; as vitrines das páginas exibem até 20 itens |
+| Link "Ver tudo" | Cabeçalho da vitrine; aponta para **Loja** filtrada por **Animal Republik** ou **Premium**, com filtros e paginação do catálogo |
+| Preço, estoque, imagem e compra | Cadastro de cada item em **Produtos** |
+| Link na navbar | **Aparência → Menus** → menu ligado a **Navegação principal** |
+
+As imagens iniciais dessas páginas são placeholders gerados para o projeto. Substitua por material aprovado do cliente ou fornecedor antes de usar uma campanha oficial. O sistema não sobrescreve alterações editoriais salvas nessas páginas.
+
+---
+
+## 10. Badges nos cards (promoção e mais pedido)
 
 
 

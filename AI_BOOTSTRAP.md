@@ -145,6 +145,20 @@ npm run validate
 Equivalente a `bash scripts/run-gates.sh` (PowerShell: `./scripts/run-gates.ps1`).
 Scripts ficam montados em `/var/www/html/scripts` no serviço `cli`.
 
+Durante desenvolvimento, prefira o gate focado nos arquivos alterados:
+
+```powershell
+npm run validate:changed
+```
+
+Esse modo detecta arquivos modificados ou novos pelo Git, sincroniza plugin/tema/scripts para o runtime local, roda lint/check sintático e executa apenas os validators PHP associados. Quando a alteração tiver superfície visual, use:
+
+```powershell
+npm run validate:changed:browser
+```
+
+O gate completo `npm run validate` continua sendo o fechamento antes de concluir planos ou publicar uma entrega.
+
 Validação individual:
 
 ```powershell

@@ -8,6 +8,8 @@
     "up": "docker compose up --watch",
     "down": "docker compose down",
     "validate": "node scripts/run-gates.mjs",
+    "validate:changed": "node scripts/run-gates.mjs --changed",
+    "validate:changed:browser": "node scripts/run-gates.mjs --changed --browser",
     "test": "docker compose --profile test run --rm test-runner",
     "wp": "docker compose --profile tools run --rm --no-deps cli wp",
     "bootstrap:legacy": "node scripts/bootstrap-wp-env.mjs"

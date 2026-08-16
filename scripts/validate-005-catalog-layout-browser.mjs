@@ -38,6 +38,7 @@ try {
       orderings: await page.locator('.petshop-catalog-toolbar .woocommerce-ordering').count(),
       products: await main.locator('li.product').count(),
       labelProblems,
+      visibleThemeHeroes: await page.locator('.hero-section:visible').count(),
       overflow: await page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth)),
       pageErrors,
     };
@@ -50,6 +51,7 @@ try {
     if (record.resultCounts !== 1 || record.orderings !== 1) failures.push(`${viewport.name}: toolbar de catalogo divergente`);
     if (record.products < 1) failures.push(`${viewport.name}: grade de produtos ausente`);
     if (record.labelProblems) failures.push(`${viewport.name}: ${record.labelProblems} checkbox(es) sem rotulo valido`);
+    if (record.visibleThemeHeroes > 0) failures.push(`${viewport.name}: hero-section padrao do tema visivel no catalogo`);
     if (record.overflow > 1) failures.push(`${viewport.name}: overflow horizontal de ${record.overflow}px`);
     if (pageErrors.length) failures.push(`${viewport.name}: ${pageErrors.length} erro(s) de pagina`);
 

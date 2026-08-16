@@ -10,7 +10,7 @@ final class StorefrontExperience
 {
     use \Petshop\Core\Compatibility\StorefrontLegacyApi;
 
-    private const VERSION = '3.1.0';
+    private const VERSION = '3.2.0';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';

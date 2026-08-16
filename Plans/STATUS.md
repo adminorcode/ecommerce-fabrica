@@ -20,9 +20,10 @@
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Concluido | Secao de atendimento Gutenberg na Home, schema 26, CTA WhatsApp editavel com fallback para Atendimento, imagens 1920 x 640 e 1080 x 1350, gates PHP/browser validados |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
 | [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
-| [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Pendente | Animal Republik e premium podem avançar após o Plano 016; go-live completo da loja permanece condicionado aos gates do Plano 017 |
+| [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
+| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Pendente | Redesenha filtros de catálogo com toolbar, chips, accordions, painel com ação fixa e drawer responsivo inspirado em padrões de Petlove, Petz, Cobasi, Chewy e Amazon |
 
 ## Ordem recomendada de execução
 
@@ -49,7 +50,8 @@
   ├── 017 (fechamento P0 para publicação: pagamento, frete, políticas, SEO, CWV, backup e a11y)
   ├── 018 (páginas comerciais P1 após 016; publicação operacional completa respeita gates do 017)
   ├── 019 (profissionais/laceiros como entrega institucional P2)
-  └── 020 (header de checkout sem distrações e com aparência intencional)
+  ├── 020 (header de checkout sem distrações e com aparência intencional)
+  └── 021 (filtros de catálogo funcionais e responsivos)
 ```
 
 ## Origem
@@ -60,4 +62,6 @@ Planos 017–019 derivados da análise de lacunas do `Orcode_Requisitos_Website_
 
 Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação reduzida, mas redesenhar o header para comunicar fluxo de compra seguro e não parecer navbar quebrada.
 
-**Última atualização:** 2026-08-12 (Plano 015 concluído; próximos recomendados: 017 e 018)
+Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com padrões observados em Petlove, Petz, Cobasi, Chewy e Amazon.
+
+**Última atualização:** 2026-08-15 (Plano 021 criado para filtros de catálogo; próximos recomendados: 017, 019 e 021)

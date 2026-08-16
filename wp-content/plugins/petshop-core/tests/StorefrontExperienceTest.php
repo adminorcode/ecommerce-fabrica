@@ -146,8 +146,8 @@ final class StorefrontExperienceTest extends TestCase
 
     public function testHomeMigratorExposesTheCanonicalSchemaRegistry(): void
     {
-        self::assertSame(25, HomeMigrator::currentSchema());
-        self::assertSame(range(7, 25), array_keys(HomeMigrator::registry()));
+        self::assertSame(26, HomeMigrator::currentSchema());
+        self::assertSame(range(7, 26), array_keys(HomeMigrator::registry()));
         self::assertNotContains(false, array_map('is_callable', HomeMigrator::registry()));
         $showcase = '[petshop_product_showcase title="Sentinela"]';
         self::assertSame($showcase, HomeMigrator::registry()[17]($showcase, '', '', 0));

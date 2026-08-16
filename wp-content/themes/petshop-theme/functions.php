@@ -8,12 +8,47 @@ add_filter('blocksy:builder:header:enabled', '__return_false');
 add_filter('blocksy:builder:footer:enabled', '__return_false');
 add_filter('blocksy:footer:theme-author', '__return_false');
 add_filter('blocksy:footer:copyright:value', static fn (): string => '');
+add_filter(
+    'blocksy:single:has-default-hero',
+    static function (bool $hasDefaultHero): bool {
+        if (function_exists('is_product') && is_product()) {
+            return false;
+        }
+
+        if (function_exists('is_woocommerce') && is_woocommerce()) {
+            return false;
+        }
+
+        if (!is_page()) {
+            return $hasDefaultHero;
+        }
+
+        $page = get_queried_object();
+        if (!$page instanceof \WP_Post) {
+            return $hasDefaultHero;
+        }
+
+        return (bool) get_post_meta((int) $page->ID, '_petshop_managed_commercial_page_018', true)
+            ? false
+            : $hasDefaultHero;
+    }
+);
+add_filter('blocksy:archive:has-default-hero', '__return_false');
+add_filter('blocksy:woocommerce:archive:has-default-hero', '__return_false');
+add_filter('blocksy:woo:archive:has-default-hero', '__return_false');
 
 add_filter(
     'body_class',
     static function (array $classes): array {
         if (is_page('lista-de-desejos')) {
             $classes[] = 'page-lista-de-desejos';
+        }
+
+        if (is_page()) {
+            $page = get_queried_object();
+            if ($page instanceof \WP_Post && get_post_meta((int) $page->ID, '_petshop_managed_commercial_page_018', true)) {
+                $classes[] = 'petshop-commercial-managed';
+            }
         }
 
         return $classes;

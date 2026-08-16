@@ -69,6 +69,10 @@ if [[ "$SKIP_PROVISION" -eq 0 ]]; then
   run_wp eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
   echo "==> fixtures administraveis do Plano 013"
   run_eval_file seed-013-catalog-samples.php
+  echo "==> produtos Animal Republik autorizados"
+  run_eval_file seed-animal-republik-launches.php
+  echo "==> vitrines comerciais com Ver tudo"
+  run_eval_file sync-commercial-page-catalog-links.php
 fi
 
 run_eval_file validate-storefront.php
@@ -83,6 +87,8 @@ run_eval_file validate-013-security.php
 run_eval_file validate-014-identity-campaigns.php
 run_eval_file validate-015-support-section.php
 run_eval_file validate-016-product-grid.php
+run_eval_file validate-018-commercial-pages.php
+run_eval_file validate-animal-republik-products.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then
   run_eval_file validate-004b.php
@@ -122,7 +128,7 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
   if [[ "$RUN_BROWSER" -eq 1 ]]; then
     echo "==> browser gates (container)"
-    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs; do
+    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-no-theme-hero-browser.mjs; do
       docker compose --profile tools run --rm node node "/workspace/scripts/$script"
     done
     docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
