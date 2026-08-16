@@ -54,3 +54,4 @@ Thumbs.db
 
 # Test and coverage artifacts
 coverage/
+outputs/

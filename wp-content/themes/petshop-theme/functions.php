@@ -138,11 +138,14 @@ add_action(
             $petshopDefault('petshop_benefit_text')
         );
         $benefitUrl = (string) get_theme_mod('petshop_benefit_url', '');
-        $supportPageId = (int) get_theme_mod('petshop_support_page', 0);
-        $supportPage = $supportPageId > 0 ? get_post($supportPageId) : null;
-        $supportUrl = $supportPage instanceof \WP_Post && $supportPage->post_status === 'publish'
-            ? (string) get_permalink($supportPage)
-            : '';
+        $supportUrl = trim((string) get_theme_mod('petshop_footer_whatsapp', ''));
+        if ($supportUrl === '') {
+            $supportPageId = (int) get_theme_mod('petshop_support_page', 0);
+            $supportPage = $supportPageId > 0 ? get_post($supportPageId) : null;
+            $supportUrl = $supportPage instanceof \WP_Post && $supportPage->post_status === 'publish'
+                ? (string) get_permalink($supportPage)
+                : '';
+        }
         $supportLabel = trim((string) get_theme_mod('petshop_support_label', $petshopDefault('petshop_support_label')));
         $checkoutAssuranceText = trim((string) get_theme_mod(
             'petshop_checkout_assurance_text',
@@ -170,6 +173,11 @@ add_action(
         <?php endif; ?>
         <header class="petshop-commercial-header" itemscope itemtype="https://schema.org/WPHeader">
             <div class="petshop-commercial-header__main ct-container">
+                <?php if (has_nav_menu('petshop-primary')) : ?>
+                    <button class="petshop-commercial-header__menu-toggle" type="button" aria-label="<?php esc_attr_e('Abrir categorias', 'petshop-theme'); ?>" aria-expanded="false" aria-controls="petshop-commercial-menu-panel">
+                        <span class="petshop-commercial-header__menu-icon" aria-hidden="true"></span>
+                    </button>
+                <?php endif; ?>
                 <div class="petshop-commercial-header__brand" itemscope itemtype="https://schema.org/Organization">
                     <?php if (has_custom_logo()) : ?>
                         <?php the_custom_logo(); ?>
@@ -204,24 +212,27 @@ add_action(
                 </nav>
             </div>
             <?php if (has_nav_menu('petshop-primary')) : ?>
+                <div class="petshop-commercial-header__menu-overlay" data-petshop-menu-overlay hidden></div>
                 <div class="petshop-commercial-header__navigation">
                     <div class="ct-container">
-                        <button class="petshop-commercial-header__menu-toggle" type="button" aria-expanded="false" aria-controls="petshop-commercial-menu-panel">
-                            <span class="petshop-commercial-header__menu-icon" aria-hidden="true"></span>
-                            <span><?php esc_html_e('Categorias', 'petshop-theme'); ?></span>
-                        </button>
+                        <div id="petshop-commercial-menu-panel" class="petshop-commercial-header__menu-panel" aria-label="<?php esc_attr_e('Categorias e coleções', 'petshop-theme'); ?>">
+                            <div class="petshop-commercial-header__drawer-head">
+                                <strong><?php esc_html_e('Categorias', 'petshop-theme'); ?></strong>
+                                <button class="petshop-commercial-header__drawer-close" type="button" aria-label="<?php esc_attr_e('Fechar categorias', 'petshop-theme'); ?>">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
                         <?php
                         wp_nav_menu([
                             'theme_location' => 'petshop-primary',
                             'container' => 'nav',
-                            'container_id' => 'petshop-commercial-menu-panel',
-                            'container_class' => 'petshop-commercial-header__menu-panel',
                             'container_aria_label' => __('Categorias e coleções', 'petshop-theme'),
                             'menu_class' => 'petshop-commercial-menu',
                             'depth' => 2,
                             'fallback_cb' => false,
                         ]);
                         ?>
+                        </div>
                     </div>
                 </div>
             <?php endif; ?>
@@ -240,6 +251,9 @@ add_action(
                 const header = document.querySelector('.petshop-commercial-header');
                 const toggle = header?.querySelector('.petshop-commercial-header__menu-toggle');
                 const panel = header?.querySelector('#petshop-commercial-menu-panel');
+                const overlay = header?.querySelector('[data-petshop-menu-overlay]');
+                const closeButton = header?.querySelector('.petshop-commercial-header__drawer-close');
+                const desktopQuery = window.matchMedia('(min-width: 768px)');
 
                 if (!header || !toggle || !panel) {
                     return;
@@ -248,12 +262,32 @@ add_action(
                 const close = () => {
                     toggle.setAttribute('aria-expanded', 'false');
                     header.classList.remove('is-menu-open');
+                    document.documentElement.classList.remove('petshop-menu-drawer-open');
+                    if (!desktopQuery.matches) {
+                        panel.setAttribute('aria-hidden', 'true');
+                    }
+                    if (overlay instanceof HTMLElement) {
+                        overlay.hidden = true;
+                    }
+                };
+
+                const open = () => {
+                    toggle.setAttribute('aria-expanded', 'true');
+                    header.classList.add('is-menu-open');
+                    document.documentElement.classList.add('petshop-menu-drawer-open');
+                    panel.setAttribute('aria-hidden', 'false');
+                    if (overlay instanceof HTMLElement) {
+                        overlay.hidden = false;
+                    }
                 };
 
                 toggle.addEventListener('click', () => {
                     const expanded = toggle.getAttribute('aria-expanded') === 'true';
-                    toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-                    header.classList.toggle('is-menu-open', !expanded);
+                    if (expanded) {
+                        close();
+                    } else {
+                        open();
+                    }
                 });
 
                 panel.addEventListener('click', (event) => {
@@ -262,13 +296,30 @@ add_action(
                     }
                 });
 
+                closeButton?.addEventListener('click', () => {
+                    close();
+                    toggle.focus();
+                });
+
+                overlay?.addEventListener('click', close);
+
                 document.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') {
                         close();
+                        toggle.focus();
                     }
                 });
 
-                window.matchMedia('(min-width: 768px)').addEventListener('change', close);
+                desktopQuery.addEventListener('change', () => {
+                    close();
+                    if (desktopQuery.matches) {
+                        panel.removeAttribute('aria-hidden');
+                    }
+                });
+
+                if (!desktopQuery.matches) {
+                    panel.setAttribute('aria-hidden', 'true');
+                }
             })();
         </script>
         <?php

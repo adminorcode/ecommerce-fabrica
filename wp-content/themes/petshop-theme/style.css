@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.3
+Version: 0.6.8
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -289,8 +289,9 @@ a:hover { color: var(--color-brand-orange-dark); }
   aspect-ratio: 1 / 1 !important;
   height: auto;
   border-radius: 0;
-  object-fit: cover;
-  background: var(--color-surface-soft);
+  object-fit: contain;
+  padding: clamp(.35rem, 1.6vw, .75rem);
+  background: var(--color-surface);
 }
 
 .woocommerce ul.products li.product .woocommerce-loop-product__title {
@@ -1122,18 +1123,29 @@ a:hover { color: var(--color-brand-orange-dark); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .625rem;
-  width: 100%;
+  flex-shrink: 0;
+  width: 44px;
   min-height: 44px;
+  min-width: 44px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
-  font-size: .9375rem;
-  font-weight: 700;
   line-height: 1.2;
   cursor: pointer;
+}
+
+.petshop-commercial-header__menu-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .petshop-commercial-header__menu-toggle:hover,
@@ -1165,12 +1177,88 @@ a:hover { color: var(--color-brand-orange-dark); }
 }
 
 .petshop-commercial-header__menu-panel {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  width: min(86vw, 22rem);
+  max-width: calc(100vw - 3rem);
+  padding: var(--space-3);
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 24px 72px rgb(37 36 38 / 22%);
+  transform: translateX(-105%);
+  transition: transform 180ms ease-out;
+  overflow-y: auto;
+}
+
+.admin-bar .petshop-commercial-header__menu-panel,
+.admin-bar .petshop-commercial-header__menu-overlay {
+  top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+  .admin-bar .petshop-commercial-header__menu-panel,
+  .admin-bar .petshop-commercial-header__menu-overlay {
+    top: 46px;
+  }
+}
+
+.petshop-commercial-header__drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding-block-end: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-ink);
+}
+
+.petshop-commercial-header__drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.petshop-commercial-header__drawer-close:hover,
+.petshop-commercial-header__drawer-close:focus-visible {
+  border-color: var(--color-brand-teal-dark);
+  color: var(--color-brand-teal-dark);
+}
+
+.petshop-commercial-header__drawer-close:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.petshop-commercial-header__menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgb(37 36 38 / 44%);
+}
+
+.petshop-commercial-header__menu-overlay[hidden] {
   display: none;
-  padding-top: .5rem;
 }
 
 .petshop-commercial-header.is-menu-open .petshop-commercial-header__menu-panel {
-  display: block;
+  transform: translateX(0);
+}
+
+html.petshop-menu-drawer-open {
+  overflow: hidden;
 }
 
 .petshop-commercial-menu,
@@ -3033,8 +3121,25 @@ footer.ct-footer .ct-footer-copyright {
   }
 
   .petshop-commercial-header__menu-panel {
+    position: static;
+    inset: auto;
     display: block;
+    width: auto;
+    max-width: none;
     padding-top: 0;
+    padding-inline: 0;
+    padding-bottom: 0;
+    border-right: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    transition: none;
+    overflow: visible;
+  }
+
+  .petshop-commercial-header__drawer-head,
+  .petshop-commercial-header__menu-overlay {
+    display: none;
   }
 
   .petshop-commercial-menu {
@@ -3271,10 +3376,23 @@ footer.ct-footer .ct-footer-copyright {
   }
 
   .petshop-commercial-header__main {
-    grid-template-columns: minmax(6.5rem, 1fr) auto;
+    grid-template-columns: 44px minmax(5.5rem, 1fr) auto;
     gap: .5rem 1rem;
     min-height: auto;
     padding-block: .65rem;
+  }
+
+  .petshop-commercial-header__menu-toggle {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    justify-self: start;
+  }
+
+  .petshop-commercial-header__brand {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
   }
 
   .petshop-commercial-header__brand .custom-logo {
@@ -3288,7 +3406,29 @@ footer.ct-footer .ct-footer-copyright {
   }
 
   .petshop-commercial-header__actions {
+    grid-column: 3;
+    grid-row: 1;
     gap: var(--space-2);
+  }
+
+  .petshop-commercial-header__navigation {
+    border-top: 0;
+  }
+
+  .petshop-commercial-header__navigation .ct-container {
+    padding-block: 0;
+    overflow: visible;
+  }
+
+  .petshop-commercial-menu {
+    padding-block: var(--space-2);
+  }
+
+  .petshop-commercial-menu a {
+    justify-content: flex-start;
+    width: 100%;
+    padding-inline: .75rem;
+    text-align: left;
   }
 
   .petshop-distraction-free-checkout .petshop-commercial-header__main {
@@ -3301,6 +3441,14 @@ footer.ct-footer .ct-footer-copyright {
   .petshop-distraction-free-checkout .petshop-commercial-header__brand .custom-logo {
     width: min(7rem, 100%);
     max-height: 48px;
+  }
+
+  .petshop-distraction-free-checkout .petshop-commercial-header__menu-toggle {
+    display: none;
+  }
+
+  .petshop-distraction-free-checkout .petshop-commercial-header__brand {
+    grid-column: 1;
   }
 
   .petshop-distraction-free-checkout .petshop-checkout-header__assurance {
@@ -3439,6 +3587,13 @@ footer.ct-footer .ct-footer-copyright {
 
   .woocommerce ul.products.columns-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .woocommerce ul.products li.product figure img,
+  .woocommerce ul.products li.product img,
+  .wc-block-grid__product-image img {
+    aspect-ratio: 4 / 5 !important;
+    padding: .75rem;
   }
 
   .petshop-home-campaigns__link {
