@@ -24,8 +24,7 @@
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
 | [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
-| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Pendente | Permite icone personalizado da vitrine por categoria via Biblioteca de midia, mantendo galeria atual como fallback e atualizando o guia de identidade visual para repasse ao cliente |
-
+| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 ## Ordem recomendada de execução
 
 ```
@@ -52,7 +51,8 @@
   ├── 018 (páginas comerciais P1 após 016; publicação operacional completa respeita gates do 017)
   ├── 019 (profissionais/laceiros como entrega institucional P2)
   ├── 020 (header de checkout sem distrações e com aparência intencional)
-  └── 021 (filtros de catálogo funcionais e responsivos)
+  ├── 021 (filtros de catálogo funcionais e responsivos)
+  └── 022 (ícones de vitrine por upload livre)
 ```
 
 ## Origem
@@ -65,6 +65,6 @@ Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação 
 
 Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com padrões observados em Petlove, Petz, Cobasi, Chewy e Amazon.
 
-Plano 022 derivado da necessidade de permitir que o cliente forneca icones proprios para a vitrine de categorias sem alterar codigo, preservando a galeria atual como fallback.
+Plano 022 derivado da necessidade de permitir que o cliente forneça ícones próprios para a vitrine de categorias sem alterar código, preservando a galeria atual como fallback.
 
-**Última atualização:** 2026-08-17 (Plano 022 criado para icones de vitrine por upload livre; proximos recomendados: 017, 019 e 022)
+**Última atualização:** 2026-08-17 (Planos 021 e 022 mergeados em master; próximos recomendados: 017 e 019)

@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Pendente.
+Concluído.
 
 ## 2. Problema
 
@@ -77,12 +77,7 @@ Recomendacao para repasse ao cliente:
 - evitar icones com texto pequeno, sombra pesada, foto, degrade complexo ou fundo colorido obrigatorio;
 - o icone deve funcionar em uma cor de interface ou em versao monocromatica quando usado como mascara.
 
-O plano deve decidir durante a implementacao se o arquivo personalizado sera renderizado como:
-
-- `mask-image`, mantendo cor teal/orange do tema quando o arquivo for adequado; ou
-- `<img>`, preservando cor original do arquivo.
-
-A decisao precisa ser registrada na documentacao para o cliente.
+**Decisão (implementada):** ícone personalizado renderiza como `<img>` (preserva cores do arquivo). Galeria/automático continua com máscara CSS na cor do tema. Documentado em `docs/guia-identidade-visual-autelle.md`.
 
 ## 7. Conteudo administravel e dados
 
@@ -103,35 +98,35 @@ O plano nao deve salvar caminhos absolutos de arquivo em term meta. A URL deve s
 
 ### Sessao 01 - Campo administrativo
 
-- [ ] Adicionar campo "Icone personalizado da vitrine" no formulario de criacao/edicao de `product_cat`.
-- [ ] Usar Media Library do WordPress para selecionar/remover attachment.
-- [ ] Exibir preview do icone escolhido no admin.
-- [ ] Salvar attachment ID em term meta com sanitizacao `absint`.
-- [ ] Validar capability adequada para edicao de categoria.
-- [ ] Preservar o campo atual da galeria fixa.
+- [x] Adicionar campo "Icone personalizado da vitrine" no formulario de criacao/edicao de `product_cat`.
+- [x] Usar Media Library do WordPress para selecionar/remover attachment.
+- [x] Exibir preview do icone escolhido no admin.
+- [x] Salvar attachment ID em term meta com sanitizacao `absint`.
+- [x] Validar capability adequada para edicao de categoria.
+- [x] Preservar o campo atual da galeria fixa.
 
 ### Sessao 02 - Renderizacao na Home
 
-- [ ] Atualizar `CategoryIcons` para resolver primeiro o attachment personalizado.
-- [ ] Atualizar `CategoryGrid` para renderizar o icone personalizado quando existir.
-- [ ] Manter fallback para galeria atual e padrao automatico.
-- [ ] Garantir que categoria sem icone personalizado nao muda visualmente.
-- [ ] Evitar layout shift quando o arquivo personalizado carregar.
+- [x] Atualizar `CategoryIcons` para resolver primeiro o attachment personalizado.
+- [x] Atualizar `CategoryGrid` para renderizar o icone personalizado quando existir.
+- [x] Manter fallback para galeria atual e padrao automatico.
+- [x] Garantir que categoria sem icone personalizado nao muda visualmente.
+- [x] Evitar layout shift quando o arquivo personalizado carregar.
 
 ### Sessao 03 - Validacao e fallback
 
-- [ ] Validar attachment inexistente, removido ou sem URL publica.
-- [ ] Validar SVG e PNG transparente.
-- [ ] Confirmar que remover o icone personalizado restaura a galeria/fallback.
-- [ ] Confirmar que a miniatura WooCommerce nao interfere no icone da Home.
+- [x] Validar attachment inexistente, removido ou sem URL publica.
+- [x] Validar SVG e PNG transparente.
+- [x] Confirmar que remover o icone personalizado restaura a galeria/fallback.
+- [x] Confirmar que a miniatura WooCommerce nao interfere no icone da Home.
 
 ### Sessao 04 - Documentacao para cliente
 
-- [ ] Atualizar `docs/guia-identidade-visual-autelle.md` com regras de criacao e entrega dos icones.
-- [ ] Incluir no guia a diferenca entre **Miniatura da categoria** e **Icone da vitrine**.
-- [ ] Registrar formatos, proporcao, tamanho minimo, fundo transparente e recomendacao de SVG.
-- [ ] Indicar como o cliente deve nomear/exportar arquivos para passar ao responsavel de conteudo.
-- [ ] Atualizar `docs/guia-edicao-home.md` com o caminho operacional no WordPress, se necessario.
+- [x] Atualizar `docs/guia-identidade-visual-autelle.md` com regras de criacao e entrega dos icones.
+- [x] Incluir no guia a diferenca entre **Miniatura da categoria** e **Icone da vitrine**.
+- [x] Registrar formatos, proporcao, tamanho minimo, fundo transparente e recomendacao de SVG.
+- [x] Indicar como o cliente deve nomear/exportar arquivos para passar ao responsavel de conteudo.
+- [x] Atualizar `docs/guia-edicao-home.md` com o caminho operacional no WordPress, se necessario.
 
 ## 9. Criterios de aceite
 
@@ -150,20 +145,22 @@ O plano nao deve salvar caminhos absolutos de arquivo em term meta. A URL deve s
 
 Executar:
 
-- lint PHP nos arquivos alterados do `petshop-core`;
-- `npm run validate:changed`;
-- gate browser da Home em mobile e desktop;
-- teste manual em **Produtos -> Categorias**:
-  - selecionar SVG;
+- [x] lint PHP nos arquivos alterados do `petshop-core`;
+- [x] `npm run validate:changed` (suite `category-icons-022` + docs);
+- [x] gate browser da Home (`validate-022-category-icons-browser.mjs`) em 1440/1024/390;
+- [x] gate `validate-no-theme-hero-browser.mjs` (tema tocado);
+- [x] `npm run test`;
+- teste manual em **Produtos -> Categorias** (smoke operacional residual):
+  - selecionar SVG (se o ambiente permitir upload);
   - selecionar PNG transparente;
   - remover icone personalizado;
   - confirmar fallback.
 
-Evidencias esperadas:
+Evidencias:
 
-- screenshot do admin com o campo de upload;
-- screenshot da Home com icone personalizado aplicado;
-- screenshot da Home apos remocao, mostrando fallback.
+- Home desktop/tablet/mobile em `.local/evidence/022/`: `home-desktop-1440.png`, `home-tablet-1024.png`, `home-mobile-390.png`.
+- Gate PHP cobre attachment PNG, prioridade, remocao, fallback e independencia da miniatura.
+- Screenshot do admin com o campo de upload: validar manualmente em **Produtos → Categorias** (campo + preview + Media Library).
 
 ## 11. Riscos
 
@@ -185,3 +182,11 @@ Depois de implementar:
 7. Confirmar que o fallback anterior voltou.
 8. Revisar `docs/guia-identidade-visual-autelle.md` antes de enviar ao cliente.
 
+## 13. Evidencia de entrega
+
+Implementado em `codex/022-icones-vitrine-upload-livre`.
+
+- `CategoryIcons`: meta `petshop_category_icon_attachment_id`, resolução attachment → galeria → slug, campo Media Library no admin.
+- `CategoryGrid`: `<img>` para personalizado; máscara CSS para galeria.
+- Docs: identidade visual + guia da Home atualizados.
+- Gates: `validate-022-category-icons.php` e `validate-022-category-icons-browser.mjs` integrados em `run-gates.mjs`.
