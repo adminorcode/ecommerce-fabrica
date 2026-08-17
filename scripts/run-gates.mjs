@@ -43,7 +43,9 @@ const changedFiles = () => {
         .split(/\r?\n/)
         .filter(Boolean);
 
-    return [...new Set([...tracked, ...untracked])].sort();
+    return [...new Set([...tracked, ...untracked])]
+        .filter((file) => !file.startsWith('.opencode/') && file !== 'opencode.json' && !file.startsWith('.local/'))
+        .sort();
 };
 
 const containerPhpPath = (file) => {
@@ -177,6 +179,17 @@ const classifySuites = (files) => {
         if (file.includes('015-support')) {
             suites.add('support-015');
         }
+        if (
+            file.includes('CategoryIcons')
+            || file.includes('category-icon')
+            || file.includes('CategoryGrid')
+            || file.includes('CategoryTermMeta')
+            || file.includes('validate-022-category-icons')
+            || file.includes('022-icones-vitrine')
+        ) {
+            suites.add('category-icons-022');
+            browserScripts.add('validate-022-category-icons-browser.mjs');
+        }
     }
 
     return { suites, browserScripts };
@@ -208,6 +221,9 @@ const runFocusedSuites = (suites) => {
     if (suites.has('support-015')) {
         evalFile('validate-015-support-section.php');
     }
+    if (suites.has('category-icons-022')) {
+        evalFile('validate-022-category-icons.php');
+    }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');
     }
@@ -224,6 +240,9 @@ const runBrowserScripts = (browserScripts) => {
 
     const originalHome = dockerCliOutput('option', 'get', 'home');
     const originalSiteUrl = dockerCliOutput('option', 'get', 'siteurl');
+    const publicHome = process.env.PETSHOP_PUBLIC_URL || 'http://localhost:8888';
+    const restoreHome = originalHome.includes('://wordpress') ? publicHome : originalHome;
+    const restoreSiteUrl = originalSiteUrl.includes('://wordpress') ? publicHome : originalSiteUrl;
     try {
         dockerCli('option', 'update', 'home', 'http://wordpress');
         dockerCli('option', 'update', 'siteurl', 'http://wordpress');
@@ -233,8 +252,8 @@ const runBrowserScripts = (browserScripts) => {
             run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=localhost:8888', 'node', 'node', `/workspace/scripts/${script}`]);
         }
     } finally {
-        dockerCli('option', 'update', 'home', originalHome);
-        dockerCli('option', 'update', 'siteurl', originalSiteUrl);
+        dockerCli('option', 'update', 'home', restoreHome);
+        dockerCli('option', 'update', 'siteurl', restoreSiteUrl);
         dockerCli('cache', 'flush');
     }
 };

@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.9
+Version: 0.6.11
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -1129,12 +1129,14 @@ a:hover { color: var(--color-brand-orange-dark); }
 }
 
 .petshop-header-action__count {
+  position: absolute;
+  top: -.45rem;
+  right: -.55rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 1.15rem;
   height: 1.15rem;
-  margin-left: -.6rem;
   padding-inline: .25rem;
   border: 2px solid var(--color-surface);
   border-radius: var(--radius-pill);
@@ -1691,6 +1693,21 @@ html.petshop-menu-drawer-open {
     height .18s ease;
 }
 
+.petshop-category-card__icon--media {
+  display: grid;
+  place-items: center;
+  background-color: transparent;
+  mask: none;
+  -webkit-mask: none;
+}
+
+.petshop-category-card__icon--media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .petshop-category-card__label {
   display: -webkit-box;
   overflow: hidden;
@@ -1726,6 +1743,12 @@ html.petshop-menu-drawer-open {
   width: calc(var(--petshop-cat-icon-size) + 5px);
   height: calc(var(--petshop-cat-icon-size) + 5px);
   background-color: var(--color-on-teal);
+}
+
+.petshop-category-card:hover .petshop-category-card__icon--media,
+.petshop-category-card:focus-within .petshop-category-card__icon--media,
+.petshop-category-card.is-preview-open .petshop-category-card__icon--media {
+  background-color: transparent;
 }
 
 .petshop-category-preview {

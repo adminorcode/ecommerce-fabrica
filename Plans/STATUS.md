@@ -24,6 +24,7 @@
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
 | [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Pendente | Redesenha filtros de catálogo com toolbar, chips, accordions, painel com ação fixa e drawer responsivo inspirado em padrões de Petlove, Petz, Cobasi, Chewy e Amazon |
+| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 
 ## Ordem recomendada de execução
 
@@ -51,7 +52,8 @@
   ├── 018 (páginas comerciais P1 após 016; publicação operacional completa respeita gates do 017)
   ├── 019 (profissionais/laceiros como entrega institucional P2)
   ├── 020 (header de checkout sem distrações e com aparência intencional)
-  └── 021 (filtros de catálogo funcionais e responsivos)
+  ├── 021 (filtros de catálogo funcionais e responsivos)
+  └── 022 (ícones de vitrine por upload livre)
 ```
 
 ## Origem
@@ -64,4 +66,6 @@ Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação 
 
 Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com padrões observados em Petlove, Petz, Cobasi, Chewy e Amazon.
 
-**Última atualização:** 2026-08-15 (Plano 021 criado para filtros de catálogo; próximos recomendados: 017, 019 e 021)
+Plano 022 derivado da necessidade de permitir que o cliente forneça ícones próprios para a vitrine de categorias sem alterar código, preservando a galeria atual como fallback.
+
+**Última atualização:** 2026-08-17 (Plano 022 concluído; próximos recomendados: 017, 019 e 021)

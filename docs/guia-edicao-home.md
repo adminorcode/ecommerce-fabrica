@@ -128,15 +128,17 @@ Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida
 
 | Nome das categorias | **Produtos → Categorias** → editar cada categoria. |
 
-| Ícone da vitrine (Home) | Mesma tela → **Ícone da vitrine** → escolha na galeria outline (teal). |
+| Ícone personalizado da vitrine (Home) | Mesma tela → **Ícone personalizado da vitrine** → Biblioteca de mídia (selecionar, trocar ou remover). Prioridade máxima. |
 
-| Imagem da categoria (página da categoria) | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. |
+| Ícone da galeria (fallback) | Mesma tela → **Ícone da vitrine** → galeria outline do projeto (teal). |
+
+| Imagem da categoria (página da categoria) | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. Não altera o ícone da Home. |
 
 | Quais categorias aparecem | **Produtos → Categorias** → marque **Exibir na navegação**. Ordem: campo **Ordem comercial**. |
 
 
 
-A Home usa ícones compactos da galeria do projeto. No desktop, ao passar o mouse (ou focar com teclado) em uma categoria com produtos, aparece uma prévia com até 3 itens — sem overlay. A **Miniatura** WooCommerce continua valendo para a página da própria categoria.
+A Home usa, nesta ordem: ícone personalizado (se houver), ícone da galeria, ou automático por slug. No desktop, ao passar o mouse (ou focar com teclado) em uma categoria com produtos, aparece uma prévia com até 3 itens — sem overlay. A **Miniatura** WooCommerce continua valendo só para a página da própria categoria.
 
 
 
