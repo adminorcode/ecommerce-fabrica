@@ -1,8 +1,10 @@
 # Plano 022 - Icones de vitrine por upload livre
 
+**Branch de implementação:** `codex/022-icones-vitrine-upload-livre` — entrega incorporada em `master`
+
 ## 1. Status
 
-Concluído.
+Concluído. Entrega incorporada em `master`.
 
 ## 2. Problema
 
@@ -184,7 +186,7 @@ Depois de implementar:
 
 ## 13. Evidencia de entrega
 
-Implementado em `codex/022-icones-vitrine-upload-livre`.
+Implementado em `codex/022-icones-vitrine-upload-livre` e incorporado em `master`.
 
 - `CategoryIcons`: meta `petshop_category_icon_attachment_id`, resolução attachment → galeria → slug, campo Media Library no admin.
 - `CategoryGrid`: `<img>` para personalizado; máscara CSS para galeria.

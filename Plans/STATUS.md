@@ -23,8 +23,8 @@
 | [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
-| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
-| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
+| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Entrega em `master`. Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
+| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 ## Ordem recomendada de execução
 
 ```

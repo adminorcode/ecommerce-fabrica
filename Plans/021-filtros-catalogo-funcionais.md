@@ -1,8 +1,10 @@
 # Plano 021 — Filtros de catálogo funcionais
 
+**Branch de implementação:** `codex/021-filtros-catalogo-funcionais` — entrega incorporada em `master`
+
 ## 1. Status
 
-Concluído.
+Concluído. Entrega incorporada em `master`.
 
 ## 2. Problema
 
@@ -243,7 +245,7 @@ Após implementação, testar manualmente:
 
 ## 13. Evidência de entrega
 
-Implementado em `codex/021-filtros-catalogo-funcionais`.
+Implementado em `codex/021-filtros-catalogo-funcionais` e incorporado em `master`.
 
 - `CatalogFilter.php`: toolbar com botão de filtros e chips aplicados fora do painel, painel com header/body/footer, facetas em disclosure com `aria-expanded`, grupos ativos abertos por padrão e chip para categoria atual em rotas de categoria.
 - `catalog-filter.js`: controle de drawer em tablet/mobile, Escape, retorno de foco, trava de scroll do body, busca de categorias com `aria-live`, navegação por setas entre facetas e `Ver mais/Ver menos`.

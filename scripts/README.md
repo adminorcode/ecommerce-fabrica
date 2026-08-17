@@ -45,6 +45,14 @@ Sequência padrão:
 
 **Git Bash (Windows):** `run-gates.sh` exporta `MSYS_NO_PATHCONV=1` para preservar paths `/var/www/html/scripts` no contêiner.
 
+## Deploy (HostGator/cPanel)
+
+```powershell
+npm run prepare:deploy
+```
+
+Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável, ZIPs do tema/plugin, `uploads.tar.gz` e `petshop-db.sql`. O caminho absoluto é impresso ao final e gravado em `WHERE.txt`. Skill: `.cursor/skills/preparar-deploy/`.
+
 ## Catálogo por plano
 
 | Script | Plano | Descrição |
