@@ -121,10 +121,12 @@ function petshop_render_header_action(string $url, string $label, string $iconKe
 
     ?>
     <a href="<?php echo esc_url($url); ?>" class="petshop-header-action petshop-header-action--<?php echo esc_attr($iconKey); ?>" aria-label="<?php echo esc_attr($label); ?>">
-        <span class="petshop-header-action__icon" aria-hidden="true"><?php echo $icons[$iconKey]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG ?></span>
-        <?php if ($iconKey === 'wishlist') : ?>
-            <span class="petshop-header-action__count" data-petshop-wishlist-count hidden>0</span>
-        <?php endif; ?>
+        <span class="petshop-header-action__icon" aria-hidden="true">
+            <?php echo $icons[$iconKey]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG ?>
+            <?php if ($iconKey === 'wishlist') : ?>
+                <span class="petshop-header-action__count" data-petshop-wishlist-count hidden>0</span>
+            <?php endif; ?>
+        </span>
         <span class="petshop-header-action__label"><?php echo esc_html($label); ?></span>
     </a>
     <?php

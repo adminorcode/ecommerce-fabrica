@@ -1,354 +1,471 @@
-# Guia de publicacao na HostGator com cPanel
+# Guia correto de publicacao na HostGator/cPanel
 
-Este guia descreve como publicar este projeto em uma hospedagem HostGator com cPanel.
-O projeto nao e um site HTML estatico: ele e uma loja WordPress/WooCommerce com codigo
-customizado em:
+Este projeto e uma loja WordPress/WooCommerce. A publicacao correta nao e enviar o
+repositorio inteiro para `public_html`.
 
-- `wp-content/themes/petshop-theme/`: tema filho do Blocksy.
-- `wp-content/plugins/petshop-core/`: plugin proprio com regras de negocio e blocos.
-
-Nao envie o repositorio inteiro para `public_html`. Pastas como `.git`, `docker`,
-`node_modules`, `Plans`, `scripts`, `.local` e arquivos `.env` sao de desenvolvimento.
-
-## 1. Pre-requisitos no servidor
-
-Antes de subir o codigo, confirme no cPanel/WordPress:
-
-- WordPress instalado no dominio correto, normalmente em `public_html`.
-- PHP 8.3 selecionado para o dominio.
-- HTTPS ativo.
-- Banco MySQL criado e vinculado ao WordPress.
-- Acesso ao painel do WordPress como administrador.
-- Acesso ao Gerenciador de Arquivos do cPanel.
-
-Plugins/tema necessarios no WordPress:
-
-- WooCommerce.
-- Blocksy, como tema pai.
-- Stackable, se as paginas importadas usarem blocos dele.
-- Plugin de pagamento aprovado para a loja, por exemplo Mercado Pago.
-- Plugin/regra de frete aprovado, conforme decisao operacional do projeto.
-
-## 2. Escolha o tipo de publicacao
-
-Existem dois cenarios diferentes.
-
-### Cenario A - Migrar a loja completa
-
-Use este cenario para levar para a HostGator o site como ele esta no ambiente local:
-paginas, produtos, categorias, menus, configuracoes, imagens da Biblioteca de midia e
-dados salvos no WordPress.
-
-Arquivos necessarios:
-
-- `petshop-db.sql`: banco de dados WordPress/WooCommerce.
-- `uploads.tar.gz`: midias de `wp-content/uploads/`.
-- `petshop-theme.zip`: tema filho customizado.
-- `petshop-core.zip`: plugin customizado.
-
-Esse e o fluxo correto para primeira publicacao quando o conteudo ja foi montado
-localmente.
-
-### Cenario B - Atualizar somente codigo
-
-Use este cenario quando o WordPress de producao ja existe, o banco de producao deve
-ser preservado e voce quer atualizar apenas tema/plugin.
-
-Envie somente:
+Suba apenas estes artefatos:
 
 - `petshop-theme.zip`
 - `petshop-core.zip`
+- `uploads.tar.gz`
+- `petshop-db.sql`
 
-Nao importe banco nesse cenario, porque isso pode sobrescrever pedidos, clientes,
-produtos e configuracoes reais da loja.
+Nao envie `.git`, `.local`, `node_modules`, `tests`, `Plans`, `scripts`, `outputs`,
+`.env` ou backups locais.
 
-## 3. Gerar pacote completo local
+## 1. Preparar o servidor
 
-O projeto ja possui um servico Docker de backup para exportar banco e uploads.
-Com o ambiente local rodando:
+No cPanel/WordPress, confirme antes de importar:
 
-```powershell
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$out = Join-Path (Resolve-Path '.').Path ('outputs\hostgator-full-migration\' + $stamp)
-New-Item -ItemType Directory -Force -Path $out | Out-Null
+- WordPress instalado na raiz do dominio, normalmente `public_html`.
+- PHP 8.3 ativo para o dominio.
+- Banco MySQL do WordPress identificado em `public_html/wp-config.php`.
+- Acesso ao WordPress Admin.
+- Acesso ao cPanel File Manager.
+- Blocksy instalado, pois `petshop-theme` e tema filho de Blocksy.
+- WooCommerce instalado.
 
-docker compose --profile migration run --rm backup
+Verificacao:
 
-$containerName = 'petshop-copy-backup-' + $stamp
-$volumeName = 'petshop_migration_backups'
-docker create --name $containerName -v "${volumeName}:/backups:ro" -v "${out}:/out" petshop-wordpress:local sh -c "cp /backups/database.sql /out/petshop-db.sql && cp /backups/uploads.tar.gz /out/uploads.tar.gz && cp /backups/manifest.txt /out/manifest.txt" | Out-Null
-docker start -a $containerName | Out-Null
-docker rm $containerName | Out-Null
+- Em WordPress Admin > Diagnostico > Informacoes > Servidor, confirme `Versao do PHP 8.3.x`.
+- Em `wp-config.php`, confirme `DB_NAME`, `DB_USER`, `DB_PASSWORD` e `DB_HOST`.
+- Em Aparencia > Temas, confirme que `Blocksy` aparece instalado.
+
+## 2. Gerar os pacotes corretos
+
+### Tema
+
+O ZIP do tema deve conter:
+
+```text
+petshop-theme/style.css
+petshop-theme/functions.php
+petshop-theme/assets/...
+petshop-theme/patterns/...
 ```
 
-Saida esperada:
-
-- `outputs/hostgator-full-migration/<data-hora>/petshop-db.sql`
-- `outputs/hostgator-full-migration/<data-hora>/uploads.tar.gz`
-- `outputs/hostgator-full-migration/<data-hora>/manifest.txt`
-
-`manifest.txt` guarda hashes SHA256 para conferir se o banco e uploads nao foram
-corrompidos.
-
-## 4. Gerar ZIPs de tema e plugin
-
-No computador local, a partir da raiz do repositorio:
+Verificacao local:
 
 ```powershell
-$root = (Resolve-Path '.').Path
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$out = Join-Path $root ('outputs\deploy-cpanel\' + $stamp)
-$stage = Join-Path $out 'stage'
-New-Item -ItemType Directory -Force -Path $stage | Out-Null
-
-$themeStage = Join-Path $stage 'petshop-theme'
-$pluginStage = Join-Path $stage 'petshop-core'
-
-robocopy (Join-Path $root 'wp-content\themes\petshop-theme') $themeStage /E /XD .local node_modules tests /NFL /NDL /NJH /NJS /NP | Out-Null
-robocopy (Join-Path $root 'wp-content\plugins\petshop-core') $pluginStage /E /XD .local node_modules tests /NFL /NDL /NJH /NJS /NP | Out-Null
-
-Compress-Archive -Path $themeStage -DestinationPath (Join-Path $out 'petshop-theme.zip')
-Compress-Archive -Path $pluginStage -DestinationPath (Join-Path $out 'petshop-core.zip')
+Expand-Archive .\petshop-theme.zip -DestinationPath .\tmp-theme-check -Force
+Test-Path .\tmp-theme-check\petshop-theme\style.css
+Select-String .\tmp-theme-check\petshop-theme\style.css -Pattern "Template: blocksy"
 ```
 
-Os ZIPs ficam em `outputs/deploy-cpanel/<data-hora>/`.
+O `style.css` precisa ter:
 
-## 5. Opcoes automaticas da HostGator
+```css
+Template: blocksy
+```
 
-A HostGator documenta alternativas mais automaticas para WordPress:
+### Plugin
 
-- **All-in-One WP Migration**: recomendado pela HostGator para migrar WordPress pelo
-  painel, quando origem e destino permitem usar plugin.
-- **WPvivid Backup & Migration**: documentado pela HostGator para gerar `.zip` dos
-  arquivos e `.sql` do banco pelo proprio WordPress.
-- **Backup manual pelo Portal/cPanel**: permite baixar backup do diretorio inicial e
-  banco MySQL.
-- **Gator Backup**: servico da HostGator para backups automaticos do site e banco,
-  com rotina configuravel e restauracao pela ferramenta.
-- **Suporte HostGator**: pode realizar migracao/restauracao em alguns cenarios,
-  dependendo do plano, origem e politica vigente.
+O ZIP do plugin deve conter:
 
-Para este projeto, se voce esta partindo do ambiente local Docker, o pacote mais
-confiavel e o gerado na secao 3. Se voce ja tiver uma instalacao WordPress acessivel
-por navegador, plugin de migracao pode ser mais simples.
+```text
+petshop-core/petshop-core.php
+petshop-core/includes/...
+petshop-core/assets/js/wishlist.js
+petshop-core/assets/js/catalog-filter.js
+petshop-core/blocks/...
+petshop-core/vendor/autoload.php
+```
 
-## 6. Instalar o WordPress no cPanel
+O plugin nao deve conter:
 
-Se o WordPress ainda nao estiver instalado:
+```text
+petshop-core/node_modules/
+petshop-core/tests/
+petshop-core/vendor/phpunit/
+petshop-core/vendor/myclabs/
+petshop-core/vendor/sebastian/
+```
 
-1. No cPanel, abra o instalador de WordPress disponivel na conta.
-2. Escolha o dominio correto.
-3. Instale na raiz do dominio. Para a loja principal, o caminho deve ficar como
-   `public_html`, sem subpasta intermediaria.
-4. Crie usuario administrador individual e senha forte.
-5. Acesse `https://seudominio.com/wp-admin`.
+O erro real encontrado em producao foi causado por `vendor` de desenvolvimento:
 
-Se ja existe WordPress instalado, faca backup antes de substituir tema, plugin, banco
-ou uploads. Banco importado em cima de uma loja em uso pode apagar dados atuais.
+```text
+Failed opening required .../vendor/myclabs/deep-copy/src/DeepCopy/deep_copy.php
+```
 
-## 7. Importar o banco de dados
+Portanto, gere o pacote com dependencias de producao. Se Composer estiver disponivel:
 
-No cPanel:
+```powershell
+cd wp-content\plugins\petshop-core
+composer install --no-dev --optimize-autoloader
+```
 
-1. Crie ou identifique o banco MySQL que sera usado pelo WordPress.
-2. Abra **phpMyAdmin**.
-3. Selecione o banco correto.
-4. Abra a aba **Importar**.
-5. Envie `petshop-db.sql`.
-6. Execute a importacao.
-
-Depois, confira `public_html/wp-config.php`:
+Se o plugin nao usa bibliotecas de runtime alem do autoload PSR-4, `vendor/autoload.php`
+pode ser um autoloader minimo:
 
 ```php
-define( 'DB_NAME', 'nome_do_banco' );
-define( 'DB_USER', 'usuario_do_banco' );
-define( 'DB_PASSWORD', 'senha_do_banco' );
-define( 'DB_HOST', 'localhost' );
+<?php
+
+declare(strict_types=1);
+
+spl_autoload_register(
+    static function (string $class): void {
+        $prefix = "Petshop\\Core\\";
+
+        if (!str_starts_with($class, $prefix)) {
+            return;
+        }
+
+        $relative = substr($class, strlen($prefix));
+        $file = __DIR__ . '/../includes/' . strtr($relative, chr(92), '/') . '.php';
+
+        if (is_file($file)) {
+            require_once $file;
+        }
+    }
+);
+
+return true;
 ```
 
-Os valores devem bater com o banco criado na HostGator.
+Verificacao local do ZIP:
 
-Depois da importacao, atualize as URLs antigas para o dominio real. Em WordPress,
-essa troca precisa respeitar dados serializados. Prefira uma ferramenta de migracao
-WordPress ou WP-CLI com `search-replace`. Nao faca substituicao manual simples dentro
-do `.sql` se houver dados serializados.
+```powershell
+Expand-Archive .\petshop-core.zip -DestinationPath .\tmp-plugin-check -Force
+Test-Path .\tmp-plugin-check\petshop-core\petshop-core.php
+Test-Path .\tmp-plugin-check\petshop-core\assets\js\wishlist.js
+Test-Path .\tmp-plugin-check\petshop-core\vendor\autoload.php
+Test-Path .\tmp-plugin-check\petshop-core\node_modules
+Test-Path .\tmp-plugin-check\petshop-core\tests
+```
 
-Exemplo conceitual:
+Os dois ultimos devem retornar `False`.
+
+## 3. Enviar e extrair arquivos no cPanel
+
+Use FileZilla ou File Manager para enviar os arquivos.
+
+### Tema
+
+Destino:
 
 ```text
-http://localhost:8888 -> https://seudominio.com
+public_html/wp-content/themes/
 ```
 
-## 8. Importar uploads
+Depois extraia `petshop-theme.zip`.
 
-No Gerenciador de Arquivos:
-
-1. Abra `public_html/wp-content/`.
-2. Envie `uploads.tar.gz`.
-3. Extraia o arquivo ali.
-4. Confirme que o caminho ficou:
-
-```text
-public_html/wp-content/uploads/
-```
-
-Sem `uploads`, o banco pode apontar para imagens que nao existem no servidor.
-
-## 9. Subir o tema pelo cPanel
-
-No Gerenciador de Arquivos:
-
-1. Abra `public_html/wp-content/themes/`.
-2. Envie `petshop-theme.zip`.
-3. Extraia o ZIP ali.
-4. Confirme que o caminho ficou:
+Verificacao:
 
 ```text
 public_html/wp-content/themes/petshop-theme/style.css
 ```
 
-O caminho abaixo esta errado e precisa ser corrigido:
+### Plugin
+
+Destino:
 
 ```text
-public_html/wp-content/themes/petshop-theme/petshop-theme/style.css
+public_html/wp-content/plugins/
 ```
 
-No painel do WordPress:
+Depois extraia `petshop-core.zip`.
 
-1. Va em **Aparencia > Temas**.
-2. Confirme que o tema **Blocksy** esta instalado.
-3. Ative **Petshop Theme**.
-
-## 10. Subir o plugin pelo cPanel
-
-No Gerenciador de Arquivos:
-
-1. Abra `public_html/wp-content/plugins/`.
-2. Envie `petshop-core.zip`.
-3. Extraia o ZIP ali.
-4. Confirme que o caminho ficou:
+Verificacao:
 
 ```text
 public_html/wp-content/plugins/petshop-core/petshop-core.php
+public_html/wp-content/plugins/petshop-core/assets/js/wishlist.js
+public_html/wp-content/plugins/petshop-core/vendor/autoload.php
 ```
 
-No painel do WordPress:
+### Uploads
 
-1. Va em **Plugins**.
-2. Ative **WooCommerce** primeiro.
-3. Ative **Petshop Core** depois.
+Destino:
 
-Se a ativacao falhar por versao de PHP, ajuste o PHP do dominio para 8.3 no cPanel.
+```text
+public_html/wp-content/
+```
 
-## 11. Configurar WooCommerce
+Depois extraia `uploads.tar.gz`.
 
-No WordPress, revise:
+Verificacao:
 
-- **WooCommerce > Configuracoes > Geral**: endereco da loja e pais/estado.
-- **Produtos**: medidas, peso, estoque e paginas da loja.
-- **Entrega**: zonas, metodos, origem, embalagens, servicos e contingencia.
-- **Pagamentos**: Pix/cartao, sandbox antes de producao e webhooks/retornos.
-- **Emails**: remetente, dominio, templates e recebimento real.
-- **Contas e privacidade**: termos, privacidade e comportamento de checkout.
-- **Avancado**: paginas de carrinho, checkout, minha conta e termos.
+```text
+public_html/wp-content/uploads/2026/
+public_html/wp-content/uploads/woocommerce-placeholder.webp
+```
 
-Nao publique a loja em producao sem testar pedido aprovado, recusado e pendente.
+## 4. Ativar WooCommerce, plugin e tema
 
-## 12. Conteudo editavel
+No WordPress Admin:
 
-Textos comerciais, institucionais, juridicos e imagens de pagina devem ficar
-editaveis no WordPress:
+1. Ative `WooCommerce`.
+2. Ative `Petshop Core`.
+3. Ative `Petshop Theme`.
 
-- Home e paginas institucionais: **Paginas > Editar com Gutenberg**.
-- Imagens: **Midia > Biblioteca**, com texto alternativo.
-- Produtos e categorias: **Produtos** e **Produtos > Categorias**.
-- Menus: **Aparencia > Menus** ou editor equivalente do tema.
-- Conteudo global: configuracoes administrativas, Customizer ou opcoes do tema.
+Se `Petshop Core` falhar com erro fatal, nao continue no escuro. Ative log e leia o
+erro real.
 
-Nao corrija texto comercial editando PHP, CSS ou JavaScript em producao.
+## 5. Como ativar e ler debug.log
 
-## 13. Checklist antes de abrir a loja
+Edite `public_html/wp-config.php` temporariamente.
 
-Valide no dominio final:
+Antes da linha:
 
-- Home carrega sem erro visual.
-- Loja, categoria, busca e pagina de produto funcionam.
-- Carrinho e checkout funcionam em desktop e mobile.
-- Pedido aprovado, recusado e pendente foram testados em sandbox.
-- Frete calcula com CEP real e produto real.
-- Emails transacionais chegam.
-- Paginas legais estao publicadas e linkadas no checkout.
-- HTTPS esta ativo sem conteudo misto.
-- Sitemap e robots estao coerentes.
-- Backup e restauracao foram testados.
-- Contas administrativas sao individuais e com senha forte.
-- Cache/CDN, se usados, nao quebram carrinho e checkout.
-- Fluxos principais funcionam por teclado e leitor de tela.
+```php
+/* That's all, stop editing! Happy publishing. */
+```
 
-## 14. Checklist apos publicacao
+adicione:
 
-Depois de apontar o dominio e abrir a loja:
+```php
+define( 'WP_DEBUG', true );
+define( 'WP_DEBUG_LOG', true );
+define( 'WP_DEBUG_DISPLAY', false );
+@ini_set( 'display_errors', 0 );
+```
 
-- Comprar um produto de baixo valor em producao, se operacionalmente aprovado.
-- Confirmar status do pedido no WooCommerce.
-- Confirmar email para cliente e loja.
-- Confirmar baixa/registro no gateway de pagamento.
-- Confirmar calculo de frete e informacao de prazo.
-- Monitorar logs de erro no cPanel e no WordPress.
-- Medir Core Web Vitals em paginas criticas.
-- Verificar indexacao no Google Search Console quando configurado.
+Depois tente repetir a acao que falhou.
 
-## 15. Rotina de backup na HostGator
+Leia:
 
-Para producao, nao dependa apenas de backup manual.
+```text
+public_html/wp-content/debug.log
+```
 
-Opcoes:
+Tambem verifique:
 
-- **Backup automatico da HostGator**: existe nos planos compartilhados, com rotina
-  diaria, semanal e mensal, mas restauracao pode depender do suporte e taxa.
-- **Gator Backup**: indicado quando a loja precisa de backup automatico configuravel,
-  retencao e restauracao mais rapida pelo cliente.
-- **Backup manual antes de mudancas**: baixe banco MySQL e arquivos pelo Portal/cPanel
-  antes de atualizar plugin, tema, WordPress ou WooCommerce.
+```text
+public_html/error_log
+```
 
-Para WooCommerce, backup deve cobrir banco e arquivos. O banco guarda pedidos,
-clientes, produtos e configuracoes; `uploads` guarda imagens e anexos.
+Erros comuns e correcoes:
 
-## 16. Reversao
+- `vendor/myclabs`, `phpunit`, `sebastian` ou `deep-copy`: o plugin foi enviado com
+  `vendor` de desenvolvimento. Reempacote sem `require-dev` ou use autoload minimo.
+- `filemtime() ... assets/js/wishlist.js`: o ZIP do plugin ficou incompleto. Envie
+  `assets/js/wishlist.js`.
+- `PETSHOP_HERO_ATTACHMENT_MISSING`: o banco e os uploads ainda nao estao alinhados,
+  ou `uploads.tar.gz` nao foi extraido corretamente.
+- Tela branca sem fatal: confira `template` e `stylesheet` no banco. Para tema filho,
+  `template` precisa ser `blocksy` e `stylesheet` precisa ser `petshop-theme`.
 
-Antes de qualquer atualizacao em producao, mantenha:
+Depois de resolver, remova `WP_DEBUG_LOG` e deixe producao assim:
 
-- backup do banco;
-- backup de `wp-content/uploads/`;
-- copia dos ZIPs anteriores de `petshop-theme` e `petshop-core`;
-- anotacao da versao ativa de WordPress, WooCommerce, Blocksy e plugins.
+```php
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_DISPLAY', false );
+```
 
-Para reverter codigo:
+Apague logs criados:
 
-1. Desative `Petshop Core` se houver erro fatal.
-2. Restaure a versao anterior de `wp-content/plugins/petshop-core/`.
-3. Restaure a versao anterior de `wp-content/themes/petshop-theme/` se necessario.
-4. Reimporte o banco apenas se a mudanca alterou dados e houver backup consistente.
+```text
+public_html/wp-content/debug.log
+public_html/error_log
+```
 
-## 17. Pendencias P0 de producao
+## 6. Importar banco
 
-O Plano 017 ainda esta pendente. A instalacao tecnica no cPanel nao encerra a
-publicacao operacional enquanto estes itens nao forem validados:
+O banco `petshop-db.sql` e um dump completo com `DROP TABLE`. Ele substitui o WordPress
+atual. Use somente em primeira publicacao ou quando for aceitavel sobrescrever dados.
 
-- Mercado Pago sandbox e cenarios aprovado/recusado/pendente.
-- Frete real, origem, embalagens, contrato/credenciais e contingencia.
-- Politicas juridicas aprovadas e publicadas.
-- Emails transacionais e entregabilidade.
-- SEO tecnico, sitemap, robots e dados estruturados.
-- Core Web Vitals.
-- Backup/restore.
-- Monitoramento e logs.
-- Validacao manual de acessibilidade com teclado, NVDA e VoiceOver.
+### Caminho preferido: phpMyAdmin
 
-## 18. Fontes HostGator consultadas
+1. Abra cPanel > phpMyAdmin.
+2. Selecione o banco usado pelo `wp-config.php`.
+3. Abra Importar.
+4. Envie `petshop-db.sql`.
+5. Execute.
 
-- Migracao de WordPress: https://suporte.hostgator.com.br/hc/pt-br/articles/30814843869715-Como-migrar-um-site-feito-no-WordPress
-- Gerar `.zip` e `.sql`: https://suporte.hostgator.com.br/hc/pt-br/articles/40007325064595-Como-gerar-arquivos-zip-e-sql-para-migrar-site-WordPress
-- Backup manual: https://suporte.hostgator.com.br/hc/pt-br/articles/30807223548563-Como-fazer-uma-c%C3%B3pia-de-seguran%C3%A7a-backup-na-HostGator
-- Tipos de backup e Gator Backup: https://suporte.hostgator.com.br/hc/pt-br/articles/51908984420115-Qual-a-diferen%C3%A7a-entre-o-backup-da-HostGator-backup-manual-e-Gator-Backup
-- Importar banco via phpMyAdmin: https://suporte.hostgator.com.br/hc/pt-br/articles/30814715222803-Como-importar-um-banco-de-dados-atrav%C3%A9s-do-phpMyAdmin
+Depois atualize as URLs antigas do dump:
+
+```text
+http://localhost:8888 -> https://seudominio.com
+```
+
+No caso validado, o dominio temporario foi:
+
+```text
+https://viniciusgarciapaladi1786862104000.0330439.meusitehostgator.com.br
+```
+
+### Caminho de contingencia: importador PHP temporario
+
+Use somente se o upload/import pelo phpMyAdmin falhar ou o seletor de arquivo do
+navegador nao funcionar.
+
+1. Envie `petshop-db.sql` para:
+
+```text
+public_html/wp-content/petshop-db.sql
+```
+
+2. Crie temporariamente em `public_html/petshop-import-chunk.php` um importador que:
+
+- le `wp-config.php`;
+- conecta no banco atual;
+- remove a primeira linha MariaDB `/*M!999999...`;
+- substitui `http://localhost:8888` pela URL real;
+- executa o dump linha por linha;
+- ajusta `siteurl`, `home`, `template` e `stylesheet`;
+- apaga a si mesmo no final.
+
+3. Execute pelo navegador ou por requisicao HTTP:
+
+```text
+https://seudominio.com/petshop-import-chunk.php?token=TOKEN
+```
+
+Saida esperada:
+
+```text
+Starting streaming import
+queries=100 line=...
+...
+OK streaming imported queries: 788
+URL: https://seudominio.com
+```
+
+4. Apague qualquer importador temporario que sobrar.
+
+Verificacao no banco:
+
+```text
+wp_options.siteurl = https://seudominio.com
+wp_options.home = https://seudominio.com
+wp_options.template = blocksy
+wp_options.stylesheet = petshop-theme
+```
+
+## 7. Corrigir tema filho apos importacao
+
+Como `petshop-theme` e tema filho do Blocksy, estas opcoes precisam ficar assim:
+
+```text
+template   = blocksy
+stylesheet = petshop-theme
+```
+
+Se `template = petshop-theme`, a home pode ficar em branco, porque o WordPress tenta
+usar o tema filho como tema pai.
+
+Verificacao visual:
+
+- Home nao pode estar em branco.
+- Titulo esperado: `Autelie Moda Pet` ou titulo configurado da loja.
+- Header deve exibir logo, busca, atendimento, lista de desejos e minha conta.
+- Hero deve exibir a imagem `petshop-004b-hero-wide`.
+
+## 8. Limpeza obrigatoria no servidor
+
+Depois que a loja estiver funcionando, remova:
+
+```text
+public_html/petshop-import-*.php
+public_html/petshop-fix-*.php
+public_html/petshop-cleanup.php
+public_html/petshop-write-*.php
+public_html/wp-content/petshop-db.sql
+public_html/wp-content/uploads.tar.gz
+public_html/wp-content/debug.log
+public_html/error_log
+```
+
+Tambem desative cache/drop-ins temporariamente se eles causarem tela branca:
+
+```text
+public_html/wp-content/advanced-cache.php
+public_html/wp-content/cache/
+public_html/wp-content/speedycache-config/
+```
+
+Se remover cache, revise depois se o plugin de cache deve ser reativado/configurado.
+Nao deixe cache quebrando carrinho, checkout ou lista de desejos.
+
+## 9. Verificacoes finais
+
+### Home
+
+Abrir:
+
+```text
+https://seudominio.com/
+```
+
+Deve aparecer:
+
+- logo Autelie Moda Pet;
+- menu de categorias;
+- busca de produtos;
+- hero com cachorro usando bandana;
+- blocos de pronta entrega, condicoes para volume e frete;
+- footer institucional.
+
+Nao deve aparecer:
+
+```text
+Notice:
+Warning:
+Fatal error:
+Parse error:
+Hello world!
+My Blog
+```
+
+### Loja
+
+Abrir:
+
+```text
+https://seudominio.com/loja/
+```
+
+Deve aparecer:
+
+- filtros de categoria, preco, cor, tamanho e disponibilidade;
+- contagem de produtos, por exemplo `EXIBINDO 1-16 DE 116 RESULTADOS`;
+- cards de produtos com preco;
+- botao `Adicionar ao carrinho`;
+- icone de lista de desejos.
+
+### Imagens
+
+Verifique se estas imagens carregam:
+
+```text
+wp-content/uploads/2026/07/autelie-logo.png
+wp-content/uploads/2026/07/petshop-004b-hero-wide-1536x1024.jpg
+wp-content/uploads/woocommerce-placeholder-300x300.webp
+```
+
+Se varias imagens de produto virarem placeholder, isso indica produto sem imagem
+cadastrada ou midia ausente. Nao e falha do tema.
+
+### Plugin
+
+No WordPress Admin > Plugins:
+
+- WooCommerce ativo.
+- Petshop Core ativo.
+
+No File Manager:
+
+```text
+public_html/wp-content/plugins/petshop-core/assets/js/wishlist.js
+```
+
+precisa existir.
+
+### Logs
+
+Depois da validacao final:
+
+- `public_html/wp-content/debug.log` nao deve existir.
+- `public_html/error_log` nao deve existir, ou deve estar vazio/sem erros novos.
+- `WP_DEBUG_DISPLAY` deve estar `false`.
+
+## 10. Observacoes importantes
+
+- Nao use o ZIP antigo do plugin se ele incluir `vendor` de desenvolvimento.
+- Nao ative `Petshop Core` antes do WooCommerce.
+- Nao importe banco em loja ja operando sem backup, porque pedidos/clientes podem ser
+  sobrescritos.
+- Nao deixe arquivos `.sql`, `.tar.gz` ou scripts temporarios acessiveis em
+  `public_html`.
+- O cPanel Terminal pode estar bloqueado em hospedagem compartilhada. Nesse caso,
+  use File Manager, phpMyAdmin e scripts temporarios removidos ao final.

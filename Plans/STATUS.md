@@ -23,7 +23,8 @@
 | [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
-| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Pendente | Redesenha filtros de catálogo com toolbar, chips, accordions, painel com ação fixa e drawer responsivo inspirado em padrões de Petlove, Petz, Cobasi, Chewy e Amazon |
+| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
+| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Pendente | Permite icone personalizado da vitrine por categoria via Biblioteca de midia, mantendo galeria atual como fallback e atualizando o guia de identidade visual para repasse ao cliente |
 
 ## Ordem recomendada de execução
 
@@ -64,4 +65,6 @@ Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação 
 
 Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com padrões observados em Petlove, Petz, Cobasi, Chewy e Amazon.
 
-**Última atualização:** 2026-08-15 (Plano 021 criado para filtros de catálogo; próximos recomendados: 017, 019 e 021)
+Plano 022 derivado da necessidade de permitir que o cliente forneca icones proprios para a vitrine de categorias sem alterar codigo, preservando a galeria atual como fallback.
+
+**Última atualização:** 2026-08-17 (Plano 022 criado para icones de vitrine por upload livre; proximos recomendados: 017, 019 e 022)

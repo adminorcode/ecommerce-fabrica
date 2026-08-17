@@ -161,6 +161,14 @@ const classifySuites = (files) => {
         if (file.includes('005-catalog-layout')) {
             browserScripts.add('validate-005-catalog-layout-browser.mjs');
         }
+        if (
+            file.includes('CatalogFilter.php')
+            || file.includes('catalog-filter.js')
+            || file.includes('validate-021-catalog-filters')
+            || file.startsWith('wp-content/themes/petshop-theme/')
+        ) {
+            browserScripts.add('validate-021-catalog-filters-browser.mjs');
+        }
         if (file.includes('005-pdp')) {
             browserScripts.add('validate-005-pdp-browser.mjs');
         }

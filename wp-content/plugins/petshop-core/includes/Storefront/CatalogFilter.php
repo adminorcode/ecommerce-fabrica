@@ -35,67 +35,76 @@ final class CatalogFilter
             }
         }
         $applied = self::appliedFilters();
+        $stock = self::selectedStockStatus();
 
-        echo '<button class="petshop-catalog-filter-toggle" type="button" data-petshop-filter-open aria-controls="petshop-catalog-filter-panel" aria-expanded="false">';
-        echo esc_html__('Filtrar produtos', 'petshop-core');
-        if ($applied !== []) {
-            echo '<span aria-label="' . esc_attr(sprintf(_n('%d filtro aplicado', '%d filtros aplicados', count($applied), 'petshop-core'), count($applied))) . '">' . esc_html((string) count($applied)) . '</span>';
-        }
-        echo '</button>';
         echo '<div class="petshop-catalog-filter-backdrop" data-petshop-filter-backdrop hidden></div>';
         echo '<aside id="petshop-catalog-filter-panel" class="petshop-catalog-sidebar" role="dialog" aria-modal="false" aria-labelledby="petshop-catalog-filter-title" tabindex="-1">';
         echo '<form class="petshop-catalog-filter" action="' . esc_url(wc_get_page_permalink('shop')) . '" method="get">';
         echo '<div class="petshop-catalog-filter__header"><h2 id="petshop-catalog-filter-title" class="petshop-catalog-filter__title">' . esc_html__('Filtros', 'petshop-core') . '</h2>';
-        echo '<button type="button" class="petshop-catalog-filter__close" data-petshop-filter-close aria-label="' . esc_attr__('Fechar filtros', 'petshop-core') . '">×</button></div>';
+        echo '<button type="button" class="petshop-catalog-filter__close" data-petshop-filter-close aria-label="' . esc_attr__('Fechar filtros', 'petshop-core') . '"><span aria-hidden="true">&times;</span></button></div>';
+        echo '<div class="petshop-catalog-filter__body">';
 
         if ($applied !== []) {
-            echo '<div class="petshop-catalog-filter__applied" aria-label="' . esc_attr__('Filtros aplicados', 'petshop-core') . '"><h3>' . esc_html__('Aplicados', 'petshop-core') . '</h3><ul>';
-            foreach ($applied as $filter) {
-                echo '<li><a href="' . esc_url($filter['remove_url']) . '"><span>' . esc_html($filter['label']) . '</span><span aria-hidden="true">×</span></a></li>';
-            }
-            echo '</ul><a class="petshop-catalog-filter__clear" href="' . esc_url(wc_get_page_permalink('shop')) . '">' . esc_html__('Limpar todos', 'petshop-core') . '</a></div>';
+            self::renderAppliedFilters($applied, 'panel');
         }
 
         if ($categories !== []) {
-            echo '<fieldset><legend>' . esc_html__('Categorias', 'petshop-core') . '</legend>';
+            self::openFacet('categories', __('Categorias', 'petshop-core'), true, $selectedCategories !== []);
             echo '<div class="petshop-catalog-filter__search"><label for="petshop-category-search">' . esc_html__('Filtrar categorias', 'petshop-core') . '</label>';
             echo '<input id="petshop-category-search" type="search" placeholder="' . esc_attr__('Digite uma categoria', 'petshop-core') . '" autocomplete="off" aria-controls="petshop-category-options"></div>';
             echo '<p class="screen-reader-text" data-petshop-category-status aria-live="polite"></p><ul id="petshop-category-options">';
             foreach ($categories as $term) {
-                self::renderTermCheckbox('product_cat[]', $term, in_array($term->slug, $selectedCategories, true), 'category');
+                self::renderTermCheckbox('petshop_categories[]', $term, in_array($term->slug, $selectedCategories, true), 'category');
             }
-            echo '</ul></fieldset>';
+            echo '</ul><button type="button" class="petshop-catalog-filter__more" data-petshop-filter-more data-more-label="' . esc_attr__('Ver mais', 'petshop-core') . '" data-less-label="' . esc_attr__('Ver menos', 'petshop-core') . '">' . esc_html__('Ver mais', 'petshop-core') . '</button>';
+            self::closeFacet();
         }
 
-        echo '<fieldset><legend>' . esc_html__('Faixa de preço', 'petshop-core') . '</legend><div class="petshop-catalog-filter__price">';
+        self::openFacet('price', __('Preço', 'petshop-core'), false, self::scalarRequestValue('min_price') !== '' || self::scalarRequestValue('max_price') !== '');
+        echo '<div class="petshop-catalog-filter__price">';
         echo '<label for="petshop-min-price">' . esc_html__('Mínimo', 'petshop-core') . '<input id="petshop-min-price" name="min_price" type="number" min="0" step="0.01" inputmode="decimal" value="' . esc_attr(self::scalarRequestValue('min_price')) . '"></label>';
         echo '<label for="petshop-max-price">' . esc_html__('Máximo', 'petshop-core') . '<input id="petshop-max-price" name="max_price" type="number" min="0" step="0.01" inputmode="decimal" value="' . esc_attr(self::scalarRequestValue('max_price')) . '"></label>';
-        echo '</div></fieldset>';
+        echo '</div>';
+        self::closeFacet();
 
         foreach ($attributes as $key => $definition) {
-            echo '<fieldset><legend>' . esc_html($definition['label']) . '</legend><ul>';
             $selected = self::selectedSlugs($key);
+            self::openFacet($definition['taxonomy'], $definition['label'], false, $selected !== []);
+            echo '<ul>';
             foreach ($definition['terms'] as $term) {
                 self::renderTermCheckbox($key, $term, in_array($term->slug, $selected, true), $definition['taxonomy']);
             }
-            echo '</ul></fieldset>';
+            echo '</ul>';
+            self::closeFacet();
         }
 
-        $stock = self::selectedStockStatus();
-        echo '<fieldset><legend>' . esc_html__('Disponibilidade', 'petshop-core') . '</legend><label class="petshop-catalog-filter__select" for="petshop-stock-status">' . esc_html__('Estoque', 'petshop-core');
+        self::openFacet('stock', __('Disponibilidade', 'petshop-core'), false, $stock !== '');
+        echo '<label class="petshop-catalog-filter__select" for="petshop-stock-status">' . esc_html__('Estoque', 'petshop-core');
         echo '<select id="petshop-stock-status" name="stock_status"><option value="">' . esc_html__('Todos', 'petshop-core') . '</option>';
         $stockLabels = ['instock' => __('Em estoque', 'petshop-core'), 'onbackorder' => __('Sob encomenda', 'petshop-core'), 'outofstock' => __('Fora de estoque', 'petshop-core')];
         foreach ($stockLabels as $value => $label) {
             echo '<option value="' . esc_attr($value) . '"' . selected($stock, $value, false) . '>' . esc_html($label) . '</option>';
         }
-        echo '</select></label></fieldset>';
+        echo '</select></label>';
+        self::closeFacet();
+        echo '</div>';
 
         if (isset($_GET['orderby']) && self::scalarRequestValue('orderby') !== '') {
             echo '<input type="hidden" name="orderby" value="' . esc_attr(sanitize_key(self::scalarRequestValue('orderby'))) . '">';
         }
         echo '<div class="petshop-catalog-filter__actions"><button class="petshop-button petshop-catalog-filter__apply" type="submit">' . esc_html__('Aplicar filtros', 'petshop-core') . '</button>';
         echo '<a href="' . esc_url(wc_get_page_permalink('shop')) . '">' . esc_html__('Limpar', 'petshop-core') . '</a></div>';
-        echo '</form></aside><div class="petshop-catalog-toolbar">';
+        echo '</form></aside><div class="petshop-catalog-toolbar"><div class="petshop-catalog-toolbar__filters">';
+        echo '<button class="petshop-catalog-filter-toggle" type="button" data-petshop-filter-open aria-controls="petshop-catalog-filter-panel" aria-expanded="false">';
+        echo esc_html__('Filtros', 'petshop-core');
+        if ($applied !== []) {
+            echo '<span aria-label="' . esc_attr(sprintf(_n('%d filtro aplicado', '%d filtros aplicados', count($applied), 'petshop-core'), count($applied))) . '">' . esc_html((string) count($applied)) . '</span>';
+        }
+        echo '</button>';
+        if ($applied !== []) {
+            self::renderAppliedFilters($applied, 'toolbar');
+        }
+        echo '</div>';
     }
 
     public static function enqueueCatalogFilterAssets(): void
@@ -115,11 +124,14 @@ final class CatalogFilter
         }
 
         $taxQuery = (array) $query->get('tax_query');
-        $taxQuery['relation'] = 'AND';
         $categories = self::selectedCatalogCategorySlugs();
         if ($categories !== []) {
+            $taxQuery = self::withoutCatalogCategoryClauses($taxQuery);
+            $query->set('product_cat', '');
+            $taxQuery['relation'] = 'AND';
             $taxQuery[] = ['taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => $categories, 'operator' => 'IN', 'include_children' => true];
         }
+        $taxQuery['relation'] = $taxQuery['relation'] ?? 'AND';
         foreach (self::ATTRIBUTE_FILTERS as $key => $definition) {
             $terms = self::selectedSlugs($key);
             if ($terms !== [] && taxonomy_exists($definition['taxonomy'])) {
@@ -143,12 +155,19 @@ final class CatalogFilter
         if (!is_shop() && !is_product_taxonomy()) {
             return;
         }
-        $hasLegacy = isset($_GET['petshop_categories']);
+        $hasLegacy = isset($_GET['product_cat']);
         $hasFiltersOnTaxonomy = is_product_taxonomy() && !self::requestTargetsShop() && self::knownRequestParametersPresent();
         if (!$hasLegacy && !$hasFiltersOnTaxonomy) {
             return;
         }
-        $url = add_query_arg(self::canonicalParametersFromRequest($_GET), wc_get_page_permalink('shop'));
+        $parameters = self::canonicalParametersFromRequest($_GET);
+        if (!isset($parameters['petshop_categories']) && is_product_category()) {
+            $currentTerm = get_queried_object();
+            if ($currentTerm instanceof \WP_Term) {
+                $parameters['petshop_categories'] = [$currentTerm->slug];
+            }
+        }
+        $url = add_query_arg($parameters, wc_get_page_permalink('shop'));
         wp_safe_redirect($url, 302, 'Petshop canonical catalog filters');
         exit;
     }
@@ -160,7 +179,7 @@ final class CatalogFilter
         $categorySource = $source['product_cat'] ?? $source['petshop_categories'] ?? [];
         $categories = self::sanitizeSlugValues($categorySource);
         if ($categories !== []) {
-            $parameters['product_cat'] = $categories;
+            $parameters['petshop_categories'] = $categories;
         }
         foreach (['min_price', 'max_price'] as $key) {
             $value = isset($source[$key]) && is_scalar($source[$key]) ? wc_format_decimal(wp_unslash((string) $source[$key])) : '';
@@ -251,8 +270,58 @@ final class CatalogFilter
     private static function renderTermCheckbox(string $name, \WP_Term $term, bool $checked, string $prefix): void
     {
         $inputId = 'petshop-' . sanitize_html_class($prefix . '-' . $term->term_id);
-        echo '<li><label for="' . esc_attr($inputId) . '"><input id="' . esc_attr($inputId) . '" type="checkbox" name="' . esc_attr($name) . '" value="' . esc_attr($term->slug) . '"' . checked($checked, true, false) . '>';
+        echo '<li data-petshop-filter-option><label for="' . esc_attr($inputId) . '"><input id="' . esc_attr($inputId) . '" type="checkbox" name="' . esc_attr($name) . '" value="' . esc_attr($term->slug) . '"' . checked($checked, true, false) . '>';
         echo '<span class="petshop-catalog-filter__name">' . esc_html($term->name) . '</span><span class="petshop-catalog-filter__count" aria-label="' . esc_attr(sprintf(_n('%d produto', '%d produtos', $term->count, 'petshop-core'), $term->count)) . '">' . esc_html((string) $term->count) . '</span></label></li>';
+    }
+
+    /** @param array<int|string, mixed> $taxQuery @return array<int|string, mixed> */
+    private static function withoutCatalogCategoryClauses(array $taxQuery): array
+    {
+        $filtered = [];
+        foreach ($taxQuery as $key => $clause) {
+            if ($key === 'relation') {
+                continue;
+            }
+            if (!is_array($clause) || ($clause['taxonomy'] ?? '') === 'product_cat') {
+                continue;
+            }
+            $filtered[] = $clause;
+        }
+
+        return $filtered;
+    }
+
+    private static function openFacet(string $slug, string $label, bool $defaultOpen, bool $active): void
+    {
+        $facetId = 'petshop-filter-facet-' . sanitize_html_class($slug);
+        $isOpen = $defaultOpen || $active;
+        echo '<fieldset class="petshop-catalog-filter__facet' . ($active ? ' is-active' : '') . '" data-petshop-filter-facet>';
+        echo '<legend><button class="petshop-catalog-filter__facet-toggle" type="button" aria-expanded="' . ($isOpen ? 'true' : 'false') . '" aria-controls="' . esc_attr($facetId) . '">';
+        echo '<span>' . esc_html($label) . '</span><span class="petshop-catalog-filter__chevron" aria-hidden="true"></span></button></legend>';
+        echo '<div id="' . esc_attr($facetId) . '" class="petshop-catalog-filter__facet-panel"' . ($isOpen ? '' : ' hidden') . '>';
+    }
+
+    private static function closeFacet(): void
+    {
+        echo '</div></fieldset>';
+    }
+
+    /** @param list<array{label: string, remove_url: string}> $applied */
+    private static function renderAppliedFilters(array $applied, string $context): void
+    {
+        echo '<div class="petshop-catalog-filter__applied petshop-catalog-filter__applied--' . esc_attr($context) . '" aria-label="' . esc_attr__('Filtros aplicados', 'petshop-core') . '">';
+        if ($context === 'panel') {
+            echo '<h3>' . esc_html__('Aplicados', 'petshop-core') . '</h3>';
+        }
+        echo '<ul>';
+        foreach ($applied as $filter) {
+            echo '<li><a href="' . esc_url($filter['remove_url']) . '"><span>' . esc_html($filter['label']) . '</span><span aria-hidden="true">&times;</span></a></li>';
+        }
+        echo '</ul>';
+        if ($context === 'panel') {
+            echo '<a class="petshop-catalog-filter__clear" href="' . esc_url(wc_get_page_permalink('shop')) . '">' . esc_html__('Limpar todos', 'petshop-core') . '</a>';
+        }
+        echo '</div>';
     }
 
     /** @return list<string> */
@@ -292,6 +361,12 @@ final class CatalogFilter
     {
         $applied = [];
         $current = self::canonicalParametersFromRequest($_GET);
+        if (!isset($current['petshop_categories']) && is_product_category()) {
+            $currentTerm = get_queried_object();
+            if ($currentTerm instanceof \WP_Term) {
+                $current['petshop_categories'] = [$currentTerm->slug];
+            }
+        }
         foreach ($current as $key => $value) {
             $values = is_array($value) ? $value : explode(',', (string) $value);
             foreach ($values as $item) {
@@ -310,8 +385,8 @@ final class CatalogFilter
 
     private static function filterLabel(string $key, string $value): string
     {
-        $prefixes = ['product_cat' => __('Categoria', 'petshop-core'), 'filter_pa_color' => __('Cor', 'petshop-core'), 'filter_pa_size' => __('Tamanho', 'petshop-core'), 'min_price' => __('Preço mínimo', 'petshop-core'), 'max_price' => __('Preço máximo', 'petshop-core'), 'stock_status' => __('Estoque', 'petshop-core'), 'orderby' => __('Ordem', 'petshop-core')];
-        $termTaxonomy = $key === 'product_cat' ? 'product_cat' : (self::ATTRIBUTE_FILTERS[$key]['taxonomy'] ?? '');
+        $prefixes = ['product_cat' => __('Categoria', 'petshop-core'), 'petshop_categories' => __('Categoria', 'petshop-core'), 'filter_pa_color' => __('Cor', 'petshop-core'), 'filter_pa_size' => __('Tamanho', 'petshop-core'), 'min_price' => __('Preço mínimo', 'petshop-core'), 'max_price' => __('Preço máximo', 'petshop-core'), 'stock_status' => __('Estoque', 'petshop-core'), 'orderby' => __('Ordem', 'petshop-core')];
+        $termTaxonomy = in_array($key, ['product_cat', 'petshop_categories'], true) ? 'product_cat' : (self::ATTRIBUTE_FILTERS[$key]['taxonomy'] ?? '');
         if ($termTaxonomy !== '') {
             $term = get_term_by('slug', $value, $termTaxonomy);
             if ($term instanceof \WP_Term) $value = $term->name;

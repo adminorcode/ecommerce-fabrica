@@ -7,6 +7,9 @@ const evidenceDir = createEvidenceDirectory('005/catalog-layout');
 const failures = [];
 const results = [];
 const browser = await launchBrowser();
+const categoryValues = (url) => [...url.searchParams.entries()]
+  .filter(([key]) => /^(?:product_cat|petshop_categories)(?:\[\d*\])?$/.test(key))
+  .map(([, value]) => value);
 
 try {
   for (const viewport of [
@@ -56,8 +59,8 @@ try {
     if (pageErrors.length) failures.push(`${viewport.name}: ${pageErrors.length} erro(s) de pagina`);
 
     if (record.sidebar && record.main) {
-      if (viewport.width >= 768 && record.sidebar.x >= record.main.x) failures.push(`${viewport.name}: sidebar nao esta a esquerda da grade`);
-      if (viewport.width < 768) {
+      if (viewport.width >= 1180 && record.sidebar.x >= record.main.x) failures.push(`${viewport.name}: sidebar nao esta a esquerda da grade`);
+      if (viewport.width < 1180) {
         const toggle = page.locator('[data-petshop-filter-open]');
         await toggle.click();
         if (!await sidebar.evaluate((element) => element.classList.contains('is-open'))) failures.push(`${viewport.name}: painel de filtros nao abriu`);
@@ -83,7 +86,11 @@ try {
   if (visibleOptions.length !== 1 || visibleOptions[0].trim() !== 'Gravatas') failures.push(`busca textual: opcoes visiveis divergentes (${visibleOptions.join(', ')})`);
   await categorySearch.fill('');
 
-  await behaviorPage.locator('input[type="checkbox"][value="gravatas"]').check();
+  const gravatasInput = behaviorPage.locator('input[type="checkbox"][value="gravatas"]');
+  if (!await gravatasInput.isVisible()) {
+    await behaviorPage.locator('[data-petshop-filter-more]').click();
+  }
+  await gravatasInput.check();
   if (new URL(behaviorPage.url()).pathname !== '/product-category/conjuntos/') failures.push('checkbox isolado navegou antes da aplicacao explicita');
   await behaviorPage.locator('.petshop-catalog-filter').evaluate((form) => {
     form.querySelectorAll('input,select').forEach((control) => {
@@ -91,11 +98,11 @@ try {
     });
   });
   await Promise.all([
-    behaviorPage.waitForURL((url) => url.pathname === '/loja/' && url.searchParams.has('product_cat[]'), { timeout: 15000 }),
+    behaviorPage.waitForURL((url) => url.pathname === '/loja/' && categoryValues(url).length > 0, { timeout: 15000 }),
     behaviorPage.locator('.petshop-catalog-filter__apply').click(),
   ]);
   const combinedUrl = new URL(behaviorPage.url());
-  const combinedSlugs = combinedUrl.searchParams.getAll('product_cat[]');
+  const combinedSlugs = categoryValues(combinedUrl);
   if (JSON.stringify(combinedSlugs) !== JSON.stringify(['conjuntos', 'gravatas'])) failures.push(`query combinada divergente: ${combinedSlugs.join(',')}`);
   if (await behaviorPage.locator('.petshop-catalog-filter input[type="checkbox"]:checked').count() !== 2) failures.push('query combinada: dois checkboxes nao permaneceram marcados');
   const combinedCategories = await behaviorPage.locator('li.product .meta-categories').allTextContents();
@@ -109,7 +116,7 @@ try {
   });
   await Promise.all([
     behaviorPage.waitForURL((url) => {
-      const categories = url.searchParams.getAll('product_cat[]');
+      const categories = categoryValues(url);
       return url.pathname === '/loja/' && categories.length === 1 && categories[0] === 'gravatas';
     }, { timeout: 15000 }),
     behaviorPage.locator('.petshop-catalog-filter__apply').click(),
@@ -125,9 +132,7 @@ try {
   });
   const canonicalLocation = canonicalResponse.headers().location || '';
   const canonicalUrl = new URL(canonicalLocation, baseUrl);
-  const canonicalCategories = [...canonicalUrl.searchParams.entries()]
-    .filter(([key]) => /^product_cat(?:\[\d*\])?$/.test(key))
-    .map(([, value]) => value);
+  const canonicalCategories = categoryValues(canonicalUrl);
   if (canonicalResponse.status() !== 302 || canonicalUrl.pathname !== '/loja/' || !canonicalCategories.includes('conjuntos')) failures.push('query em arquivo de taxonomia nao foi canonicalizada para a loja');
   results.push({
     behavior: 'catalog-filter',

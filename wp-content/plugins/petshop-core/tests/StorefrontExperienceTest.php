@@ -80,6 +80,28 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame('_stock_status', $query->get('meta_query')[0]['key']);
     }
 
+    public function testCatalogFilterReplacesNativeCategoryQueryWithUnionClause(): void
+    {
+        $_GET['product_cat'] = ['adesivos', 'bandanas'];
+        $query = new WP_Query([
+            'main_query' => true,
+            'post_type_archive' => 'product',
+            'tax_query' => [
+                ['taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => ['adesivos'], 'operator' => 'AND'],
+                ['taxonomy' => 'product_visibility', 'field' => 'name', 'terms' => ['exclude-from-catalog'], 'operator' => 'NOT IN'],
+            ],
+        ]);
+
+        CatalogFilter::applyCatalogCategoryFilter($query);
+
+        $taxQuery = $query->get('tax_query');
+        self::assertSame('', $query->get('product_cat'));
+        self::assertSame('product_visibility', $taxQuery[0]['taxonomy']);
+        self::assertSame('product_cat', $taxQuery[1]['taxonomy']);
+        self::assertSame('IN', $taxQuery[1]['operator']);
+        self::assertSame(['adesivos', 'bandanas'], $taxQuery[1]['terms']);
+    }
+
     public function testCanonicalCatalogParametersDropUnknownAndInvalidValues(): void
     {
         $parameters = CatalogFilter::canonicalParametersFromRequest([
@@ -91,7 +113,7 @@ final class StorefrontExperienceTest extends TestCase
         ]);
 
         self::assertSame([
-            'product_cat' => ['lacos', 'bandanas'],
+            'petshop_categories' => ['lacos', 'bandanas'],
             'filter_pa_color' => 'azul',
             'orderby' => 'price',
         ], $parameters);

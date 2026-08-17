@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-Pendente.
+Concluído.
 
 ## 2. Problema
 
@@ -240,3 +240,21 @@ Após implementação, testar manualmente:
 5. Remover um chip individual.
 6. Repetir em largura mobile, abrindo e fechando o drawer.
 7. Confirmar que o hero Gutenberg de `/animal-republik/` continua intacto e que o `.hero-section` padrão não voltou.
+
+## 13. Evidência de entrega
+
+Implementado em `codex/021-filtros-catalogo-funcionais`.
+
+- `CatalogFilter.php`: toolbar com botão de filtros e chips aplicados fora do painel, painel com header/body/footer, facetas em disclosure com `aria-expanded`, grupos ativos abertos por padrão e chip para categoria atual em rotas de categoria.
+- `catalog-filter.js`: controle de drawer em tablet/mobile, Escape, retorno de foco, trava de scroll do body, busca de categorias com `aria-live`, navegação por setas entre facetas e `Ver mais/Ver menos`.
+- `style.css`: sidebar sticky com altura limitada em desktop amplo, drawer lateral em tablet, bottom sheet em mobile, footer fixo, chips roláveis e contenção de overflow horizontal.
+- `validate-021-catalog-filters-browser.mjs`: gate browser para `/loja/`, `/product-category/bandanas/`, `/product-category/conjuntos/` e query combinada, em `1440`, `1024`, `768` e `390`.
+
+Validação executada:
+
+- `docker compose --profile tools run --rm --no-deps cli php -l /var/www/html/wp-content/plugins/petshop-core/includes/Storefront/CatalogFilter.php` — passou.
+- `npm run validate:changed:browser` — passou; inclui `validate-021-catalog-filters-browser.mjs` e `validate-no-theme-hero-browser.mjs`.
+- `npm run test` — passou: 15 testes, 26 assertions.
+- `npm run validate` — passou: todos os gates PHP.
+
+Screenshots gerados em `.local/evidence/021/`: `desktop-1440.png`, `desktop-1024.png`, `mobile-390.png`.
