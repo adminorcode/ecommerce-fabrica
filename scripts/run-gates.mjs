@@ -198,6 +198,20 @@ const classifySuites = (files) => {
             suites.add('category-icons-022');
             browserScripts.add('validate-022-category-icons-browser.mjs');
         }
+        if (
+            file.includes('Personalization')
+            || file.includes('personalizer')
+            || file.includes('personalizable-products')
+            || file.includes('validate-012-personalization')
+            || file.includes('validate-012-personalizer')
+            || file.includes('012-personalizador')
+            || file.includes('012-sessoes-00')
+            || file.includes('guia-personalizacao')
+            || file.includes('operacao-personalizacoes')
+        ) {
+            suites.add('personalization-012');
+            browserScripts.add('validate-012-personalizer-browser.mjs');
+        }
     }
 
     return { suites, browserScripts };
@@ -231,6 +245,10 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('category-icons-022')) {
         evalFile('validate-022-category-icons.php');
+    }
+    if (suites.has('personalization-012')) {
+        evalFile('validate-012-personalization.php');
+        evalFile('smoke-012-order-flow.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');
