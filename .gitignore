@@ -1,6 +1,8 @@
 # Dependencies and tool caches
 node_modules/
 **/vendor/
+!wp-content/plugins/petshop-core/assets/personalizer/vendor/
+!wp-content/plugins/petshop-core/assets/personalizer/vendor/**
 .npm/
 .composer/
 .phpunit.cache/

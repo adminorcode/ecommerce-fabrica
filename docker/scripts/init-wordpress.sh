@@ -14,6 +14,7 @@ set -eu
 runtime=/var/www/html
 plugins="$runtime/wp-content/plugins"
 themes="$runtime/wp-content/themes"
+personalizations="${PETSHOP_PERSONALIZATION_STORAGE:-/var/petshop-personalizations}"
 
 until mysqladmin ping -h "${WORDPRESS_DB_HOST%:*}" -u"$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" --silent; do
   sleep 2
@@ -30,6 +31,11 @@ if [ ! -d "$themes/petshop-theme" ]; then
   cp -a /opt/project-source/themes/petshop-theme "$themes/"
 fi
 chown -R www-data:www-data "$runtime/wp-content"
+
+# Private personalization storage lives outside the document root (Plano 012).
+mkdir -p "$personalizations"
+chown www-data:www-data "$personalizations"
+chmod 750 "$personalizations"
 
 if ! wp core is-installed --path="$runtime" --allow-root >/dev/null 2>&1; then
   wp config create --path="$runtime" --allow-root --skip-check --dbname="$WORDPRESS_DB_NAME" --dbuser="$WORDPRESS_DB_USER" --dbpass="$WORDPRESS_DB_PASSWORD" --dbhost="$WORDPRESS_DB_HOST"
