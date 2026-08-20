@@ -14,7 +14,35 @@ Salve e visualize a loja após cada alteração. O conteúdo editado no painel *
 
 
 
-## 1. Hero (topo da página)
+## 1. Barra verde do topo (todas as páginas)
+
+
+
+Essa faixa aparece acima do logo em **todas** as páginas da loja, não só na Home.
+
+
+
+**Onde:** **Aparência → Personalizar → Barra promocional**
+
+
+
+| Item | Como editar |
+| --- | --- |
+| Texto | Campo **Texto da barra**. É o recado comercial da faixa teal. |
+| Link | Campo **Link da barra (opcional)**. Com URL, a mensagem inteira fica clicável. |
+| Ocultar a faixa | Deixe o texto em branco e publique. A barra some sem deixar espaço. |
+
+
+
+Não é preciso alterar código nem a Home no Gutenberg para mudar essa mensagem.
+
+
+
+---
+
+
+
+## 2. Hero (topo da página)
 
 
 
@@ -40,7 +68,7 @@ Salve e visualize a loja após cada alteração. O conteúdo editado no painel *
 
 
 
-## 2. Faixa de benefícios
+## 3. Faixa de benefícios
 
 
 
@@ -76,7 +104,7 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 
 
 
-## 3. Banners de campanha
+## 4. Banners de campanha
 
 
 
@@ -94,6 +122,7 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 | Texto alternativo | Painel lateral → **Texto alternativo contextual** |
 | Copy editorial | Modo **Campanha editorial** → campos de eyebrow, título, texto, benefício e CTA no canvas ou painel lateral |
 | Link de destino | Painel lateral → campo de URL (produto, categoria, página ou link externo). Em campanha editorial, é o destino do CTA |
+| Tempo de visualização | Painel lateral do banner → **Tempo de visualização (segundos)** |
 | Ordem | Arraste os blocos-filho no editor |
 | Remover campanha | Selecione o bloco-filho → **Opções** → **Remover** |
 | Rótulo interno | Painel lateral → **Rótulo interno** (somente para identificar no editor) |
@@ -104,11 +133,9 @@ Use **Arte final** quando a peça já vier fechada com texto incorporado. Nesse 
 
 Use **Campanha editorial** para campanhas recorrentes. A imagem vira apoio visual e a oferta fica em texto real no Gutenberg: eyebrow, título, texto, benefício, rótulo do CTA e destino. Essa modalidade é a recomendada quando a equipe precisa atualizar copy, SEO, acessibilidade ou CTA sem criar nova arte.
 
-Com **uma** campanha completa, a loja exibe um banner estático. Com **duas ou mais**, aparecem setas e indicadores para navegação manual — sem troca automática.
+Cadastre **até 3** banners. Com **uma** campanha completa, a loja exibe um banner estático. Com **duas ou três**, aparecem setas laterais e indicadores na parte inferior da arte; as imagens avançam sozinhas no tempo configurado em cada banner (**padrão 10 segundos**). Passe o mouse ou foque um controle para pausar. Se o sistema do visitante pedir movimento reduzido, a troca automática é desligada e a navegação continua manual.
 
-
-
-Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida, a faixa inteira **some** (sem espaço vazio).
+O quarto banner não é publicado. Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida, a faixa inteira **some** (sem espaço vazio).
 
 
 
@@ -116,7 +143,7 @@ Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida
 
 
 
-## 4. Compre por categoria
+## 5. Compre por categoria
 
 
 
@@ -146,7 +173,7 @@ A Home usa, nesta ordem: ícone personalizado (se houver), ícone da galeria, ou
 
 
 
-## 5. Vitrines de produtos
+## 6. Vitrines de produtos
 
 **Onde:** cada seção de produtos da Home mantém título, texto e link em blocos nativos. A grade é o bloco **Vitrine de produtos** (`petshop/product-grid`) dentro da mesma seção.
 
@@ -165,7 +192,7 @@ Uma vitrine sem produtos válidos não aparece na loja. A seção externa també
 
 ---
 
-## 6. Kits e conjuntos
+## 7. Kits e conjuntos
 
 **Onde:** seção `petshop-kits-section` na Home.
 
@@ -179,7 +206,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 7. Coleção da estação
+## 8. Coleção da estação
 
 **Onde:** seção `petshop-seasonal-section` na Home.
 
@@ -191,7 +218,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 8. Seleção para banho e tosa
+## 9. Seleção para banho e tosa
 
 **Onde:** seção `petshop-professional-section` na Home.
 
@@ -203,7 +230,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 9. Páginas comerciais P1
+## 10. Páginas comerciais P1
 
 **Onde:** **Páginas → Animal Republik** e **Páginas → Produtos premium**.
 
@@ -223,7 +250,7 @@ As imagens iniciais dessas páginas são placeholders gerados para o projeto. Su
 
 ---
 
-## 10. Badges nos cards (promoção e mais pedido)
+## 11. Badges nos cards (promoção e mais pedido)
 
 
 
@@ -245,7 +272,7 @@ Sem promoção ou vendas suficientes, o badge correspondente **não aparece**.
 
 
 
-## 10. Avaliações
+## 12. Avaliações
 
 
 
@@ -257,7 +284,7 @@ Exibidas automaticamente a partir de **avaliações aprovadas** nos produtos (**
 
 
 
-## 11. Secao de atendimento (final)
+## 13. Secao de atendimento (final)
 
 **Onde:** grupo `petshop-support-banner`, no final da Home, editavel direto no Gutenberg.
 
@@ -298,6 +325,8 @@ Se uma atualizacao preservar o banner antigo como imagem unica, substitua manual
 | Tipo de conteúdo | Painel |
 
 | --- | --- |
+
+| Barra verde do topo (todas as páginas) | **Personalizar → Barra promocional** |
 
 | Textos e imagens do hero, benefícios e seções editoriais | **Páginas → Home** (Gutenberg) |
 

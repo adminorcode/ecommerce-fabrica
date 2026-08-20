@@ -26,6 +26,7 @@
 | [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Entrega em `master`. Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
 | [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 | [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) | Concluído | Customizer + composição da referência (4 colunas, ícones, selos); gates PHP/browser |
+| [024-carrossel-banner-promocional.md](./024-carrossel-banner-promocional.md) | Concluído | Até 3 banners, tempo por imagem (padrão 10 s), autoplay com setas/indicadores sobrepostos; gates PHP/browser |
 ## Ordem recomendada de execução
 
 ```
@@ -54,7 +55,8 @@
   ├── 020 (header de checkout sem distrações e com aparência intencional)
   ├── 021 (filtros de catálogo funcionais e responsivos)
   ├── 022 (ícones de vitrine por upload livre)
-  └── 023 (rodapé institucional editável — Customizer/menus + composição da referência)
+  ├── 023 (rodapé institucional editável — Customizer/menus + composição da referência)
+  └── 024 (carrossel do banner promocional — até 3 imagens, autoplay configurável)
 ```
 
 ## Origem
@@ -71,4 +73,6 @@ Plano 022 derivado da necessidade de permitir que o cliente forneça ícones pr�
 
 Plano 023 derivado do pedido de rodapé mais editável (2026-08-19): mockup como composição visual e inventário de campos (redes, atendimento, selos, legal), com tokens do Plano 014.
 
-**Última atualização:** 2026-08-19 (Plano 023 concluído com composição visual da referência; 012 em andamento com inventário de editor fechado)
+Plano 024 derivado do pedido de transformar o banner promocional da Home em carrossel (2026-08-19): até 3 imagens, tempo de visualização configurável por imagem (padrão 10 s) e controles sobrepostos à arte.
+
+**Última atualização:** 2026-08-19 (Plano 024 concluído: carrossel promocional com até 3 imagens; 012 em andamento com inventário de editor fechado)

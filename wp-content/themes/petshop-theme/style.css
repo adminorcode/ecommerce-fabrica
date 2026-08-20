@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.12
+Version: 0.6.13
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -2049,9 +2049,11 @@ figure.petshop-support-banner__image {
 .petshop-home-campaigns {
   margin-inline: auto;
   padding-block: var(--space-4);
+  overflow-x: clip;
 }
 
 .petshop-home-campaigns__inner {
+  position: relative;
   width: min(100%, var(--container-max));
   margin-inline: auto;
 }
@@ -2191,36 +2193,58 @@ figure.petshop-support-banner__image {
   object-position: center;
 }
 
-.petshop-home-campaigns__controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  margin-block-start: var(--space-3);
+.petshop-home-campaigns.is-carousel .petshop-home-campaigns__controls {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  margin: 0;
+  pointer-events: none;
 }
 
 .petshop-home-campaigns__prev,
-.petshop-home-campaigns__next,
-.petshop-home-campaigns__dot {
+.petshop-home-campaigns__next {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
   min-width: 2.75rem;
   min-height: 2.75rem;
   padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-ink);
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand-teal-900);
+  color: var(--white);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 22%), 0 0 0 2px rgb(255 255 255 / 55%);
   cursor: pointer;
-  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+  pointer-events: auto;
+  transform: translateY(-50%);
+  transition: background-color .2s ease, transform .2s ease;
+}
+
+.petshop-home-campaigns__prev {
+  left: .75rem;
+}
+
+.petshop-home-campaigns__next {
+  right: .75rem;
+}
+
+.petshop-home-campaigns__prev svg,
+.petshop-home-campaigns__next svg {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .petshop-home-campaigns__prev:hover,
-.petshop-home-campaigns__next:hover,
-.petshop-home-campaigns__dot:hover {
-  border-color: var(--color-brand-teal-dark);
-  color: var(--color-brand-teal-dark);
+.petshop-home-campaigns__next:hover {
+  background: var(--brand-teal-700);
+  transform: translateY(-50%) scale(1.04);
 }
 
 .petshop-home-campaigns__prev:focus-visible,
@@ -2237,23 +2261,44 @@ figure.petshop-support-banner__image {
 }
 
 .petshop-home-campaigns__dots {
+  position: absolute;
+  bottom: .85rem;
+  left: 50%;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: .15rem;
+  pointer-events: auto;
+  transform: translateX(-50%);
 }
 
 .petshop-home-campaigns__dot {
-  width: .75rem;
-  min-width: .75rem;
-  height: .75rem;
-  min-height: .75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
   padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.petshop-home-campaigns__dot.is-active,
-.petshop-home-campaigns__dot[aria-selected="true"] {
-  background: var(--color-brand-teal-dark);
-  border-color: var(--color-brand-teal-dark);
+.petshop-home-campaigns__dot::after {
+  content: "";
+  width: .7rem;
+  height: .7rem;
+  border-radius: 50%;
+  background: var(--brand-teal-900);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 55%), 0 1px 3px rgb(0 0 0 / 28%);
+}
+
+.petshop-home-campaigns__dot.is-active::after,
+.petshop-home-campaigns__dot[aria-selected="true"]::after {
+  background: var(--white);
+  box-shadow: 0 0 0 1px var(--brand-teal-900), 0 1px 3px rgb(0 0 0 / 28%);
 }
 
 .petshop-home-campaigns-editor,
@@ -2348,6 +2393,11 @@ figure.petshop-support-banner__image {
 html.petshop-reduced-motion .petshop-home-campaigns__controls *,
 html.petshop-reduced-motion .petshop-home-campaigns__link {
   transition: none;
+}
+
+html.petshop-reduced-motion .petshop-home-campaigns__prev:hover,
+html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
+  transform: translateY(-50%);
 }
 
 .petshop-support-cta {
@@ -3918,6 +3968,14 @@ footer.ct-footer .ct-footer-copyright {
 
   .petshop-home-campaigns__link {
     aspect-ratio: 4 / 5;
+  }
+
+  .petshop-home-campaigns__prev {
+    left: .75rem;
+  }
+
+  .petshop-home-campaigns__next {
+    right: .75rem;
   }
 
   .petshop-home-campaigns__editorial,

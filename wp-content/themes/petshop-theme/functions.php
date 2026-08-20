@@ -140,10 +140,14 @@ add_action(
         $petshopDefault = static fn (string $id): mixed => class_exists(\Petshop\Core\Settings\DefaultSettings::class)
             ? \Petshop\Core\Settings\DefaultSettings::get($id)
             : null;
-        $benefitText = (string) get_theme_mod(
-            'petshop_benefit_text',
-            $petshopDefault('petshop_benefit_text')
-        );
+        $benefitText = trim((string) preg_replace(
+            '/\s+/u',
+            ' ',
+            (string) get_theme_mod(
+                'petshop_benefit_text',
+                $petshopDefault('petshop_benefit_text')
+            )
+        ));
         $benefitUrl = (string) get_theme_mod('petshop_benefit_url', '');
         $supportUrl = trim((string) get_theme_mod('petshop_footer_whatsapp', ''));
         if ($supportUrl === '') {

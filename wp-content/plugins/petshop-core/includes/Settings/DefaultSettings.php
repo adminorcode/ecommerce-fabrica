@@ -22,16 +22,20 @@ final class DefaultSettings
     {
         return [
             'petshop_benefit_text' => [
-                'label' => __('Mensagem da barra superior', 'petshop-core'),
+                'label' => __('Texto da barra', 'petshop-core'),
                 'default' => 'Acabamento cuidadoso para tutores e profissionais',
-                'type' => 'text',
-                'sanitize' => 'sanitize_text_field',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+                'section' => 'petshop_promo_bar',
+                'description' => __('Ex.: Produção própria de acessórios pet • Atacado, varejo e personalizados. Vazio oculta a faixa.', 'petshop-core'),
             ],
             'petshop_benefit_url' => [
-                'label' => __('Link da barra superior', 'petshop-core'),
+                'label' => __('Link da barra (opcional)', 'petshop-core'),
                 'default' => '',
                 'type' => 'url',
                 'sanitize' => 'esc_url_raw',
+                'section' => 'petshop_promo_bar',
+                'description' => __('Se preenchido, a mensagem inteira vira um link. Sem URL, o texto permanece só informativo.', 'petshop-core'),
             ],
             'petshop_support_label' => [
                 'label' => __('Rótulo do atendimento no cabeçalho', 'petshop-core'),

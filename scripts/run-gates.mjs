@@ -214,7 +214,7 @@ const classifySuites = (files) => {
         }
         if (
             file.includes('023-rodape')
-            || file.includes('validate-023-footer')
+            ||             file.includes('validate-023-footer')
             || file.includes('petshop_footer')
             || file.includes('institutional-footer')
             || (file.includes('DefaultSettings.php') && file.includes('petshop-core'))
@@ -222,6 +222,16 @@ const classifySuites = (files) => {
         ) {
             suites.add('footer-023');
             browserScripts.add('validate-023-footer-browser.mjs');
+        }
+        if (
+            file.includes('home-campaign')
+            || file.includes('HomeCampaign')
+            || file.includes('class-home-campaign-blocks')
+            || file.includes('validate-024-home-campaigns')
+            || file.includes('024-carrossel-banner')
+        ) {
+            suites.add('campaigns-024');
+            browserScripts.add('validate-024-home-campaigns-carousel-browser.mjs');
         }
     }
 
@@ -263,6 +273,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('footer-023')) {
         evalFile('validate-023-footer.php');
+    }
+    if (suites.has('campaigns-024')) {
+        evalFile('validate-024-home-campaigns-carousel.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -17,6 +17,12 @@ final class Customizer
 
     public static function register(\WP_Customize_Manager $customizer): void
     {
+        $customizer->add_section('petshop_promo_bar', [
+            'title' => __('Barra promocional', 'petshop-core'),
+            'priority' => 34,
+            'description' => __('Faixa verde no topo de todas as páginas da loja. Deixe o texto em branco para ocultar a barra.', 'petshop-core'),
+        ]);
+
         $customizer->add_section('petshop_store_content', [
             'title' => __('Conteúdo da loja', 'petshop-core'),
             'priority' => 35,
