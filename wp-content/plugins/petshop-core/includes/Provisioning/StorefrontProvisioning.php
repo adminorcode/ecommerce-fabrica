@@ -147,6 +147,34 @@ trait StorefrontProvisioning
                 set_theme_mod('petshop_support_page', (int) $supportPage->ID);
             }
         }
+        self::ensureFooterDefaults();
+    }
+
+    private static function ensureFooterDefaults(): void
+    {
+        $keys = [
+            'petshop_footer_description',
+            'petshop_footer_copyright',
+            'petshop_footer_whatsapp_label',
+            'petshop_footer_support_text',
+            'petshop_footer_hours',
+            'petshop_footer_faq_text',
+            'petshop_footer_trust_1_title',
+            'petshop_footer_trust_1_text',
+            'petshop_footer_trust_2_title',
+            'petshop_footer_trust_2_text',
+            'petshop_footer_trust_3_title',
+            'petshop_footer_trust_3_text',
+            'petshop_footer_trust_4_title',
+            'petshop_footer_trust_4_text',
+        ];
+
+        foreach ($keys as $key) {
+            if (get_theme_mod($key, null) !== null) {
+                continue;
+            }
+            set_theme_mod($key, \Petshop\Core\Settings\DefaultSettings::get($key));
+        }
     }
 
     private static function ensureCommercialMenu(int $collectionsId, int $personalizeId): void

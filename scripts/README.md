@@ -71,6 +71,8 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável, ZIPs do tema/
 | `validate-005-cart-browser.mjs` | 008 | Browser: adicionar ao carrinho/minicarrinho |
 | `validate-005-session-02-editor.mjs` | 005 S02 | Editor Gutenberg |
 | `validate-009-cart-checkout-browser.mjs` | 009 | Browser: cart/checkout tokens e a11y |
+| `validate-023-footer.php` | 023 | Rodapé: settings Customizer e render preenchido/vazio |
+| `validate-023-footer-browser.mjs` | 023 | Browser: composição do rodapé (4 colunas, redes na marca, ícones, 1440/390) |
 | `test-004b-persistence.php` | 004b | Persistência editorial |
 | `test-005-session-01-persistence.php` | 005 S01 | Persistência header |
 | `test-005-session-02-persistence.php` | 005 S02 | Persistência hero |

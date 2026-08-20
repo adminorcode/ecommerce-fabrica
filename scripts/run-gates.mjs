@@ -212,6 +212,17 @@ const classifySuites = (files) => {
             suites.add('personalization-012');
             browserScripts.add('validate-012-personalizer-browser.mjs');
         }
+        if (
+            file.includes('023-rodape')
+            || file.includes('validate-023-footer')
+            || file.includes('petshop_footer')
+            || file.includes('institutional-footer')
+            || (file.includes('DefaultSettings.php') && file.includes('petshop-core'))
+            || file.includes('Admin/Customizer.php')
+        ) {
+            suites.add('footer-023');
+            browserScripts.add('validate-023-footer-browser.mjs');
+        }
     }
 
     return { suites, browserScripts };
@@ -249,6 +260,9 @@ const runFocusedSuites = (suites) => {
     if (suites.has('personalization-012')) {
         evalFile('validate-012-personalization.php');
         evalFile('smoke-012-order-flow.php');
+    }
+    if (suites.has('footer-023')) {
+        evalFile('validate-023-footer.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontProvisioner
 {
-    private const VERSION = '3.2.0';
+    private const VERSION = '3.2.1';
     private const OPTION = 'petshop_storefront_version';
     private const COMMERCIAL_MENU_OPTION = 'petshop_commercial_menu_version';
 

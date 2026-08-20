@@ -61,6 +61,7 @@ Invoke-EvalFile 'validate-016-product-grid.php'
 Invoke-EvalFile 'validate-018-commercial-pages.php'
 Invoke-EvalFile 'validate-animal-republik-products.php'
 Invoke-EvalFile 'validate-012-personalization.php'
+Invoke-EvalFile 'validate-023-footer.php'
 Invoke-EvalFile 'smoke-012-order-flow.php'
 
 if ($ContentAudit) {
@@ -95,7 +96,7 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }

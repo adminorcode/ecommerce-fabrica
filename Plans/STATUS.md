@@ -25,6 +25,7 @@
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
 | [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Entrega em `master`. Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
 | [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
+| [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) | Concluído | Customizer + composição da referência (4 colunas, ícones, selos); gates PHP/browser |
 ## Ordem recomendada de execução
 
 ```
@@ -52,7 +53,8 @@
   ├── 019 (profissionais/laceiros como entrega institucional P2)
   ├── 020 (header de checkout sem distrações e com aparência intencional)
   ├── 021 (filtros de catálogo funcionais e responsivos)
-  └── 022 (ícones de vitrine por upload livre)
+  ├── 022 (ícones de vitrine por upload livre)
+  └── 023 (rodapé institucional editável — Customizer/menus + composição da referência)
 ```
 
 ## Origem
@@ -67,4 +69,6 @@ Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com p
 
 Plano 022 derivado da necessidade de permitir que o cliente forneça ícones próprios para a vitrine de categorias sem alterar código, preservando a galeria atual como fallback.
 
-**Última atualização:** 2026-08-17 (Planos 021 e 022 mergeados em master; próximos recomendados: 017 e 019)
+Plano 023 derivado do pedido de rodapé mais editável (2026-08-19): mockup como composição visual e inventário de campos (redes, atendimento, selos, legal), com tokens do Plano 014.
+
+**Última atualização:** 2026-08-19 (Plano 023 concluído com composição visual da referência; 012 em andamento com inventário de editor fechado)

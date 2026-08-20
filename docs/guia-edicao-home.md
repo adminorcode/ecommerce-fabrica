@@ -314,3 +314,11 @@ Se uma atualizacao preservar o banner antigo como imagem unica, substitua manual
 | Secao de atendimento da Home | **Páginas → Home** (grupo `petshop-support-banner`, textos, botao e imagens nativas) |
 
 | Logo | **Personalizar → Identidade do site** |
+
+| Rodapé — descrição, redes, atendimento, selos, legal | **Personalizar → Rodapé da loja** |
+
+| Rodapé — categorias | **Aparência → Menus** (localização `petshop-primary`) |
+
+| Rodapé — institucional | **Aparência → Menus** (localização `petshop-footer`) |
+
+Guia dedicado: [guia-edicao-rodape.md](./guia-edicao-rodape.md).
