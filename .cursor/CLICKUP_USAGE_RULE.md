@@ -23,11 +23,13 @@ Fonte canônica da lista deste repositório. Não versionar tokens nem credencia
    - `## Por quê`
    - `## Critérios de aceite`
    - `## Contexto técnico`
-6. Sempre incluir o caminho local: `Plano local: Plans/{numero}-{slug}.md`.
-7. Não depender de links externos para o mínimo necessário; o ticket ClickUp deve ser acionável sozinho.
-8. Não preencher assignee, tag, prioridade, due date ou campo customizado sem pedido explícito.
-9. Status inicial: `Open`. Só mudar status quando o usuário pedir ou o fluxo (`pr-to-clickup`, `merge-and-close-ticket`) exigir.
-10. Após criar, gravar no plano local o ID, a URL e o status do ticket ClickUp.
+6. **Nada opcional:** nenhum critério, campo ou parâmetro pode aparecer como opcional, nice to have ou proposta. Ou é obrigatório ou está fora de escopo (`plans-no-optional.mdc`).
+7. CEP de endereço implica ViaCEP (`viacep-address.mdc`). Calculadora de frete é a única exceção.
+8. Sempre incluir o caminho local: `Plano local: Plans/{numero}-{slug}.md`.
+9. Não depender de links externos para o mínimo necessário; o ticket ClickUp deve ser acionável sozinho.
+10. Não preencher assignee, tag, prioridade, due date ou campo customizado sem pedido explícito.
+11. Status inicial: `Open`. Só mudar status quando o usuário pedir ou o fluxo (`pr-to-clickup`, `merge-and-close-ticket`) exigir.
+12. Após criar, gravar no plano local o ID, a URL e o status do ticket ClickUp.
 
 ## Relação com o repositório
 

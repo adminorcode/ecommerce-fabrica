@@ -28,7 +28,9 @@ Todo ticket deve conter:
 ## Regras
 
 - O título deve ser curto, descritivo e orientado ao resultado.
-- Critérios de aceite delimitam o escopo: itens solicitados são obrigatórios; sugestões ficam fora do ticket até aprovação.
+- Critérios de aceite delimitam o escopo: itens solicitados são obrigatórios.
+- **Nada opcional:** nenhum campo, critério ou parâmetro pode ser marcado como opcional, nice to have ou proposta. Ou é obrigatório no escopo ou está fora de escopo. Ideia não aceita não entra no ticket.
+- CEP de endereço implica ViaCEP. Calculadora de frete é a única exceção.
 - Use user story para funcionalidades de usuário final quando ela ajudar a esclarecer o valor.
 - Não dependa de links ou documentos externos para explicar o mínimo necessário do ticket.
 - Use o formato suportado pela ferramenta: Markdown no ClickUp/Jira e o formato configurado no Azure DevOps.

@@ -19,9 +19,11 @@ Ticket, plano e branch compartilham o mesmo `{numero}-{slug}`.
 ## Criação e enriquecimento
 
 1. Enriquecer primeiro o plano local com motivação, escopo, fora de escopo, critérios de aceite e contexto técnico.
-2. Inventariar textos e imagens administráveis quando o ticket tocar interface.
-3. Criar ou atualizar a tarefa na lista Autelie Ecommerce (`901715697289`) com a estrutura da skill `write-kanban-tickets`.
-4. Registrar no plano o ID/URL ClickUp. Não duplicar tarefa existente.
+2. **Nada opcional:** campo, critério ou parâmetro ou é obrigatório no escopo ou está fora de escopo. Ver `plans-no-optional.mdc`.
+3. CEP de endereço implica ViaCEP (`viacep-address.mdc`). Calculadora de frete é a única exceção.
+4. Inventariar textos e imagens administráveis quando o ticket tocar interface.
+5. Criar ou atualizar a tarefa na lista Autelie Ecommerce (`901715697289`) com a estrutura da skill `write-kanban-tickets`.
+6. Registrar no plano o ID/URL ClickUp. Não duplicar tarefa existente.
 
 ## Rastreabilidade
 

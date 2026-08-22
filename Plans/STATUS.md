@@ -27,6 +27,13 @@
 | [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 | [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) | Concluído | Customizer + composição da referência (4 colunas, ícones, selos); gates PHP/browser |
 | [024-carrossel-banner-promocional.md](./024-carrossel-banner-promocional.md) | Concluído | Até 3 banners, tempo por imagem (padrão 10 s), autoplay com setas/indicadores sobrepostos; gates PHP/browser |
+| [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) | Pendente | Cadastro PF/PJ, telefone, endereço com ViaCEP e senha escolhida; remove senha temporária. ClickUp [86e2xz60k](https://app.clickup.com/t/86e2xz60k) |
+| [026-checkout-dados-salvos-viacep.md](./026-checkout-dados-salvos-viacep.md) | Pendente | Checkout hidrata dados da conta e preenche endereço via ViaCEP ao informar o CEP. ClickUp [86e2xzer3](https://app.clickup.com/t/86e2xzer3) |
+| [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Pendente | Uma calculadora de frete na PDP; Correios via Virtuaria; Melhor Envio sem Correios; CEP persiste. ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
+| [028-recuperacao-pagamento-pendente.md](./028-recuperacao-pagamento-pendente.md) | Pendente | Um e-mail nativo de pagamento pendente no WooCommerce 11+; sem plugin de recovery. ClickUp [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) |
+| [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
+| [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Pendente | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
+| [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
 ## Ordem recomendada de execução
 
 ```
@@ -56,7 +63,14 @@
   ├── 021 (filtros de catálogo funcionais e responsivos)
   ├── 022 (ícones de vitrine por upload livre)
   ├── 023 (rodapé institucional editável — Customizer/menus + composição da referência)
-  └── 024 (carrossel do banner promocional — até 3 imagens, autoplay configurável)
+  ├── 024 (carrossel do banner promocional — até 3 imagens, autoplay configurável)
+  ├── 025 (cadastro com senha escolhida; remove senha temporária do 013)
+  ├── 026 (checkout hidrata dados da conta e ViaCEP no CEP)
+  ├── 027 (calculadora de frete única; Virtuaria + Melhor Envio)
+  ├── 028 (recuperação de pagamento pendente; WooCommerce 11+ nativo)
+  ├── 029 (retorno à loja após Pix Mercado Pago)
+  ├── 030 (frase da confirmação: Parabéns! Seu pedido foi recebido!)
+  └── 031 (card variável: Comprar agora + preço único)
 ```
 
 ## Origem
@@ -75,4 +89,18 @@ Plano 023 derivado do pedido de rodapé mais editável (2026-08-19): mockup como
 
 Plano 024 derivado do pedido de transformar o banner promocional da Home em carrossel (2026-08-19): até 3 imagens, tempo de visualização configurável por imagem (padrão 10 s) e controles sobrepostos à arte.
 
-**Última atualização:** 2026-08-19 (Plano 024 concluído: carrossel promocional com até 3 imagens; 012 em andamento com inventário de editor fechado)
+Plano 025 derivado da fricção de cadastro (2026-08-21): senha temporária por e-mail após informar o endereço eletrônico; o cliente precisa escolher a senha, informar CPF/CNPJ e endereço, e entrar sem validar a conta no e-mail.
+
+Plano 026 derivado do checkout (2026-08-22): dados já gravados na conta devem hidratar o Checkout Block; CEP consulta ViaCEP e preenche o endereço.
+
+Plano 027 derivado da PDP com duas calculadoras (2026-08-22): a UI da loja vira hub WooCommerce; Correios só Virtuaria; Melhor Envio registrado para as demais transportadoras.
+
+Plano 028 derivado da recuperação de pedidos em Pagamento pendente (2026-08-22): um e-mail nativo do WooCommerce 11+, sem plugin extra.
+
+Plano 029 derivado da reclamação de Pix no Checkout Pro (2026-08-22): após aprovação, redirecionar à loja (Pedidos ou confirmação).
+
+Plano 030 derivado do pedido de copy na confirmação (2026-08-22): “Parabéns! Seu pedido foi recebido!” administrável.
+
+Plano 031 derivado da comparação de card variável (2026-08-22): Comprar agora, chips e um preço, sem faixa.
+
+**Última atualização:** 2026-08-22 (Planos 025–031 pendentes; 012 em andamento)
