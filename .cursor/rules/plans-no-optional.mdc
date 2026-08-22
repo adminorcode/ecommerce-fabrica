@@ -1,0 +1,13 @@
+---
+description: Manter escopo comprometido explícito e separado de propostas
+alwaysApply: true
+---
+
+# Escopo explícito em planos e tickets
+
+- Requisito aceito pelo solicitante é obrigatório na entrega atual.
+- Não rotular critério de aceite ou definition of done comprometido como opcional.
+- Distinguir três estados: escopo comprometido, fora de escopo e proposta pendente de aprovação.
+- Registrar o que ficou fora de escopo com contexto suficiente para retomar depois.
+- Apresentar ideias extras fora do plano e esperar aprovação explícita antes de tratá-las como requisito.
+- Só marcar trabalho concluído quando todo critério comprometido estiver atendido, bloqueado com motivo documentado ou removido pelo solicitante.

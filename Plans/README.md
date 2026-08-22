@@ -1,5 +1,7 @@
 # Convenções para planos
 
+Planos numerados usam o arquivo `Plans/{numero}-{slug}.md`. Ticket ClickUp, plano e branch compartilham o mesmo identificador. A lista e as regras de criação estão em `.cursor/CLICKUP_USAGE_RULE.md`.
+
 Todo plano que criar ou alterar páginas, templates ou componentes visuais deve tratar conteúdo administrável como requisito obrigatório.
 
 ## Textos e imagens

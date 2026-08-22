@@ -27,6 +27,7 @@ Skill de projeto para a loja WordPress/WooCommerce do petshop. Aplique **antes e
 4. `Plans/STATUS.md` — plano ativo e bloqueios
 5. O arquivo do plano solicitado (inteiro, incluindo gates e sessões)
 6. `Plans/README.md` — se o plano tocar interface ou conteúdo editorial
+7. `.cursor/CLICKUP_USAGE_RULE.md` e `write-kanban-tickets` — se o trabalho for criar ou revisar ticket
 
 Não marque checkboxes do plano nem declare conclusão sem evidência de validação.
 
