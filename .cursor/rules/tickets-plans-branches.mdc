@@ -1,0 +1,39 @@
+---
+description: Rastreabilidade entre ticket ClickUp, plano local, branch, PR e merge
+alwaysApply: true
+---
+
+# Tickets, planos, branches e ClickUp
+
+Leia `.cursor/CLICKUP_USAGE_RULE.md` e a skill `write-kanban-tickets` antes de criar ou revisar ticket.
+
+## Convenção local
+
+- Planos: arquivo `Plans/{numero}-{slug}.md` (não pasta).
+- Branch: `{numero}-{slug}` a partir de `master`.
+- Ticket ClickUp: uma tarefa por plano, título `Plano {numero} - Resultado`.
+- Integração: `master`. Merge e fechamento só com pedido explícito.
+
+Ticket, plano e branch compartilham o mesmo `{numero}-{slug}`.
+
+## Criação e enriquecimento
+
+1. Enriquecer primeiro o plano local com motivação, escopo, fora de escopo, critérios de aceite e contexto técnico.
+2. **Nada opcional:** campo, critério ou parâmetro ou é obrigatório no escopo ou está fora de escopo. Ver `plans-no-optional.mdc`.
+3. CEP de endereço implica ViaCEP (`viacep-address.mdc`). Calculadora de frete é a única exceção.
+4. Inventariar textos e imagens administráveis quando o ticket tocar interface.
+5. Criar ou atualizar a tarefa na lista Autelie Ecommerce (`901715697289`) com a estrutura da skill `write-kanban-tickets`.
+6. Registrar no plano o ID/URL ClickUp. Não duplicar tarefa existente.
+
+## Rastreabilidade
+
+- Todo trabalho com ticket mantém vínculo entre ClickUp, plano, branch, commits e Pull Request.
+- Ler o plano antes de implementar e atualizar checkboxes só após validação.
+- Não marcar item concluído sem evidência.
+
+## Branches e PR
+
+- Uma branch por ticket. Não misturar mudanças não relacionadas.
+- PR informa ticket, comportamento entregue, validações e limitações.
+- Não criar commit, PR, merge nem alterar status do ticket sem pedido explícito.
+- Após merge autorizado: atualizar `master` e fechar o ticket com `merge-and-close-ticket`.

@@ -10,7 +10,7 @@ final class StorefrontExperience
 {
     use \Petshop\Core\Compatibility\StorefrontLegacyApi;
 
-    private const VERSION = '3.1.0';
+    private const VERSION = '3.2.1';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -143,6 +143,7 @@ final class StorefrontExperience
 
         return (int) get_post_meta($homeId, '_petshop_home_schema_version', true)
             < \Petshop\Core\Migration\HomeMigrator::currentSchema()
-            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl)
+            || \Petshop\Core\Migration\HomeMigrator::needsSupportSectionRepair($content);
     }
 }

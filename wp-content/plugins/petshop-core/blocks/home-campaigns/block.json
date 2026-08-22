@@ -2,11 +2,11 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "petshop/home-campaigns",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Banners de campanha",
   "category": "petshop",
   "icon": "images-alt2",
-  "description": "Faixa de banners de campanha editáveis na Home.",
+  "description": "Faixa de até 3 banners de campanha em carrossel na Home.",
   "textdomain": "petshop-core",
   "supports": {
     "html": false,

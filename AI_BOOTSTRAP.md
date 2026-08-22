@@ -71,6 +71,18 @@ Para desenvolvimento contínuo, com sincronização do plugin e tema próprios:
 docker compose up --watch
 ```
 
+Após alterar plugin, tema, Dockerfiles ou lockfiles — e antes de validar — **sempre**
+reconstrua as imagens e entregue o código no volume de runtime (o `init` não
+sobrescreve `petshop-core`/`petshop-theme` já existentes):
+
+```powershell
+docker compose build wordpress node
+docker compose up -d --force-recreate --wait wordpress
+docker compose exec wordpress sh -lc "cp -a /opt/project-source/plugins/petshop-core/. /var/www/html/wp-content/plugins/petshop-core/ && cp -a /opt/project-source/themes/petshop-theme/. /var/www/html/wp-content/themes/petshop-theme/ && chown -R www-data:www-data /var/www/html/wp-content/plugins/petshop-core /var/www/html/wp-content/themes/petshop-theme"
+```
+
+Detalhe operacional: `.cursor/skills/petshop-workflow/SKILL.md`.
+
 URLs locais:
 
 - Loja: <http://localhost:8888>
@@ -144,6 +156,20 @@ npm run validate
 
 Equivalente a `bash scripts/run-gates.sh` (PowerShell: `./scripts/run-gates.ps1`).
 Scripts ficam montados em `/var/www/html/scripts` no serviço `cli`.
+
+Durante desenvolvimento, prefira o gate focado nos arquivos alterados:
+
+```powershell
+npm run validate:changed
+```
+
+Esse modo detecta arquivos modificados ou novos pelo Git, sincroniza plugin/tema/scripts para o runtime local, roda lint/check sintático e executa apenas os validators PHP associados. Quando a alteração tiver superfície visual, use:
+
+```powershell
+npm run validate:changed:browser
+```
+
+O gate completo `npm run validate` continua sendo o fechamento antes de concluir planos ou publicar uma entrega.
 
 Validação individual:
 

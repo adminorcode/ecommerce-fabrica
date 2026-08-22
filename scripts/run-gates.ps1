@@ -38,6 +38,12 @@ if (-not $SkipProvision) {
     Invoke-WpCli eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
     Write-Host '==> fixtures administraveis do Plano 013'
     Invoke-EvalFile 'seed-013-catalog-samples.php'
+    Write-Host '==> fixtures personalizáveis do Plano 012'
+    Invoke-EvalFile 'seed-012-personalizable-products.php'
+    Write-Host '==> produtos Animal Republik autorizados'
+    Invoke-EvalFile 'seed-animal-republik-launches.php'
+    Write-Host '==> vitrines comerciais com Ver tudo'
+    Invoke-EvalFile 'sync-commercial-page-catalog-links.php'
 }
 
 Invoke-EvalFile 'validate-storefront.php'
@@ -50,7 +56,14 @@ Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
 Invoke-EvalFile 'validate-014-identity-campaigns.php'
+Invoke-EvalFile 'validate-015-support-section.php'
 Invoke-EvalFile 'validate-016-product-grid.php'
+Invoke-EvalFile 'validate-018-commercial-pages.php'
+Invoke-EvalFile 'validate-animal-republik-products.php'
+Invoke-EvalFile 'validate-012-personalization.php'
+Invoke-EvalFile 'validate-023-footer.php'
+Invoke-EvalFile 'validate-024-home-campaigns-carousel.php'
+Invoke-EvalFile 'smoke-012-order-flow.php'
 
 if ($ContentAudit) {
     Invoke-EvalFile 'validate-004b.php'
@@ -84,7 +97,7 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs')) {
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }

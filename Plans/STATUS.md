@@ -14,16 +14,26 @@
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
 | [010b-wishlist-lista-de-desejos.md](./010b-wishlist-lista-de-desejos.md) | Concluído | Página, endpoint Minha conta, link no header, merge localStorage → conta |
 | [011-banners-gerenciaveis-home.md](./011-banners-gerenciaveis-home.md) | Concluído | Blocos `petshop/home-campaigns` e `petshop/home-campaign`; carrossel manual acessível; persistência validada |
-| [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Pendente | Editor open source no `petshop-core`, Store API/HPOS, arquivos privados e fila WooCommerce → Personalizações |
+| [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) | Em andamento | Inventário do editor fechado (§0.1): página dedicada, sem limite de objetos, tipografia/cores livres, camadas, só upload, confirmação→carrinho/editor. Próximo: implementar Sessão 03 |
 | [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) | Em andamento | Código, gates automatizados e Virtuaria Correios local validados; aguarda Mercado Pago sandbox, jurídico, origem/contrato reais e NVDA/VoiceOver |
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Concluído | Tokens AUTellê, Nunito Sans, campanha editorial Gutenberg e rodapé no tom escuro anterior validados em PHP/browser |
-| [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Pendente | Secao de atendimento Gutenberg na Home com CTA preferencial para WhatsApp, imagens 1920 x 640 e 1080 x 1350, em substituicao ao banner-imagem; depende do 014 |
+| [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Concluido | Secao de atendimento Gutenberg na Home, schema 26, CTA WhatsApp editavel com fallback para Atendimento, imagens 1920 x 640 e 1080 x 1350, gates PHP/browser validados |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
 | [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
-| [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Pendente | Eventos Pet, Animal Republik, premium, Por Raça, bandanas/adesivos e capas de chuva com conteúdo administrável e produtos reais |
+| [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
-
+| [021-filtros-catalogo-funcionais.md](./021-filtros-catalogo-funcionais.md) | Concluído | Entrega em `master`. Filtros com toolbar/chips, accordions acessíveis, ação fixa, drawer responsivo e gate browser 021 validados em 1440/1024/768/390 |
+| [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
+| [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) | Concluído | Customizer + composição da referência (4 colunas, ícones, selos); gates PHP/browser |
+| [024-carrossel-banner-promocional.md](./024-carrossel-banner-promocional.md) | Concluído | Até 3 banners, tempo por imagem (padrão 10 s), autoplay com setas/indicadores sobrepostos; gates PHP/browser |
+| [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) | Pendente | Cadastro PF/PJ, telefone, endereço com ViaCEP e senha escolhida; remove senha temporária. ClickUp [86e2xz60k](https://app.clickup.com/t/86e2xz60k) |
+| [026-checkout-dados-salvos-viacep.md](./026-checkout-dados-salvos-viacep.md) | Pendente | Checkout hidrata dados da conta e preenche endereço via ViaCEP ao informar o CEP. ClickUp [86e2xzer3](https://app.clickup.com/t/86e2xzer3) |
+| [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Pendente | Uma calculadora de frete na PDP; Correios via Virtuaria; Melhor Envio sem Correios; CEP persiste; preço sem entidade HTML (`R$ 27,00`, não `&#82;&#36;`). ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
+| [028-recuperacao-pagamento-pendente.md](./028-recuperacao-pagamento-pendente.md) | Pendente | Um e-mail nativo de pagamento pendente no WooCommerce 11+; sem plugin de recovery. ClickUp [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) |
+| [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
+| [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Pendente | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
+| [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
 ## Ordem recomendada de execução
 
 ```
@@ -46,10 +56,21 @@
       └── 015 (seção de atendimento editorial da Home)
 
 013 (fluxo WooCommerce implementado)
-  └── 017 (fechamento P0 para publicação: pagamento, frete, políticas, SEO, CWV, backup e a11y)
-      ├── 018 (páginas comerciais P1 quando houver conteúdo e materiais aprovados)
-      ├── 019 (profissionais/laceiros como entrega institucional P2)
-      └── 020 (header de checkout sem distrações e com aparência intencional)
+  ├── 017 (fechamento P0 para publicação: pagamento, frete, políticas, SEO, CWV, backup e a11y)
+  ├── 018 (páginas comerciais P1 após 016; publicação operacional completa respeita gates do 017)
+  ├── 019 (profissionais/laceiros como entrega institucional P2)
+  ├── 020 (header de checkout sem distrações e com aparência intencional)
+  ├── 021 (filtros de catálogo funcionais e responsivos)
+  ├── 022 (ícones de vitrine por upload livre)
+  ├── 023 (rodapé institucional editável — Customizer/menus + composição da referência)
+  ├── 024 (carrossel do banner promocional — até 3 imagens, autoplay configurável)
+  ├── 025 (cadastro com senha escolhida; remove senha temporária do 013)
+  ├── 026 (checkout hidrata dados da conta e ViaCEP no CEP)
+  ├── 027 (calculadora de frete única; Virtuaria + Melhor Envio)
+  ├── 028 (recuperação de pagamento pendente; WooCommerce 11+ nativo)
+  ├── 029 (retorno à loja após Pix Mercado Pago)
+  ├── 030 (frase da confirmação: Parabéns! Seu pedido foi recebido!)
+  └── 031 (card variável: Comprar agora + preço único)
 ```
 
 ## Origem
@@ -60,4 +81,26 @@ Planos 017–019 derivados da análise de lacunas do `Orcode_Requisitos_Website_
 
 Plano 020 derivado da avaliação do checkout em 2026-08-12: manter navegação reduzida, mas redesenhar o header para comunicar fluxo de compra seguro e não parecer navbar quebrada.
 
-**Última atualização:** 2026-08-12 (Plano 020 criado para header de checkout sem distrações; próximos recomendados: 015, 017 e 020)
+Plano 021 derivado da avaliação de UX dos filtros em 2026-08-15, cruzada com padrões observados em Petlove, Petz, Cobasi, Chewy e Amazon.
+
+Plano 022 derivado da necessidade de permitir que o cliente forneça ícones próprios para a vitrine de categorias sem alterar código, preservando a galeria atual como fallback.
+
+Plano 023 derivado do pedido de rodapé mais editável (2026-08-19): mockup como composição visual e inventário de campos (redes, atendimento, selos, legal), com tokens do Plano 014.
+
+Plano 024 derivado do pedido de transformar o banner promocional da Home em carrossel (2026-08-19): até 3 imagens, tempo de visualização configurável por imagem (padrão 10 s) e controles sobrepostos à arte.
+
+Plano 025 derivado da fricção de cadastro (2026-08-21): senha temporária por e-mail após informar o endereço eletrônico; o cliente precisa escolher a senha, informar CPF/CNPJ e endereço, e entrar sem validar a conta no e-mail.
+
+Plano 026 derivado do checkout (2026-08-22): dados já gravados na conta devem hidratar o Checkout Block; CEP consulta ViaCEP e preenche o endereço.
+
+Plano 027 derivado da PDP com duas calculadoras (2026-08-22): a UI da loja vira hub WooCommerce; Correios só Virtuaria; Melhor Envio registrado para as demais transportadoras.
+
+Plano 028 derivado da recuperação de pedidos em Pagamento pendente (2026-08-22): um e-mail nativo do WooCommerce 11+, sem plugin extra.
+
+Plano 029 derivado da reclamação de Pix no Checkout Pro (2026-08-22): após aprovação, redirecionar à loja (Pedidos ou confirmação).
+
+Plano 030 derivado do pedido de copy na confirmação (2026-08-22): “Parabéns! Seu pedido foi recebido!” administrável.
+
+Plano 031 derivado da comparação de card variável (2026-08-22): Comprar agora, chips e um preço, sem faixa.
+
+**Última atualização:** 2026-08-22 (Planos 025–031 pendentes; 012 em andamento)

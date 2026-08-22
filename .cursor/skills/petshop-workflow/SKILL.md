@@ -27,6 +27,7 @@ Skill de projeto para a loja WordPress/WooCommerce do petshop. Aplique **antes e
 4. `Plans/STATUS.md` — plano ativo e bloqueios
 5. O arquivo do plano solicitado (inteiro, incluindo gates e sessões)
 6. `Plans/README.md` — se o plano tocar interface ou conteúdo editorial
+7. `.cursor/CLICKUP_USAGE_RULE.md` e `write-kanban-tickets` — se o trabalho for criar ou revisar ticket
 
 Não marque checkboxes do plano nem declare conclusão sem evidência de validação.
 
@@ -39,7 +40,7 @@ Não marque checkboxes do plano nem declare conclusão sem evidência de valida�
 | Conteúdo de páginas | Gutenberg (Stackable importado) |
 | Produtos, categorias, preços, estoque | WooCommerce |
 | Menus | Aparência → Menus |
-| Textos globais de cabeçalho/rodapé | Customizer (`petshop_store_content`) |
+| Textos globais de cabeçalho/rodapé | Customizer (`petshop_store_content`, `petshop_footer`) |
 
 **Proibido:** editar WordPress Core, WooCommerce, Blocksy ou plugins de terceiros; colocar regra de negócio no `functions.php` do tema; instalar plugins sem registro em plano; versionar segredos.
 
@@ -48,7 +49,7 @@ Não marque checkboxes do plano nem declare conclusão sem evidência de valida�
 O host **não** tem PHP/WP-CLI. Use Docker Compose:
 
 ```powershell
-# Subir ambiente de desenvolvimento (sync plugin + tema)
+# Subir ambiente de desenvolvimento (sync contínuo plugin + tema)
 docker compose up --watch
 
 # WP-CLI
@@ -62,6 +63,41 @@ docker compose --profile tools run --rm --no-deps cli wp plugin list
 URLs locais: loja `http://localhost:8888`, admin `http://localhost:8888/wp-admin`.
 
 Nunca use `docker compose down --volumes` sem autorização explícita.
+
+### Entregar imagens + runtime com o código do repositório (obrigatório)
+
+O volume `wordpress_runtime` **não** é bind mount do worktree. O `init` só copia
+`petshop-core` / `petshop-theme` na **primeira** criação do volume. Sem sync, o
+contêiner fica com código antigo mesmo após editar o repo.
+
+Sempre que alterar `petshop-core`, `petshop-theme`, `docker/`, Dockerfiles,
+`composer.lock` ou `package-lock.json` — e **antes** de validar, smoke ou handoff —
+reconstrua as imagens e entregue o código no runtime:
+
+```powershell
+# 1) Rebuild das imagens locais com o COPY atual do repositório
+docker compose build wordpress node
+
+# 2) Recria o WordPress com a imagem nova (preserva volumes/dados)
+docker compose up -d --force-recreate --wait wordpress
+
+# 3) Entrega plugin/tema da imagem no volume de runtime
+docker compose exec wordpress sh -lc "cp -a /opt/project-source/plugins/petshop-core/. /var/www/html/wp-content/plugins/petshop-core/ && cp -a /opt/project-source/themes/petshop-theme/. /var/www/html/wp-content/themes/petshop-theme/ && chown -R www-data:www-data /var/www/html/wp-content/plugins/petshop-core /var/www/html/wp-content/themes/petshop-theme"
+```
+
+Alternativa em desenvolvimento contínuo: manter `docker compose up --watch` (usa
+`initial_sync` + sync em mudanças). Isso **não** substitui o rebuild quando
+Dockerfile, dependências ou scripts em `docker/` mudarem.
+
+Confirmação rápida após entregar:
+
+```powershell
+docker compose --profile tools run --rm --no-deps cli wp eval "echo class_exists('Petshop\\\\Core\\\\Settings\\\\DefaultSettings') ? 'ok' : 'fail';"
+docker compose ps
+```
+
+Não declare validação concluída se o gate falhar por código ausente no contêiner —
+rode o bloco de entrega acima e repita o gate.
 
 ## Padrões de código deste repo
 
@@ -100,13 +136,14 @@ Todo texto comercial/institucional e toda imagem de conteúdo exibida em página
 
 ### Depois (gate da sessão)
 
-1. Verificar ambiente sobe sem erro fatal (`docker compose logs`)
-2. Executar validações do plano (scripts abaixo)
-3. Testar fluxo funcional afetado (desktop + mobile quando aplicável)
-4. Testar persistência editorial se houver conteúdo administrável
-5. Executar `/ecommerce-design-review` ou aplicar `.cursor/rules/ecommerce-ui-ux.mdc` em alterações visuais
-6. Atualizar checkboxes do plano **somente** após gate passar
-7. Atualizar `Plans/STATUS.md` se o status do plano mudou
+1. **Entregar imagens/runtime** com o código do repositório (seção acima) se plugin, tema ou Docker mudaram
+2. Verificar ambiente sobe sem erro fatal (`docker compose logs`)
+3. Executar validações do plano (scripts abaixo)
+4. Testar fluxo funcional afetado (desktop + mobile quando aplicável)
+5. Testar persistência editorial se houver conteúdo administrável
+6. Executar `/ecommerce-design-review` ou aplicar `.cursor/rules/ecommerce-ui-ux.mdc` em alterações visuais
+7. Atualizar checkboxes do plano **somente** após gate passar
+8. Atualizar `Plans/STATUS.md` se o status do plano mudou
 
 Se uma verificação falhar: diagnosticar, corrigir, repetir. Parar e pedir decisão do usuário apenas para bloqueios editoriais/destrutivos após segunda tentativa.
 
@@ -156,6 +193,7 @@ Guia completo: `docs/cursor-ai-guide.md`
 
 - commit, push ou PR sem solicitação explícita
 - marcar plano/sessão concluído sem validação
+- validar/smoke com código antigo no volume — **sempre** rebuild+entrega quando plugin/tema mudarem
 - bind mount do repo inteiro no contêiner (Compose Watch sync só plugin + tema)
 - sobrescrever conteúdo editado pelo cliente em migrações
 - implementar Elementor ou editar Blocksy/WooCommerce core
@@ -163,6 +201,8 @@ Guia completo: `docs/cursor-ai-guide.md`
 
 ## Estado atual (consultar `Plans/STATUS.md` para atualização)
 
-- Plano **005** bloqueado na Sessão 03 (aguarda fotografias reais)
-- Sessões 01–02 do 005 concluídas; filtro lateral do catálogo validado
-- Plano **003** (Docker) em andamento
+- Consulte `Plans/STATUS.md` — não confie em resumos embutidos nesta skill
+- Ambiente Docker: após mudanças no repo, use o bloco **Entregar imagens + runtime**
+
+Base directory for this skill: .cursor/skills/petshop-workflow
+Relative paths in this skill (e.g., scripts/, reference/) are relative to this base directory.

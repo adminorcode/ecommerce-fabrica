@@ -182,12 +182,14 @@ Evitar animais artificiais, anatomia incorreta, saturação excessiva, cenários
 
 | Mídia | Desktop | Mobile | Uso e composição |
 |---|---:|---:|---|
+| Secao de atendimento da Home | 1920 x 640 px (3:1) | 1080 x 1350 px (4:5) | Usar no grupo `petshop-support-banner`. O CSS coloca copy em coluna propria e a imagem ocupa somente o painel de midia. Em desktop largo a imagem renderiza em 3:1; em tablet a secao empilha e preserva 3:1; em mobile renderiza 4:5. |
 | Hero institucional | 2400 × 900 px (8:3) | 1080 × 1350 px (4:5) | Copy é HTML/Gutenberg: ocupar até 40% da largura no desktop, à esquerda. Pet/pessoa/produto ocupa o lado direito. Nunca gerar texto ou CTA na foto. |
 | Banner promocional ou sazonal editorial | 1920 × 640 px (3:1) | 1080 × 1350 px (4:5) | Reservar cerca de 40% para copy da interface e 60% para foto/produto. Usar uma ação principal. |
 | Banner de arte final | 1920 × 640 px (3:1) | 1080 × 1350 px (4:5) | Permitido para peça fechada com texto incorporado; exigir as duas versões e área segura de 8% em todos os lados. |
 | Imagem principal do produto | 1600 × 1600 px (1:1) | mesma mídia | Fundo limpo, produto em 75–85% do quadro, cor e material fiéis; sem texto, selo ou marca d’água. |
 | Galeria/detalhe de produto | 1600 × 1600 px (1:1) | mesma mídia | Mostrar escala, fecho, acabamento, aplicação ou variação. Manter iluminação e fundo coerentes com a foto principal. |
-| Categoria ou coleção | 1600 × 900 px (16:9) | 1080 × 1350 px (4:5), se houver copy sobreposta | Posicionar o assunto no centro ou no lado oposto à copy. |
+| Categoria ou coleção (miniatura/página) | 1600 × 900 px (16:9) | 1080 × 1350 px (4:5), se houver copy sobreposta | Posicionar o assunto no centro ou no lado oposto à copy. Não confundir com o ícone da vitrine da Home. |
+| Ícone personalizado da vitrine (Home) | SVG ou PNG/WebP 256 × 256 px (1:1) | mesma mídia | Fundo transparente; ver seção 9. Renderizado como `<img>` com cores do arquivo. |
 | Foto editorial de apoio | 1600 × 1200 px (4:3) | 1080 × 1350 px (4:5), quando necessário | Uso em blocos Gutenberg, páginas institucionais e conteúdo de escolha. |
 | Avatar/rede social | 1080 × 1080 px (1:1) | mesma mídia | Não substitui logo de navegação. |
 | Favicon/ícone de app | 512 × 512 px (1:1) | mesma mídia | Fornecer a partir de ativo oficial, sem recriar o logo. |
@@ -200,6 +202,10 @@ As dimensões são de entrega, não de exibição literal. O WordPress gera vers
 - Hero e banner editorial mobile: usar arte vertical própria. Manter o assunto na faixa central/superior e deixar a copy fora da imagem, em blocos Gutenberg.
 - Arte final: manter texto, logo, preço e CTA a pelo menos 8% das quatro bordas; não presumir que o corte desktop funciona em mobile.
 - Produto: enquadrar o item inteiro, sem corte em laços, gravatas, fechos ou acabamento. Usar o mesmo ângulo/fundo na imagem principal de uma mesma variação.
+- Secao de atendimento da Home: nao aplicar a regra de reservar 40% para copy dentro da imagem. Essa secao usa o CSS `petshop-support-banner`: copy em coluna separada, midia em painel proprio, desktop 3:1 e mobile 4:5 com `object-fit: cover`.
+- Secao de atendimento da Home desktop: preencher o quadro 1920 x 640 px com assunto no centro ou levemente a direita; nao usar faixa vazia, degrade reservado para texto, telefone, CTA, logo do WhatsApp ou copy dentro da arte.
+- Secao de atendimento da Home mobile: criar arte vertical propria em 1080 x 1350 px; nao reaproveitar corte horizontal.
+- Banner promocional/sazonal full-width: a altura renderizada deve seguir 3:1. Em container de 1280 px, a altura esperada e aproximadamente 427 px; nao limitar para 320 px quando a fonte for 1920 x 640 px.
 - Antes de publicar, revisar o ponto focal no Gutenberg e nos breakpoints de 390, 768, 1024 e 1440 px.
 
 ### Formatos, otimização e acessibilidade
@@ -219,6 +225,42 @@ Usar ícones lineares, arredondados e simples: patas, corações, caixas, etique
 - uso preferencial de verde-petróleo;
 - laranja apenas para chamar atenção;
 - elementos decorativos entre 8% e 20% de opacidade.
+
+### Ícones da grade “Compre por categoria”
+
+A Home distingue três origens de ícone por categoria, nesta ordem:
+
+1. **Ícone personalizado da vitrine** — arquivo enviado em **Produtos → Categorias → editar categoria → Ícone personalizado da vitrine** (Biblioteca de mídia).
+2. **Ícone da galeria do projeto** — campo **Ícone da vitrine** (galeria outline fixa).
+3. **Automático por slug** — fallback interno quando nada estiver configurado.
+
+A **Miniatura** WooCommerce da categoria é outra imagem: serve à página/listagem da categoria e **não** substitui o ícone da Home.
+
+#### Como preparar os arquivos para o cliente
+
+| Requisito | Orientação |
+| --- | --- |
+| Formato preferido | **SVG** outline/simple, quando o WordPress local aceitar SVG |
+| Fallback seguro | **PNG** ou **WebP** com fundo transparente |
+| JPEG | Aceito só como fallback técnico; evitar para ícones |
+| Proporção | **1:1** |
+| Tamanho mínimo (raster) | **256 × 256 px** |
+| Área útil | Motivo centralizado, com margem confortável nas bordas |
+| Linguagem | Traço simples, arredondado, coerente com Autellê; evitar texto miúdo, sombra pesada, foto, degradê complexo ou fundo colorido obrigatório |
+| Nome do arquivo | Descritivo, por exemplo `icone-vitrine-bandanas.svg` ou `icone-vitrine-lacos.png` |
+
+#### Renderização na loja
+
+- Ícones da **galeria/automático** continuam coloridos pela interface (máscara CSS na cor teal do tema).
+- Ícone **personalizado** é renderizado como `<img>` e **preserva as cores do arquivo**. Entregar arte já na paleta desejada (preferencialmente monocromática teal ou com transparência limpa).
+- Se o ambiente bloquear upload de SVG, documentar o bloqueio e entregar PNG transparente 256×256.
+
+#### Repasse operacional
+
+1. Exportar o ícone conforme a tabela acima.
+2. Enviar o arquivo ao responsável de conteúdo (ou fazer upload direto na Biblioteca de mídia).
+3. Em **Produtos → Categorias**, editar a categoria, selecionar o arquivo em **Ícone personalizado da vitrine**, salvar.
+4. Confirmar na Home; para voltar ao fallback, usar **Remover** no mesmo campo.
 
 ## 10. Banners promocionais e conteúdo editável
 

@@ -6,6 +6,8 @@ namespace Petshop\Core;
 
 use Petshop\Core\Admin\Customizer;
 use Petshop\Core\Cli\MigrateCommand;
+use Petshop\Core\Cli\PersonalizationCommand;
+use Petshop\Core\Personalization\PersonalizationModule;
 use Petshop\Core\Storefront\SearchExperience;
 use Petshop\Core\WooCommerce\Routes;
 use Petshop\Core\WooCommerce\ProductDetails;
@@ -36,11 +38,13 @@ final class Plugin
         HomeCampaignBlocks::bootstrap();
         ProductGridBlock::bootstrap();
         Customizer::bootstrap();
+        PersonalizationModule::bootstrap();
 
         add_action('init', [self::class, 'loadTextdomain'], 1);
 
         if (defined('WP_CLI') && WP_CLI) {
             MigrateCommand::register();
+            PersonalizationCommand::register();
         }
     }
 

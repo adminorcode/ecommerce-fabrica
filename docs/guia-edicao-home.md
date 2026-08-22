@@ -14,7 +14,35 @@ Salve e visualize a loja após cada alteração. O conteúdo editado no painel *
 
 
 
-## 1. Hero (topo da página)
+## 1. Barra verde do topo (todas as páginas)
+
+
+
+Essa faixa aparece acima do logo em **todas** as páginas da loja, não só na Home.
+
+
+
+**Onde:** **Aparência → Personalizar → Barra promocional**
+
+
+
+| Item | Como editar |
+| --- | --- |
+| Texto | Campo **Texto da barra**. É o recado comercial da faixa teal. |
+| Link | Campo **Link da barra (opcional)**. Com URL, a mensagem inteira fica clicável. |
+| Ocultar a faixa | Deixe o texto em branco e publique. A barra some sem deixar espaço. |
+
+
+
+Não é preciso alterar código nem a Home no Gutenberg para mudar essa mensagem.
+
+
+
+---
+
+
+
+## 2. Hero (topo da página)
 
 
 
@@ -40,7 +68,7 @@ Salve e visualize a loja após cada alteração. O conteúdo editado no painel *
 
 
 
-## 2. Faixa de benefícios
+## 3. Faixa de benefícios
 
 
 
@@ -76,7 +104,7 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 
 
 
-## 3. Banners de campanha
+## 4. Banners de campanha
 
 
 
@@ -94,6 +122,7 @@ Títulos e textos de apoio são blocos **Parágrafo** dentro do grupo `petshop-b
 | Texto alternativo | Painel lateral → **Texto alternativo contextual** |
 | Copy editorial | Modo **Campanha editorial** → campos de eyebrow, título, texto, benefício e CTA no canvas ou painel lateral |
 | Link de destino | Painel lateral → campo de URL (produto, categoria, página ou link externo). Em campanha editorial, é o destino do CTA |
+| Tempo de visualização | Painel lateral do banner → **Tempo de visualização (segundos)** |
 | Ordem | Arraste os blocos-filho no editor |
 | Remover campanha | Selecione o bloco-filho → **Opções** → **Remover** |
 | Rótulo interno | Painel lateral → **Rótulo interno** (somente para identificar no editor) |
@@ -104,11 +133,9 @@ Use **Arte final** quando a peça já vier fechada com texto incorporado. Nesse 
 
 Use **Campanha editorial** para campanhas recorrentes. A imagem vira apoio visual e a oferta fica em texto real no Gutenberg: eyebrow, título, texto, benefício, rótulo do CTA e destino. Essa modalidade é a recomendada quando a equipe precisa atualizar copy, SEO, acessibilidade ou CTA sem criar nova arte.
 
-Com **uma** campanha completa, a loja exibe um banner estático. Com **duas ou mais**, aparecem setas e indicadores para navegação manual — sem troca automática.
+Cadastre **até 3** banners. Com **uma** campanha completa, a loja exibe um banner estático. Com **duas ou três**, aparecem setas laterais e indicadores na parte inferior da arte; as imagens avançam sozinhas no tempo configurado em cada banner (**padrão 10 segundos**). Passe o mouse ou foque um controle para pausar. Se o sistema do visitante pedir movimento reduzido, a troca automática é desligada e a navegação continua manual.
 
-
-
-Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida, a faixa inteira **some** (sem espaço vazio).
+O quarto banner não é publicado. Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida, a faixa inteira **some** (sem espaço vazio).
 
 
 
@@ -116,7 +143,7 @@ Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida
 
 
 
-## 4. Compre por categoria
+## 5. Compre por categoria
 
 
 
@@ -128,15 +155,17 @@ Campanhas incompletas não aparecem na loja. Se nenhuma campanha estiver válida
 
 | Nome das categorias | **Produtos → Categorias** → editar cada categoria. |
 
-| Ícone da vitrine (Home) | Mesma tela → **Ícone da vitrine** → escolha na galeria outline (teal). |
+| Ícone personalizado da vitrine (Home) | Mesma tela → **Ícone personalizado da vitrine** → Biblioteca de mídia (selecionar, trocar ou remover). Prioridade máxima. |
 
-| Imagem da categoria (página da categoria) | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. |
+| Ícone da galeria (fallback) | Mesma tela → **Ícone da vitrine** → galeria outline do projeto (teal). |
+
+| Imagem da categoria (página da categoria) | Mesma tela → **Miniatura** → Biblioteca de mídia + texto alternativo. Não altera o ícone da Home. |
 
 | Quais categorias aparecem | **Produtos → Categorias** → marque **Exibir na navegação**. Ordem: campo **Ordem comercial**. |
 
 
 
-A Home usa ícones compactos da galeria do projeto. No desktop, ao passar o mouse (ou focar com teclado) em uma categoria com produtos, aparece uma prévia com até 3 itens — sem overlay. A **Miniatura** WooCommerce continua valendo para a página da própria categoria.
+A Home usa, nesta ordem: ícone personalizado (se houver), ícone da galeria, ou automático por slug. No desktop, ao passar o mouse (ou focar com teclado) em uma categoria com produtos, aparece uma prévia com até 3 itens — sem overlay. A **Miniatura** WooCommerce continua valendo só para a página da própria categoria.
 
 
 
@@ -144,7 +173,7 @@ A Home usa ícones compactos da galeria do projeto. No desktop, ao passar o mous
 
 
 
-## 5. Vitrines de produtos
+## 6. Vitrines de produtos
 
 **Onde:** cada seção de produtos da Home mantém título, texto e link em blocos nativos. A grade é o bloco **Vitrine de produtos** (`petshop/product-grid`) dentro da mesma seção.
 
@@ -163,7 +192,7 @@ Uma vitrine sem produtos válidos não aparece na loja. A seção externa també
 
 ---
 
-## 6. Kits e conjuntos
+## 7. Kits e conjuntos
 
 **Onde:** seção `petshop-kits-section` na Home.
 
@@ -177,7 +206,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 7. Coleção da estação
+## 8. Coleção da estação
 
 **Onde:** seção `petshop-seasonal-section` na Home.
 
@@ -189,7 +218,7 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 8. Seleção para banho e tosa
+## 9. Seleção para banho e tosa
 
 **Onde:** seção `petshop-professional-section` na Home.
 
@@ -201,7 +230,27 @@ A seção **some por completo** se não houver produtos publicados na categoria.
 
 ---
 
-## 9. Badges nos cards (promoção e mais pedido)
+## 10. Páginas comerciais P1
+
+**Onde:** **Páginas → Animal Republik** e **Páginas → Produtos premium**.
+
+| Item | Onde editar |
+| --- | --- |
+| Hero, título, texto, CTA e contexto editorial | Blocos nativos da própria página, no Gutenberg |
+| Imagem do hero | Selecione o bloco **Capa** → **Substituir** → Biblioteca de mídia |
+| Texto alternativo da imagem | Biblioteca de mídia ou painel lateral do bloco de imagem/capa |
+| Produtos exibidos em Animal Republik | Produtos publicados na categoria **Animal Republik**; os lançamentos importados também recebem a tag **Lançamentos Animal Republik** |
+| Produtos exibidos em Premium | Produtos publicados na categoria **Premium** |
+| Ordem, adição e remoção de produtos | Cadastro/categoria do produto em **Produtos**; as vitrines das páginas exibem até 20 itens |
+| Link "Ver tudo" | Cabeçalho da vitrine; aponta para **Loja** filtrada por **Animal Republik** ou **Premium**, com filtros e paginação do catálogo |
+| Preço, estoque, imagem e compra | Cadastro de cada item em **Produtos** |
+| Link na navbar | **Aparência → Menus** → menu ligado a **Navegação principal** |
+
+As imagens iniciais dessas páginas são placeholders gerados para o projeto. Substitua por material aprovado do cliente ou fornecedor antes de usar uma campanha oficial. O sistema não sobrescreve alterações editoriais salvas nessas páginas.
+
+---
+
+## 11. Badges nos cards (promoção e mais pedido)
 
 
 
@@ -223,7 +272,7 @@ Sem promoção ou vendas suficientes, o badge correspondente **não aparece**.
 
 
 
-## 10. Avaliações
+## 12. Avaliações
 
 
 
@@ -235,17 +284,33 @@ Exibidas automaticamente a partir de **avaliações aprovadas** nos produtos (**
 
 
 
-## 11. Banner de atendimento (final)
+## 13. Secao de atendimento (final)
 
-**Onde:** bloco **Imagem** dentro do grupo `petshop-support-banner`, no final da Home — igual ao hero, editável direto no Gutenberg.
+**Onde:** grupo `petshop-support-banner`, no final da Home, editavel direto no Gutenberg.
 
 | Item | Como editar |
 | --- | --- |
-| Imagem | Clique no bloco **Imagem** → **Substituir** → Biblioteca de mídia |
-| Link de destino | Com a imagem selecionada → painel lateral → **Link** → informe a URL (ex.: WhatsApp) |
-| Texto alternativo | Painel lateral da imagem → **Texto alternativo** |
+| Eyebrow, titulo, texto e beneficio | Edite os blocos **Paragrafo** e **Titulo** dentro do grupo. |
+| CTA | Bloco **Botoes** -> **Botao**. Edite o rotulo e a URL. Use preferencialmente `https://wa.me/<numero>` com DDI e DDD, sem espacos. |
+| Imagem desktop | Bloco **Imagem** com classe `petshop-support-banner__image--desktop` -> **Substituir** -> Biblioteca de midia. Tamanho utilizado/sugerido: 1920 x 640 px. |
+| Imagem mobile | Bloco **Imagem** com classe `petshop-support-banner__image--mobile` -> **Substituir** -> Biblioteca de midia. Tamanho utilizado/sugerido: 1080 x 1350 px. |
+| Texto alternativo | Painel lateral de cada imagem -> **Texto alternativo**. |
 
-O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_banner]` na Home — ele foi substituído por blocos nativos para permitir edição visual.
+A imagem e apenas apoio visual; nao coloque texto, telefone, preco, CTA ou logo do WhatsApp dentro da arte. O conteudo deve continuar legivel sem a foto.
+
+Alturas esperadas no storefront:
+
+| Breakpoint | Midia exibida | Proporcao renderizada |
+| --- | --- | --- |
+| Desktop amplo | Desktop | 3:1 dentro do painel de midia. |
+| Tablet | Desktop | 3:1, com a secao empilhada para evitar painel estreito. |
+| Mobile (< 768 px) | Mobile | 4:5. |
+
+Nao use imagem desktop com area vazia reservada para texto. A copy fica nos blocos da coluna de conteudo; a imagem deve preencher o quadro.
+
+O provisionamento inicial usa WhatsApp global valido em formato `https://wa.me/<numero>` quando existir. Sem URL valida, o botao aponta para a pagina de atendimento como fallback editavel; depois de configurar o canal oficial, edite o botao na Home para usar o link de WhatsApp.
+
+Se uma atualizacao preservar o banner antigo como imagem unica, substitua manualmente pelo padrao novo: adicione um **Grupo** com classe `petshop-support-banner`, inclua os textos, um unico botao e as duas imagens acima. Nao use o shortcode `[petshop_support_banner]` na Home.
 
 
 
@@ -261,6 +326,8 @@ O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_b
 
 | --- | --- |
 
+| Barra verde do topo (todas as páginas) | **Personalizar → Barra promocional** |
+
 | Textos e imagens do hero, benefícios e seções editoriais | **Páginas → Home** (Gutenberg) |
 
 | Título, intro e “Ver todos” das vitrines | Cabeçalho Gutenberg de cada seção (`petshop-section-head`) |
@@ -273,7 +340,14 @@ O banner é a imagem inteira clicável. Não use o shortcode `[petshop_support_b
 
 | Título alternativo de destaques (sem vendas) | **Personalizar → Conteúdo da loja** |
 
-| Banner de atendimento da Home | **Páginas → Home** (bloco Imagem no grupo `petshop-support-banner`) |
+| Secao de atendimento da Home | **Páginas → Home** (grupo `petshop-support-banner`, textos, botao e imagens nativas) |
 
 | Logo | **Personalizar → Identidade do site** |
 
+| Rodapé — descrição, redes, atendimento, selos, legal | **Personalizar → Rodapé da loja** |
+
+| Rodapé — categorias | **Aparência → Menus** (localização `petshop-primary`) |
+
+| Rodapé — institucional | **Aparência → Menus** (localização `petshop-footer`) |
+
+Guia dedicado: [guia-edicao-rodape.md](./guia-edicao-rodape.md).

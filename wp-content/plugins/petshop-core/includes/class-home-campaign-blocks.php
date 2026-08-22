@@ -10,6 +10,11 @@ final class HomeCampaignBlocks
 {
     use HomeCampaignAssets;
 
+    public const MAX_CAMPAIGNS = 3;
+    public const DEFAULT_DURATION_SECONDS = 10;
+    public const MIN_DURATION_SECONDS = 3;
+    public const MAX_DURATION_SECONDS = 60;
+
     public static function bootstrap(): void
     {
         add_action('init', [self::class, 'registerBlocks']);
@@ -81,7 +86,7 @@ final class HomeCampaignBlocks
                 'title' => __('Banners de campanha', 'petshop-core'),
                 'category' => 'petshop',
                 'icon' => 'images-alt2',
-                'description' => __('Faixa de banners de campanha editáveis na Home.', 'petshop-core'),
+                'description' => __('Faixa de até 3 banners de campanha em carrossel na Home.', 'petshop-core'),
                 'supports' => [
                     'html' => false,
                     'align' => ['wide', 'full'],
@@ -112,6 +117,7 @@ final class HomeCampaignBlocks
             'text' => ['type' => 'string', 'default' => ''],
             'benefit' => ['type' => 'string', 'default' => ''],
             'ctaLabel' => ['type' => 'string', 'default' => ''],
+            'durationSeconds' => ['type' => 'number', 'default' => self::DEFAULT_DURATION_SECONDS],
         ];
     }
 
@@ -183,6 +189,10 @@ final class HomeCampaignBlocks
             }
 
             $campaigns[] = self::normalizeCampaign($attrs);
+
+            if (count($campaigns) >= self::MAX_CAMPAIGNS) {
+                break;
+            }
         }
 
         return $campaigns;
@@ -232,7 +242,22 @@ final class HomeCampaignBlocks
             'text' => sanitize_textarea_field((string) ($attributes['text'] ?? '')),
             'benefit' => sanitize_text_field((string) ($attributes['benefit'] ?? '')),
             'ctaLabel' => sanitize_text_field((string) ($attributes['ctaLabel'] ?? '')),
+            'durationSeconds' => self::sanitizeDurationSeconds($attributes['durationSeconds'] ?? null),
         ];
+    }
+
+    public static function sanitizeDurationSeconds(mixed $value): int
+    {
+        if (!is_numeric($value)) {
+            return self::DEFAULT_DURATION_SECONDS;
+        }
+
+        $seconds = (int) $value;
+        if ($seconds < 1) {
+            return self::DEFAULT_DURATION_SECONDS;
+        }
+
+        return max(self::MIN_DURATION_SECONDS, min(self::MAX_DURATION_SECONDS, $seconds));
     }
 
     /**
@@ -277,10 +302,15 @@ final class HomeCampaignBlocks
 
         $picture = self::renderPicture($desktopUrl, $mobileUrl, $alt, $index > 0);
         $hiddenAttribute = $hidden ? ' hidden' : '';
+        $durationAttribute = sprintf(
+            ' data-duration-seconds="%d"',
+            (int) ($campaign['durationSeconds'] ?? self::DEFAULT_DURATION_SECONDS)
+        );
 
         return sprintf(
-            '<div class="petshop-home-campaigns__slide"%1$s><a class="petshop-home-campaigns__link" href="%2$s">%3$s</a></div>',
+            '<div class="petshop-home-campaigns__slide"%1$s%2$s><a class="petshop-home-campaigns__link" href="%3$s">%4$s</a></div>',
             $hiddenAttribute,
+            $durationAttribute,
             esc_url($link),
             $picture
         );
@@ -307,15 +337,20 @@ final class HomeCampaignBlocks
         $benefit = trim((string) ($campaign['benefit'] ?? ''));
         $picture = self::renderPicture($desktopUrl, $mobileUrl, $alt, $index > 0);
         $hiddenAttribute = $hidden ? ' hidden' : '';
+        $durationAttribute = sprintf(
+            ' data-duration-seconds="%d"',
+            (int) ($campaign['durationSeconds'] ?? self::DEFAULT_DURATION_SECONDS)
+        );
 
         return sprintf(
-            '<div class="petshop-home-campaigns__slide petshop-home-campaigns__slide--editorial"%1$s>'
+            '<div class="petshop-home-campaigns__slide petshop-home-campaigns__slide--editorial"%1$s%2$s>'
             . '<article class="petshop-home-campaigns__editorial">'
-            . '<div class="petshop-home-campaigns__content">%2$s<h2 class="petshop-home-campaigns__title">%3$s</h2>%4$s%5$s'
-            . '<a class="petshop-home-campaigns__cta" href="%6$s">%7$s</a></div>'
-            . '<figure class="petshop-home-campaigns__media">%8$s</figure>'
+            . '<div class="petshop-home-campaigns__content">%3$s<h2 class="petshop-home-campaigns__title">%4$s</h2>%5$s%6$s'
+            . '<a class="petshop-home-campaigns__cta" href="%7$s">%8$s</a></div>'
+            . '<figure class="petshop-home-campaigns__media">%9$s</figure>'
             . '</article></div>',
             $hiddenAttribute,
+            $durationAttribute,
             $eyebrow !== '' ? '<p class="petshop-home-campaigns__eyebrow">' . esc_html($eyebrow) . '</p>' : '',
             esc_html($title),
             $text !== '' ? '<p class="petshop-home-campaigns__text">' . esc_html($text) . '</p>' : '',
@@ -379,19 +414,22 @@ final class HomeCampaignBlocks
             );
         }
 
+        $chevronPrev = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        $chevronNext = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
         return sprintf(
             '<div class="petshop-home-campaigns__controls" aria-label="%1$s">'
-            . '<button type="button" class="petshop-home-campaigns__prev" aria-label="%2$s">'
-            . '<span aria-hidden="true">&lsaquo;</span></button>'
-            . '<div class="petshop-home-campaigns__dots" role="tablist">%3$s</div>'
-            . '<button type="button" class="petshop-home-campaigns__next" aria-label="%4$s">'
-            . '<span aria-hidden="true">&rsaquo;</span></button>'
-            . '<p class="petshop-home-campaigns__status screen-reader-text" aria-live="polite" aria-atomic="true">%5$s</p>'
+            . '<button type="button" class="petshop-home-campaigns__prev" aria-label="%2$s">%3$s</button>'
+            . '<div class="petshop-home-campaigns__dots" role="tablist">%4$s</div>'
+            . '<button type="button" class="petshop-home-campaigns__next" aria-label="%5$s">%6$s</button>'
+            . '<p class="petshop-home-campaigns__status screen-reader-text" aria-live="polite" aria-atomic="true">%7$s</p>'
             . '</div>',
             esc_attr__('Navegação dos banners de campanha', 'petshop-core'),
             $prevLabel,
+            $chevronPrev,
             implode('', $dots),
             $nextLabel,
+            $chevronNext,
             $statusLabel
         );
     }
@@ -421,6 +459,7 @@ final class HomeCampaignBlocks
                 ),
                 'linkUrl' => $linkUrl,
                 'editorLabel' => __('Campanha demonstrativa', 'petshop-core'),
+                'durationSeconds' => self::DEFAULT_DURATION_SECONDS,
             ],
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );

@@ -38,8 +38,8 @@ Na desativação, o agendamento e o lock técnico são limpos. O `uninstall.php`
 | Rotas/área | Conteúdo | Onde editar |
 |---|---|---|
 | Home | Hero, benefícios, vitrines e campanhas, incluindo imagens e texto alternativo | Páginas → Home, no canvas Gutenberg; imagens pela Biblioteca de mídia |
-| Cabeçalho global | Barra superior, links e rótulos de atendimento, conta e desejos | Aparência → Personalizar → Petshop |
-| Rodapé global | Descrição, WhatsApp, horário, CNPJ, endereço, redes e formas de pagamento | Aparência → Personalizar → Petshop |
+| Cabeçalho global | Barra promocional (texto e link opcional), links e rótulos de atendimento, conta e desejos | Aparência → Personalizar → Barra promocional; Conteúdo da loja |
+| Rodapé global | Descrição, WhatsApp, horário, CNPJ, endereço, redes e formas de pagamento | Aparência → Personalizar → Rodapé da loja |
 | Loja e categorias | Descrição SEO da loja; nome, descrição, ícone e imagem das categorias | Aparência → Personalizar → Petshop; Produtos → Categorias |
 | Produto | Dados comerciais, galeria, alt, descrição e aviso global de compra | Produtos; Biblioteca de mídia; Aparência → Personalizar → Petshop |
 | Navegação | Destinos do menu comercial | Aparência → Menus |
