@@ -157,6 +157,7 @@ As APIs de referência são a [Products Store API](https://developer.woocommerce
 
 - O ambiente local inicia com Mercado Pago 8.9.0 ativo, mas os gateways Pix/cartão estão desabilitados e nenhuma credencial sandbox está configurada.
 - Virtuaria Correios foi escolhido como integração de frete para validação. Em 2026-08-11, o runtime local validou `virtuaria-correios-sedex` com origem `01001000`, serviço `03220`, modo fácil sem credenciais versionadas, tarifa para CEP `01310000` e ausência do método para CEP inválido/sem retorno. O `flat_rate` permanece permitido apenas como fallback local/desenvolvimento; produção continua bloqueada até origem real, zonas, serviços, embalagem, contrato/credenciais e contingência do Virtuaria estarem aprovados.
+- Bug visual da calculadora da PDP (preço com entidade HTML, ex.: `&#82; &#36;&nbsp;27,00` no CEP `94010450`) **não** fecha neste plano: correção e aceite estão no [027](./027-calculadora-frete-hub.md).
 - Privacidade e reembolso existentes continuam em rascunho. As cinco páginas separadas serão provisionadas como estrutura Gutenberg administrável, sem inventar texto jurídico, e permanecerão em rascunho até aprovação.
 - A implementação pode fechar código e testes automatizados sem segredos, mas o plano não muda para `Concluído` enquanto os cenários Mercado Pago sandbox e o gate humano NVDA/VoiceOver não tiverem evidência.
 
@@ -200,7 +201,8 @@ Os comandos, fixtures, evidências e o ledger de tentativas ficam em [013-TESTIN
 - ativação de Stripe em produção;
 - implementação de fornecedor alternativo ao Virtuaria Correios sem novo registro de decisão;
 - saneamento automático de todo o catálogo;
-- publicação de políticas não aprovadas pelo cliente/jurídico.
+- publicação de políticas não aprovadas pelo cliente/jurídico;
+- correção do preço da calculadora da PDP com entidade HTML (`&#82;&#36;` / `&nbsp;`) — Plano 027.
 
 ## 10. Critério de conclusão
 
