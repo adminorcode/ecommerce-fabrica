@@ -29,7 +29,7 @@
 | [024-carrossel-banner-promocional.md](./024-carrossel-banner-promocional.md) | Concluído | Até 3 banners, tempo por imagem (padrão 10 s), autoplay com setas/indicadores sobrepostos; gates PHP/browser |
 | [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) | Pendente | Cadastro PF/PJ, telefone, endereço com ViaCEP e senha escolhida; remove senha temporária. ClickUp [86e2xz60k](https://app.clickup.com/t/86e2xz60k) |
 | [026-checkout-dados-salvos-viacep.md](./026-checkout-dados-salvos-viacep.md) | Pendente | Checkout hidrata dados da conta e preenche endereço via ViaCEP ao informar o CEP. ClickUp [86e2xzer3](https://app.clickup.com/t/86e2xzer3) |
-| [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Pendente | Uma calculadora de frete na PDP; Correios via Virtuaria; Melhor Envio sem Correios; CEP persiste; preço sem entidade HTML (`R$ 27,00`, não `&#82;&#36;`). ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
+| [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Concluído | Hub de frete único na PDP; exibe todos os métodos WooCommerce ativos retornados, incluindo Virtuaria/Melhor Envio; CEP persiste; preço sem entidade HTML; gates PHP/browser validados. ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
 | [028-recuperacao-pagamento-pendente.md](./028-recuperacao-pagamento-pendente.md) | Pendente | Um e-mail nativo de pagamento pendente no WooCommerce 11+; sem plugin de recovery. ClickUp [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) |
 | [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
 | [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Concluído | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
@@ -93,7 +93,7 @@ Plano 025 derivado da fricção de cadastro (2026-08-21): senha temporária por 
 
 Plano 026 derivado do checkout (2026-08-22): dados já gravados na conta devem hidratar o Checkout Block; CEP consulta ViaCEP e preenche o endereço.
 
-Plano 027 derivado da PDP com duas calculadoras (2026-08-22): a UI da loja vira hub WooCommerce; Correios só Virtuaria; Melhor Envio registrado para as demais transportadoras.
+Plano 027 derivado da PDP com duas calculadoras (2026-08-22): a UI da loja vira hub WooCommerce e exibe todos os métodos cadastrados e ativos retornados para o CEP, incluindo Virtuaria e Melhor Envio.
 
 Plano 028 derivado da recuperação de pedidos em Pagamento pendente (2026-08-22): um e-mail nativo do WooCommerce 11+, sem plugin extra.
 
@@ -103,4 +103,4 @@ Plano 030 derivado do pedido de copy na confirmação (2026-08-22): “Parabéns
 
 Plano 031 derivado da comparação de card variável (2026-08-22): Comprar agora, chips e um preço, sem faixa.
 
-**Última atualização:** 2026-08-26 (Plano 030 concluído em `master`; 025–029 e 031 pendentes; 012 em andamento)
+**Última atualização:** 2026-08-27 (Plano 027 concluído em `codex/027-calculadora-frete-hub`; 025, 026, 028, 029 e 031 pendentes; 012 em andamento)

@@ -217,25 +217,9 @@ final class ProductDetails
         $product = wc_get_product($productId);
         if (!$product instanceof \WC_Product || !$product->is_purchasable()) wp_send_json_error(['message' => __('Produto indisponível para cálculo.', 'petshop-core')], 400);
 
-        $package = [
-            'contents' => [['data' => $product, 'quantity' => 1, 'line_total' => (float) wc_get_price_to_display($product)]],
-            'contents_cost' => (float) wc_get_price_to_display($product),
-            'applied_coupons' => [],
-            'user' => ['ID' => get_current_user_id()],
-            'destination' => ['country' => 'BR', 'state' => '', 'postcode' => $postcode, 'city' => '', 'address' => '', 'address_2' => ''],
-            'cart_subtotal' => (float) wc_get_price_to_display($product),
-        ];
-        $packages = WC()->shipping()->calculate_shipping([$package]);
-        $rates = [];
-        foreach (($packages[0]['rates'] ?? []) as $rate) {
-            if (!$rate instanceof \WC_Shipping_Rate) continue;
-            $taxes = array_sum(array_map('floatval', $rate->get_taxes()));
-            $cost = (float) $rate->get_cost() + (get_option('woocommerce_tax_display_cart') === 'incl' ? $taxes : 0.0);
-            $rates[] = ['id' => $rate->get_id(), 'label' => $rate->get_label(), 'cost' => wp_strip_all_tags(wc_price($cost))];
-        }
-        if ($rates === []) wp_send_json_error(['message' => __('Não há opção de entrega para este CEP. Confira o endereço ou fale com o atendimento.', 'petshop-core')], 404);
-        $lead = trim((string) $product->get_meta('_petshop_production_lead', true));
-        wp_send_json_success(['rates' => $rates, 'productionLead' => $lead, 'transportNote' => __('O prazo de transporte é confirmado pelo método escolhido no carrinho e no checkout.', 'petshop-core')]);
+        $quotes = ShippingQuotes::quote($product, $postcode);
+        if ($quotes['rates'] === []) wp_send_json_error(['message' => __('Não há opção de entrega para este CEP. Confira o endereço ou fale com o atendimento.', 'petshop-core')], 404);
+        wp_send_json_success($quotes);
     }
 
     /** @return array<int, string> */

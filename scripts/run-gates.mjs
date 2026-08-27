@@ -222,6 +222,16 @@ const classifySuites = (files) => {
             browserScripts.add('validate-030-order-received-browser.mjs');
         }
         if (
+            file.includes('027-calculadora-frete-hub')
+            || file.includes('ShippingQuotes')
+            || file.includes('ProductDetails.php')
+            || file.includes('product-experience.js')
+            || file.includes('validate-027-shipping-hub')
+        ) {
+            suites.add('shipping-hub-027');
+            browserScripts.add('validate-027-shipping-hub-browser.mjs');
+        }
+        if (
             file.includes('023-rodape')
             ||             file.includes('validate-023-footer')
             || file.includes('petshop_footer')
@@ -288,6 +298,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('order-received-030')) {
         evalFile('validate-030.php');
+    }
+    if (suites.has('shipping-hub-027')) {
+        evalFile('validate-027-shipping-hub.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

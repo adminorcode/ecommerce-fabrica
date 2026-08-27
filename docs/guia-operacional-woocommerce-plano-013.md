@@ -36,6 +36,8 @@ O ambiente local possui a zona **Brasil (desenvolvimento)** com tarifa fixa de t
 
 Para validação de frete real, o runtime local usa **Virtuaria Correios** com o método `virtuaria-correios-sedex`. Configure no painel em **Virtuaria Correios** e em **WooCommerce → Configurações → Entrega → Áreas de entrega**. A validação local registrada em 2026-08-11 usou origem `01001000`, serviço `03220` e modo fácil sem credenciais versionadas; produção ainda exige origem real, zonas aprovadas, serviços Correios, embalagem, contrato/credenciais quando aplicável e contingência de indisponibilidade.
 
+Desde o Plano 027, a PDP deve exibir somente a calculadora **Calcular entrega** do `petshop-core`. Ela chama a API oficial de frete do WooCommerce e lista todos os métodos ativos retornados para o CEP, sem filtrar por Virtuaria, Melhor Envio, Correios, PAC ou SEDEX. O CEP calculado na PDP é gravado na sessão/cliente WooCommerce e deve chegar ao carrinho e ao checkout. Widgets próprios de cálculo da Virtuaria e do Melhor Envio ficam ocultos na PDP, carrinho e checkout; configure também os settings oficiais dos plugins para não exibir calculadora quando disponíveis. O plugin oficial **Melhor Envio** (`melhor-envio-cotacao`) foi registrado e ativado no runtime local sem credenciais versionadas; habilite os serviços operacionais no painel Melhor Envio e em **WooCommerce → Configurações → Entrega** somente com token/contrato fora do Git.
+
 O Mercado Pago deve ser configurado no painel com credenciais sandbox não versionadas. Valide Pix e cartão nos estados aprovado, recusado e pendente antes de liberar a loja. Enquanto isso, o plano permanece em andamento.
 
 ## Pedido, rastreamento e conta

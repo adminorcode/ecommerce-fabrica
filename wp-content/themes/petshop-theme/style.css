@@ -2865,6 +2865,21 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   list-style: none;
 }
 
+.single-product #shipping-calc,
+.single-product #woocommerce-correios-calculo-de-frete-na-pagina-do-produto,
+.single-product #melhor-envio-shortcode,
+.single-product .containerCalculator,
+.woocommerce-cart #shipping-calc,
+.woocommerce-cart #woocommerce-correios-calculo-de-frete-na-pagina-do-produto,
+.woocommerce-cart #melhor-envio-shortcode,
+.woocommerce-cart .containerCalculator,
+.woocommerce-checkout #shipping-calc,
+.woocommerce-checkout #woocommerce-correios-calculo-de-frete-na-pagina-do-produto,
+.woocommerce-checkout #melhor-envio-shortcode,
+.woocommerce-checkout .containerCalculator {
+  display: none !important;
+}
+
 .petshop-product-details {
   display: grid;
   gap: var(--space-3);

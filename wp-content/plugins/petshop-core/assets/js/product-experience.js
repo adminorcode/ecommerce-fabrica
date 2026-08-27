@@ -86,7 +86,8 @@
       const list = document.createElement('ul');
       payload.data.rates.forEach((rate) => {
         const item = document.createElement('li');
-        item.textContent = `${rate.label}: ${rate.cost}`;
+        const delivery = rate.deliveryEstimate ? ` (${rate.deliveryEstimate})` : '';
+        item.textContent = `${rate.label}: ${rate.costText}${delivery}`;
         list.append(item);
       });
       result.append(list);
