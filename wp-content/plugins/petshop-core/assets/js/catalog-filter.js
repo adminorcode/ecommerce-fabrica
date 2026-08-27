@@ -69,10 +69,14 @@
       const searchHidden = option.dataset.petshopSearchHidden === 'true';
       const visibleIndex = visibleOptions.indexOf(option);
       option.hidden = searchHidden || (shouldCollapse && visibleIndex >= collapsedLimit);
+      option.querySelectorAll('input').forEach((input) => {
+        input.disabled = option.hidden && !input.checked;
+      });
     });
     if (!moreButton) return;
     const needsToggle = visibleOptions.length > collapsedLimit && query === '';
     moreButton.hidden = !needsToggle;
+    moreButton.disabled = !needsToggle;
     moreButton.textContent = expandedCategories ? moreButton.dataset.lessLabel : moreButton.dataset.moreLabel;
     moreButton.setAttribute('aria-expanded', expandedCategories ? 'true' : 'false');
   };
