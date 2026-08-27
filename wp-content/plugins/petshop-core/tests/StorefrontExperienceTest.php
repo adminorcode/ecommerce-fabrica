@@ -180,6 +180,7 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame('Atendimento', DefaultSettings::get('petshop_support_label'));
         self::assertSame('Compra segura', DefaultSettings::get('petshop_checkout_assurance_text'));
         self::assertSame('Antes de adicionar ao carrinho', DefaultSettings::get('petshop_product_assurance_title'));
+        self::assertSame('Parabéns! Seu pedido foi recebido!', DefaultSettings::get('petshop_order_received_text'));
     }
 
     public function testCatalogFilterDoesNotUseAStaticLayoutFlag(): void

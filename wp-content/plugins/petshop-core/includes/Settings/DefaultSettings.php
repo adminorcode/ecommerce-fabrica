@@ -97,6 +97,13 @@ final class DefaultSettings
                 'type' => 'textarea',
                 'sanitize' => 'sanitize_textarea_field',
             ],
+            'petshop_order_received_text' => [
+                'label' => __('Frase da confirmação de pedido', 'petshop-core'),
+                'default' => 'Parabéns! Seu pedido foi recebido!',
+                'type' => 'text',
+                'sanitize' => 'Petshop\\Core\\WooCommerce\\OrderReceivedMessage::sanitize',
+                'description' => __('Título da página de pedido recebido. Em branco, a loja volta à frase inicial.', 'petshop-core'),
+            ],
             'petshop_shop_description' => [
                 'label' => __('Descrição resumida da loja para buscadores', 'petshop-core'),
                 'default' => 'Acessórios pet com acabamento cuidadoso para tutores e profissionais.',

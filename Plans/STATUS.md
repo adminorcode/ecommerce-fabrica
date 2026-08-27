@@ -32,7 +32,7 @@
 | [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Pendente | Uma calculadora de frete na PDP; Correios via Virtuaria; Melhor Envio sem Correios; CEP persiste; preço sem entidade HTML (`R$ 27,00`, não `&#82;&#36;`). ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
 | [028-recuperacao-pagamento-pendente.md](./028-recuperacao-pagamento-pendente.md) | Pendente | Um e-mail nativo de pagamento pendente no WooCommerce 11+; sem plugin de recovery. ClickUp [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) |
 | [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
-| [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Pendente | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
+| [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Implementado na branch | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
 | [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
 ## Ordem recomendada de execução
 
@@ -103,4 +103,4 @@ Plano 030 derivado do pedido de copy na confirmação (2026-08-22): “Parabéns
 
 Plano 031 derivado da comparação de card variável (2026-08-22): Comprar agora, chips e um preço, sem faixa.
 
-**Última atualização:** 2026-08-22 (Planos 025–031 pendentes; 012 em andamento)
+**Última atualização:** 2026-08-26 (Plano 030 implementado na branch `030-frase-pedido-recebido`; 025–029 e 031 pendentes; 012 em andamento)

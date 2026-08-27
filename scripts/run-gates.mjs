@@ -100,7 +100,7 @@ const runFocusedProvision = (suites) => {
         return;
     }
 
-    if (suites.has('storefront') || suites.has('commercial') || suites.has('product-grid')) {
+    if (suites.has('storefront') || suites.has('commercial') || suites.has('product-grid') || suites.has('order-received-030')) {
         dockerCli('eval', 'Petshop\\Core\\StorefrontCatalog::maybeEnsureCategories();');
         dockerCli('eval', 'Petshop\\Core\\StorefrontExperience::maybeEnsureStorefront();');
     }
@@ -213,6 +213,15 @@ const classifySuites = (files) => {
             browserScripts.add('validate-012-personalizer-browser.mjs');
         }
         if (
+            file.includes('030-frase-pedido-recebido')
+            || file.includes('OrderReceivedMessage')
+            || file.includes('validate-030')
+            || file.includes('petshop_order_received_text')
+        ) {
+            suites.add('order-received-030');
+            browserScripts.add('validate-030-order-received-browser.mjs');
+        }
+        if (
             file.includes('023-rodape')
             ||             file.includes('validate-023-footer')
             || file.includes('petshop_footer')
@@ -276,6 +285,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('campaigns-024')) {
         evalFile('validate-024-home-campaigns-carousel.php');
+    }
+    if (suites.has('order-received-030')) {
+        evalFile('validate-030.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -42,7 +42,7 @@ O Mercado Pago deve ser configurado no painel com credenciais sandbox não versi
 
 Na edição do pedido WooCommerce, o card **Rastreamento da entrega** aceita transportadora, código e URL. Os dados são persistidos pelo CRUD `WC_Order`, compatível com HPOS, e só aparecem para o cliente quando preenchidos.
 
-O texto global de próximos passos é editável no Personalizador. Compra como visitante permanece habilitada; na confirmação, o comprador pode criar uma conta para o e-mail novo do pedido e recebe o fluxo oficial de definição de senha.
+O texto global de próximos passos é editável no Personalizador. A frase de confirmação **Parabéns! Seu pedido foi recebido!** fica em **Aparência → Personalizar → Conteúdo da loja → Frase da confirmação de pedido**. Em branco, a loja volta à frase inicial; o reprovisionamento não sobrescreve uma edição posterior. Compra como visitante permanece habilitada; na confirmação, o comprador pode criar uma conta para o e-mail novo do pedido e recebe o fluxo oficial de definição de senha.
 
 ## Validação antes de publicar
 
