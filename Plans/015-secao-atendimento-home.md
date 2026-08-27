@@ -91,7 +91,7 @@ Nao usar o verde oficial do WhatsApp como fundo principal da secao. A identidade
 | Tema | `wp-content/themes/petshop-theme/assets/css/editor-storefront.css` | Paridade do padrao no canvas Gutenberg. |
 | Plugin | `wp-content/plugins/petshop-core/includes/class-storefront-experience.php` | Migracao versionada e segura do markup legado, sem sobrescrever conteudo. |
 | Documentacao | `docs/guia-edicao-home.md` | Instrucao passo a passo, tamanho utilizado, imagem sugerida, alt, CTA para WhatsApp e fallback sem URL. |
-| Documentacao | `docs/guia-identidade-visual-autelle.md` | Registrar a secao de atendimento como variante de banner editorial. |
+| Documentacao | `docs/guia-identidade-visual-autelie.md` | Registrar a secao de atendimento como variante de banner editorial. |
 | Validacao | `scripts/validate-015-*.php`, `scripts/validate-015-*-browser.mjs` | Estrutura Gutenberg, persistencia, CTA WhatsApp, contraste, mobile e regressao. |
 
 ## 7. Sessoes de implementacao

@@ -39,7 +39,7 @@ Componentes afetados:
 - `Petshop\Core\Storefront\CategoryGrid`;
 - CSS/admin do seletor de icones;
 - CSS da vitrine de categorias no `petshop-theme`, somente se necessario;
-- documentacao em `docs/guia-identidade-visual-autelle.md`;
+- documentacao em `docs/guia-identidade-visual-autelie.md`;
 - documentacao em `docs/guia-edicao-home.md`, se a instrucao operacional ficar incompleta sem ela.
 
 Fora do escopo:
@@ -79,7 +79,7 @@ Recomendacao para repasse ao cliente:
 - evitar icones com texto pequeno, sombra pesada, foto, degrade complexo ou fundo colorido obrigatorio;
 - o icone deve funcionar em uma cor de interface ou em versao monocromatica quando usado como mascara.
 
-**Decisão (implementada):** ícone personalizado renderiza como `<img>` (preserva cores do arquivo). Galeria/automático continua com máscara CSS na cor do tema. Documentado em `docs/guia-identidade-visual-autelle.md`.
+**Decisão (implementada):** ícone personalizado renderiza como `<img>` (preserva cores do arquivo). Galeria/automático continua com máscara CSS na cor do tema. Documentado em `docs/guia-identidade-visual-autelie.md`.
 
 ## 7. Conteudo administravel e dados
 
@@ -124,7 +124,7 @@ O plano nao deve salvar caminhos absolutos de arquivo em term meta. A URL deve s
 
 ### Sessao 04 - Documentacao para cliente
 
-- [x] Atualizar `docs/guia-identidade-visual-autelle.md` com regras de criacao e entrega dos icones.
+- [x] Atualizar `docs/guia-identidade-visual-autelie.md` com regras de criacao e entrega dos icones.
 - [x] Incluir no guia a diferenca entre **Miniatura da categoria** e **Icone da vitrine**.
 - [x] Registrar formatos, proporcao, tamanho minimo, fundo transparente e recomendacao de SVG.
 - [x] Indicar como o cliente deve nomear/exportar arquivos para passar ao responsavel de conteudo.
@@ -182,7 +182,7 @@ Depois de implementar:
 5. Abrir a Home e confirmar o novo icone.
 6. Remover o icone personalizado.
 7. Confirmar que o fallback anterior voltou.
-8. Revisar `docs/guia-identidade-visual-autelle.md` antes de enviar ao cliente.
+8. Revisar `docs/guia-identidade-visual-autelie.md` antes de enviar ao cliente.
 
 ## 13. Evidencia de entrega
 

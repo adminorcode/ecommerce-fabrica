@@ -34,6 +34,9 @@
 | [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
 | [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Concluído | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
 | [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
+| [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Pendente | Lupa e Enter abrem a lista de produtos; URL com `s` + `post_type=product`. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
+| [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
+| [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Pendente | Casco HTML dos e-mails de compra (pagamento confirmado e atualizações); composição do mockup, cores do 014. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
 ## Ordem recomendada de execução
 
 ```
@@ -70,7 +73,10 @@
   ├── 028 (recuperação de pagamento pendente; WooCommerce 11+ nativo)
   ├── 029 (retorno à loja após Pix Mercado Pago)
   ├── 030 (frase da confirmação: Parabéns! Seu pedido foi recebido!)
-  └── 031 (card variável: Comprar agora + preço único)
+  ├── 031 (card variável: Comprar agora + preço único)
+  ├── 032 (busca: lupa e Enter listam produtos; query `s` + `post_type=product`)
+  ├── 033 (rodapé: aproximação visual ao mockup de três faixas)
+  └── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
 ```
 
 ## Origem
@@ -103,4 +109,10 @@ Plano 030 derivado do pedido de copy na confirmação (2026-08-22): “Parabéns
 
 Plano 031 derivado da comparação de card variável (2026-08-22): Comprar agora, chips e um preço, sem faixa.
 
-**Última atualização:** 2026-08-27 (Plano 027 concluído em `codex/027-calculadora-frete-hub`; 025, 026, 028, 029 e 031 pendentes; 012 em andamento)
+Plano 032 derivado da busca do header (2026-08-24): lupa e Enter não listam produtos; corrigir a query string (`s` + `post_type=product`).
+
+Plano 033 derivado do print do rodapé (2026-08-24): aproximar a composição visual (três faixas, sublinhado, selos com filetes) sem reabrir os campos do 023.
+
+Plano 034 derivado do mockup de e-mail “Pagamento confirmado” (2026-08-24): redesenhar o casco HTML dos avisos de compra; composição da arte, tokens da loja (não os hex do PNG).
+
+**Última atualização:** 2026-08-27 (Planos 032–034 restaurados em `master`; 027 e 030 concluídos; 025, 026, 028, 029 e 031–034 pendentes; 012 em andamento)

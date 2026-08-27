@@ -1,6 +1,6 @@
-# Guia de Identidade Visual — AUTellê Moda Pet
+# Guia de Identidade Visual — AUTeliê Moda Pet
 
-> Documento oficial proposto para agentes de IA, designers e desenvolvedores responsáveis por criar interfaces, banners, anúncios, componentes e materiais visuais da AUTellê Moda Pet.
+> Documento oficial proposto para agentes de IA, designers e desenvolvedores responsáveis por criar interfaces, banners, anúncios, componentes e materiais visuais da Auteliê Moda Pet.
 
 > **Validação de marca antes da publicação:** usar sempre o logotipo original aprovado. A grafia textual da marca deve ser confirmada contra esse ativo antes de alterar menus, SEO, embalagens ou peças públicas. Este guia não autoriza redesenhar, vetorizar ou criar variações do logo.
 
@@ -246,7 +246,7 @@ A **Miniatura** WooCommerce da categoria é outra imagem: serve à página/lista
 | Proporção | **1:1** |
 | Tamanho mínimo (raster) | **256 × 256 px** |
 | Área útil | Motivo centralizado, com margem confortável nas bordas |
-| Linguagem | Traço simples, arredondado, coerente com Autellê; evitar texto miúdo, sombra pesada, foto, degradê complexo ou fundo colorido obrigatório |
+| Linguagem | Traço simples, arredondado, coerente com Auteliê; evitar texto miúdo, sombra pesada, foto, degradê complexo ou fundo colorido obrigatório |
 | Nome do arquivo | Descritivo, por exemplo `icone-vitrine-bandanas.svg` ou `icone-vitrine-lacos.png` |
 
 #### Renderização na loja
@@ -298,7 +298,7 @@ Evitar diminutivos excessivos, linguagem infantilizada, promessas absolutas, mui
 ## 12. Regras para geração de imagem
 
 ```text
-Identidade visual da AUTellê Moda Pet. Utilizar verde-petróleo profundo,
+Identidade visual da Auteliê Moda Pet. Utilizar verde-petróleo profundo,
 verde médio, aqua, laranja como detalhe, creme e branco. Estética moderna,
 acolhedora e profissional para ecommerce pet. Cantos arredondados, formas
 orgânicas, tipografia Nunito Sans ou sans-serif humanista, ícones lineares de

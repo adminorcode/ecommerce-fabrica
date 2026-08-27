@@ -8,6 +8,8 @@
 **Referência visual:** 4 colunas (marca+redes, atendimento com ícones, categorias, institucional), faixa de selos com pictogramas distintos e barra legal compacta.  
 **Entrega:** Customizer `petshop_footer`, render no tema com ocultação de vazios, composição alinhada à referência, docs em `docs/guia-edicao-rodape.md`, gates `validate-023-footer.php` / `validate-023-footer-browser.mjs`.
 
+**Ajuste visual posterior:** a aproximação ao print de 2026-08-24 (filetes na faixa de selos, sublinhado dos títulos, fundo carvão) está no [033](./033-rodape-aproximacao-mockup.md). Este plano (023) permanece concluído em campos e markup.
+
 ## 1. Objetivo
 
 Tornar o rodapé institucional da loja **completamente administrável** e **visualmente alinhado à referência**: redes, atendimento, menus, selos e dados legais editáveis no painel, com a estrutura e a iconografia do mockup.
