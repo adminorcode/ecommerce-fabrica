@@ -5,9 +5,7 @@ repositorio inteiro para `public_html`.
 
 Suba apenas estes artefatos:
 
-- `petshop-theme.zip`
-- `petshop-core.zip`
-- `uploads.tar.gz`
+- `wp-content/` (tema `petshop-theme`, plugin `petshop-core` e `uploads`)
 - `petshop-db.sql`
 
 Nao envie `.git`, `.local`, `node_modules`, `tests`, `Plans`, `scripts`, `outputs`,
@@ -33,159 +31,78 @@ Verificacao:
 
 ## 2. Gerar os pacotes corretos
 
-### Tema
-
-O ZIP do tema deve conter:
-
-```text
-petshop-theme/style.css
-petshop-theme/functions.php
-petshop-theme/assets/...
-petshop-theme/patterns/...
-```
-
-Verificacao local:
+Na raiz do repositorio:
 
 ```powershell
-Expand-Archive .\petshop-theme.zip -DestinationPath .\tmp-theme-check -Force
-Test-Path .\tmp-theme-check\petshop-theme\style.css
-Select-String .\tmp-theme-check\petshop-theme\style.css -Pattern "Template: blocksy"
+npm run prepare:deploy
 ```
 
-O `style.css` precisa ter:
+Saida: `outputs/deploy-cpanel/<stamp>/` com `wp-content/` e `petshop-db.sql`.
+
+O `wp-content` gerado deve conter:
+
+```text
+wp-content/themes/petshop-theme/style.css
+wp-content/plugins/petshop-core/petshop-core.php
+wp-content/plugins/petshop-core/vendor/autoload.php
+wp-content/uploads/
+```
+
+O `style.css` do tema precisa ter:
 
 ```css
 Template: blocksy
 ```
 
-### Plugin
+O plugin nao deve conter `node_modules/`, `tests/` nem vendor de desenvolvimento
+(`phpunit`, `myclabs`, `sebastian`). O `prepare-deploy` remove essas pastas e
+regenera o Composer com `dump-autoload --no-dev`, para o `vendor/autoload.php`
+nao tentar carregar `deep_copy.php`.
 
-O ZIP do plugin deve conter:
-
-```text
-petshop-core/petshop-core.php
-petshop-core/includes/...
-petshop-core/assets/js/wishlist.js
-petshop-core/assets/js/catalog-filter.js
-petshop-core/blocks/...
-petshop-core/vendor/autoload.php
-```
-
-O plugin nao deve conter:
-
-```text
-petshop-core/node_modules/
-petshop-core/tests/
-petshop-core/vendor/phpunit/
-petshop-core/vendor/myclabs/
-petshop-core/vendor/sebastian/
-```
-
-O erro real encontrado em producao foi causado por `vendor` de desenvolvimento:
+O erro real encontrado em producao foi:
 
 ```text
 Failed opening required .../vendor/myclabs/deep-copy/src/DeepCopy/deep_copy.php
+Permission denied
 ```
 
-Portanto, gere o pacote com dependencias de producao. Se Composer estiver disponivel:
+Isso acontece quando o autoload ainda aponta para PHPUnit e a pasta `myclabs`
+foi apagada (ou ficou no servidor com permissao ilegivel). Reenvie o
+`petshop-core` gerado apos o dump `--no-dev` e apague leftovers
+`vendor/myclabs`, `vendor/phpunit` e `vendor/sebastian` no servidor.
+
+Verificacao local:
 
 ```powershell
-cd wp-content\plugins\petshop-core
-composer install --no-dev --optimize-autoloader
+$pkg = Get-ChildItem .\outputs\deploy-cpanel | Sort-Object Name -Descending | Select-Object -First 1
+Test-Path "$pkg\wp-content\themes\petshop-theme\style.css"
+Select-String "$pkg\wp-content\themes\petshop-theme\style.css" -Pattern "Template: blocksy"
+Test-Path "$pkg\wp-content\plugins\petshop-core\petshop-core.php"
+Test-Path "$pkg\wp-content\plugins\petshop-core\vendor\autoload.php"
+Test-Path "$pkg\wp-content\plugins\petshop-core\vendor\myclabs"
+Select-String "$pkg\wp-content\plugins\petshop-core\vendor\composer\autoload_*.php" -Pattern "myclabs|phpunit/phpunit|deep-copy"
+Test-Path "$pkg\wp-content\plugins\petshop-core\node_modules"
+Test-Path "$pkg\wp-content\plugins\petshop-core\tests"
+Test-Path "$pkg\petshop-db.sql"
 ```
 
-Se o plugin nao usa bibliotecas de runtime alem do autoload PSR-4, `vendor/autoload.php`
-pode ser um autoloader minimo:
+`node_modules`, `tests` e `vendor/myclabs` devem retornar `False`. O
+`Select-String` no autoload nao pode achar `myclabs`, `phpunit/phpunit` nem
+`deep-copy`.
 
-```php
-<?php
+## 3. Enviar arquivos no cPanel
 
-declare(strict_types=1);
-
-spl_autoload_register(
-    static function (string $class): void {
-        $prefix = "Petshop\\Core\\";
-
-        if (!str_starts_with($class, $prefix)) {
-            return;
-        }
-
-        $relative = substr($class, strlen($prefix));
-        $file = __DIR__ . '/../includes/' . strtr($relative, chr(92), '/') . '.php';
-
-        if (is_file($file)) {
-            require_once $file;
-        }
-    }
-);
-
-return true;
-```
-
-Verificacao local do ZIP:
-
-```powershell
-Expand-Archive .\petshop-core.zip -DestinationPath .\tmp-plugin-check -Force
-Test-Path .\tmp-plugin-check\petshop-core\petshop-core.php
-Test-Path .\tmp-plugin-check\petshop-core\assets\js\wishlist.js
-Test-Path .\tmp-plugin-check\petshop-core\vendor\autoload.php
-Test-Path .\tmp-plugin-check\petshop-core\node_modules
-Test-Path .\tmp-plugin-check\petshop-core\tests
-```
-
-Os dois ultimos devem retornar `False`.
-
-## 3. Enviar e extrair arquivos no cPanel
-
-Use FileZilla ou File Manager para enviar os arquivos.
-
-### Tema
-
-Destino:
-
-```text
-public_html/wp-content/themes/
-```
-
-Depois extraia `petshop-theme.zip`.
+Use FileZilla ou File Manager para enviar a pasta `wp-content/` gerada para
+`public_html/wp-content/`, mesclando `themes/petshop-theme`, `plugins/petshop-core`
+e `uploads`. Importe `petshop-db.sql` no MySQL do servidor.
 
 Verificacao:
 
 ```text
 public_html/wp-content/themes/petshop-theme/style.css
-```
-
-### Plugin
-
-Destino:
-
-```text
-public_html/wp-content/plugins/
-```
-
-Depois extraia `petshop-core.zip`.
-
-Verificacao:
-
-```text
 public_html/wp-content/plugins/petshop-core/petshop-core.php
 public_html/wp-content/plugins/petshop-core/assets/js/wishlist.js
 public_html/wp-content/plugins/petshop-core/vendor/autoload.php
-```
-
-### Uploads
-
-Destino:
-
-```text
-public_html/wp-content/
-```
-
-Depois extraia `uploads.tar.gz`.
-
-Verificacao:
-
-```text
 public_html/wp-content/uploads/2026/
 public_html/wp-content/uploads/woocommerce-placeholder.webp
 ```
@@ -236,12 +153,16 @@ public_html/error_log
 
 Erros comuns e correcoes:
 
-- `vendor/myclabs`, `phpunit`, `sebastian` ou `deep-copy`: o plugin foi enviado com
-  `vendor` de desenvolvimento. Reempacote sem `require-dev` ou use autoload minimo.
-- `filemtime() ... assets/js/wishlist.js`: o ZIP do plugin ficou incompleto. Envie
+- `vendor/myclabs`, `phpunit`, `sebastian`, `deep_copy.php` ou `Permission denied` no
+  autoload: o plugin foi enviado com autoload de desenvolvimento. Rode
+  `npm run prepare:deploy` (o script faz `dump-autoload --no-dev` no pacote),
+  substitua o `petshop-core` inteiro e apague leftovers `vendor/myclabs`,
+  `vendor/phpunit` e `vendor/sebastian` no servidor. Nao “corrija” com chmod na
+  pasta leftover. Nao rode `dump-autoload --no-dev` no plugin do worktree.
+- `filemtime() ... assets/js/wishlist.js`: o plugin foi enviado incompleto. Envie
   `assets/js/wishlist.js`.
 - `PETSHOP_HERO_ATTACHMENT_MISSING`: o banco e os uploads ainda nao estao alinhados,
-  ou `uploads.tar.gz` nao foi extraido corretamente.
+  ou a pasta `uploads` nao foi copiada para `public_html/wp-content/`.
 - Tela branca sem fatal: confira `template` e `stylesheet` no banco. Para tema filho,
   `template` precisa ser `blocksy` e `stylesheet` precisa ser `petshop-theme`.
 
@@ -361,7 +282,6 @@ public_html/petshop-fix-*.php
 public_html/petshop-cleanup.php
 public_html/petshop-write-*.php
 public_html/wp-content/petshop-db.sql
-public_html/wp-content/uploads.tar.gz
 public_html/wp-content/debug.log
 public_html/error_log
 ```

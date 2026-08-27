@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Prepara pacote de deploy HostGator/cPanel a partir do ambiente Docker atual.
- * Saída: outputs/deploy-cpanel/<stamp>/
+ * Prepara pacote de deploy: wp-content (tema + plugin do worktree, uploads do
+ * volume Docker) e dump SQL. Sem ZIP, sem tar extra, sem copiar node_modules.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -9,26 +9,34 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
-  mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const isWindows = process.platform === 'win32';
 const stamp = new Date()
   .toISOString()
   .replace(/[-:]/g, '')
   .replace(/\.\d+Z$/, '')
   .replace('T', '-');
 const outDir = join(root, 'outputs', 'deploy-cpanel', stamp);
-const stageDir = join(outDir, 'stage');
 const wpContentDir = join(outDir, 'wp-content');
+const excludedNames = [
+  '.git',
+  'node_modules',
+  'tests',
+  'phpunit',
+  'myclabs',
+  'sebastian',
+  'phar-io',
+  'theseer',
+  'nikic',
+];
 
 const fail = (message) => {
   console.error(`prepare-deploy: ${message}`);
@@ -37,15 +45,15 @@ const fail = (message) => {
 
 const run = (command, args, options = {}) => {
   const result = spawnSync(command, args, {
-    cwd: root,
-    encoding: 'utf8',
+    cwd: options.cwd ?? root,
+    encoding: options.capture ? 'utf8' : undefined,
+    maxBuffer: 32 * 1024 * 1024,
     stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
     env: {
       ...process.env,
       MSYS_NO_PATHCONV: '1',
       MSYS2_ARG_CONV_EXCL: '*',
     },
-    shell: options.shell === true,
   });
 
   if ((result.status ?? 1) !== 0) {
@@ -58,100 +66,21 @@ const run = (command, args, options = {}) => {
   return options.capture ? (result.stdout || '').trim() : '';
 };
 
-const dockerCli = (...args) => run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '--no-deps', 'cli', ...args]);
-const dockerCliCapture = (...args) => run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '--no-deps', 'cli', ...args], { capture: true });
-
 const assertDocker = () => {
-  const ps = run('docker', ['compose', 'ps', '--status', 'running', '--format', '{{.Name}}'], { capture: true });
+  const ps = run('docker', ['compose', 'ps', '--status', 'running', '--format', '{{.Name}}'], {
+    capture: true,
+  });
   if (!ps.split(/\r?\n/).some((name) => name.includes('wordpress'))) {
     fail('Contêiner WordPress nao esta em execucao. Suba com: docker compose up -d --wait');
   }
 };
 
-const copyFiltered = (source, destination, excludedDirNames = []) => {
+const copyFiltered = (source, destination) => {
   mkdirSync(destination, { recursive: true });
   cpSync(source, destination, {
     recursive: true,
-    filter: (src) => {
-      const base = src.split(/[/\\]/).pop();
-      if (excludedDirNames.includes(base)) {
-        return false;
-      }
-      return true;
-    },
+    filter: (src) => !excludedNames.includes(src.split(/[/\\]/).pop()),
   });
-};
-
-const zipWithPython = (sourceDir, zipPath, rootName) => {
-  const script = `
-from pathlib import Path
-import zipfile
-src = Path(r'''${sourceDir}''')
-dest = Path(r'''${zipPath}''')
-if dest.exists():
-    dest.unlink()
-with zipfile.ZipFile(dest, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-    for path in src.rglob('*'):
-        if path.is_file():
-            zf.write(path, f"${rootName}/{path.relative_to(src).as_posix()}")
-print(dest.stat().st_size)
-`;
-  const tmp = mkdtempSync(join(tmpdir(), 'petshop-deploy-'));
-  const pyFile = join(tmp, 'zip.py');
-  try {
-    writeFileSync(pyFile, script);
-    const size = run(isWindows ? 'python' : 'python3', [pyFile], { capture: true });
-    console.log(`prepare-deploy: zip ${rootName} -> ${zipPath} (${size} bytes)`);
-  } finally {
-    rmSync(tmp, { recursive: true, force: true });
-  }
-};
-
-const extractTarGzWithPython = (tarPath, destinationDir) => {
-  const script = `
-from pathlib import Path
-import tarfile
-tar_path = Path(r'''${tarPath}''')
-dest = Path(r'''${destinationDir}''')
-dest.mkdir(parents=True, exist_ok=True)
-with tarfile.open(tar_path, 'r:gz') as tar:
-    try:
-        tar.extractall(dest, filter='data')
-    except TypeError:
-        tar.extractall(dest)
-print('extracted', tar_path.name, '->', dest)
-`;
-  const tmp = mkdtempSync(join(tmpdir(), 'petshop-deploy-'));
-  const pyFile = join(tmp, 'untar.py');
-  try {
-    writeFileSync(pyFile, script);
-    run(isWindows ? 'python' : 'python3', [pyFile]);
-  } finally {
-    rmSync(tmp, { recursive: true, force: true });
-  }
-};
-
-const tarGzWithPython = (sourceDir, tarPath, arcName) => {
-  const script = `
-from pathlib import Path
-import tarfile
-src = Path(r'''${sourceDir}''')
-dest = Path(r'''${tarPath}''')
-if dest.exists():
-    dest.unlink()
-with tarfile.open(dest, 'w:gz') as tar:
-    tar.add(src, arcname=r'''${arcName}''')
-print(dest.stat().st_size)
-`;
-  const tmp = mkdtempSync(join(tmpdir(), 'petshop-deploy-'));
-  const pyFile = join(tmp, 'tar.py');
-  try {
-    writeFileSync(pyFile, script);
-    const size = run(isWindows ? 'python' : 'python3', [pyFile], { capture: true });
-    console.log(`prepare-deploy: tar ${arcName} -> ${tarPath} (${size} bytes)`);
-  } finally {
-    rmSync(tmp, { recursive: true, force: true });
-  }
 };
 
 const mustExist = (relativePath) => {
@@ -165,31 +94,31 @@ const mustExist = (relativePath) => {
 const humanSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 ** 3) return `${(bytes / (1024 ** 2)).toFixed(1)} MB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
   return `${(bytes / (1024 ** 3)).toFixed(2)} GB`;
 };
 
+const dirSize = (dir) => {
+  let total = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    total += entry.isDirectory() ? dirSize(full) : statSync(full).size;
+  }
+  return total;
+};
+
 assertDocker();
-mkdirSync(stageDir, { recursive: true });
 mkdirSync(join(wpContentDir, 'themes'), { recursive: true });
 mkdirSync(join(wpContentDir, 'plugins'), { recursive: true });
 
 console.log(`prepare-deploy: saida -> ${outDir}`);
+console.log('prepare-deploy: copiando tema e plugin do worktree');
 
-// Sync worktree into runtime volumes so uploads/export match current code surface.
-run('docker', ['cp', join(root, 'wp-content/themes/petshop-theme'), 'petshop-wordpress-1:/var/www/html/wp-content/themes/']);
-run('docker', ['cp', join(root, 'wp-content/plugins/petshop-core'), 'petshop-wordpress-1:/var/www/html/wp-content/plugins/']);
+copyFiltered(join(root, 'wp-content/themes/petshop-theme'), join(wpContentDir, 'themes/petshop-theme'));
+copyFiltered(join(root, 'wp-content/plugins/petshop-core'), join(wpContentDir, 'plugins/petshop-core'));
 
-const themeStage = join(stageDir, 'petshop-theme');
-const pluginStage = join(stageDir, 'petshop-core');
-copyFiltered(join(root, 'wp-content/themes/petshop-theme'), themeStage, ['.git', 'node_modules']);
-copyFiltered(
-  join(root, 'wp-content/plugins/petshop-core'),
-  pluginStage,
-  ['.git', 'node_modules', 'tests', 'phpunit', 'myclabs', 'sebastian', 'phar-io', 'theseer', 'nikic']
-);
+const pluginOut = join(wpContentDir, 'plugins/petshop-core');
 
-// Extra cleanup for nested vendor test stacks if filter only matched leaf names at root.
 for (const nested of [
   'vendor/phpunit',
   'vendor/myclabs',
@@ -201,20 +130,20 @@ for (const nested of [
   'node_modules',
   'phpunit.xml.dist',
 ]) {
-  const target = join(pluginStage, nested);
+  const target = join(pluginOut, nested);
   if (existsSync(target)) {
     rmSync(target, { recursive: true, force: true });
   }
 }
 
-if (!existsSync(join(pluginStage, 'vendor/autoload.php'))) {
+if (!existsSync(join(pluginOut, 'vendor/autoload.php'))) {
   fail('petshop-core/vendor/autoload.php ausente no pacote');
 }
 
-cpSync(themeStage, join(wpContentDir, 'themes/petshop-theme'), { recursive: true });
-cpSync(pluginStage, join(wpContentDir, 'plugins/petshop-core'), { recursive: true });
-
-const uploadsTar = join(outDir, 'uploads.tar.gz');
+// Strip phpunit/myclabs then dump-autoload --no-dev on THIS copy only.
+// Leaving worktree autoload intact (PHPUnit). Shipping stripped folders
+// with a require-dev autoload fatals production on deep_copy.php.
+console.log('prepare-deploy: regenerando Composer autoload sem require-dev');
 run('docker', [
   'compose',
   '--profile',
@@ -223,54 +152,62 @@ run('docker', [
   '--rm',
   '--no-deps',
   '-v',
-  `${outDir}:/out`,
+  `${pluginOut}:/plugin`,
   'cli',
-  'sh',
-  '-c',
-  'cd /var/www/html/wp-content && tar -czf /out/uploads.tar.gz uploads',
+  'composer',
+  'dump-autoload',
+  '--no-dev',
+  '--optimize',
+  '-d',
+  '/plugin',
 ]);
 
-extractTarGzWithPython(uploadsTar, wpContentDir);
+const autoloadSnapshot = [
+  'vendor/composer/autoload_files.php',
+  'vendor/composer/autoload_static.php',
+  'vendor/composer/autoload_psr4.php',
+]
+  .map((relative) => join(pluginOut, relative))
+  .filter((absolute) => existsSync(absolute))
+  .map((absolute) => readFileSync(absolute, 'utf8'))
+  .join('\n');
 
-const dbSql = join(outDir, 'petshop-db.sql');
-run('docker', [
-  'compose',
-  '--profile',
-  'tools',
-  'run',
-  '--rm',
-  '--no-deps',
-  '-v',
-  `${outDir}:/out`,
-  'cli',
-  'wp',
-  'db',
-  'export',
-  '/out/petshop-db.sql',
-  '--add-drop-table',
-]);
-
-zipWithPython(themeStage, join(outDir, 'petshop-theme.zip'), 'petshop-theme');
-zipWithPython(pluginStage, join(outDir, 'petshop-core.zip'), 'petshop-core');
-tarGzWithPython(wpContentDir, join(outDir, 'wp-content-deploy.tar.gz'), 'wp-content');
-
-const branch = run('git', ['branch', '--show-current'], { capture: true }) || 'DETACHED';
-const commit = run('git', ['rev-parse', '--short', 'HEAD'], { capture: true });
-let home = '';
-let siteurl = '';
-try {
-  home = dockerCliCapture('wp', 'option', 'get', 'home');
-  siteurl = dockerCliCapture('wp', 'option', 'get', 'siteurl');
-} catch {
-  home = '(indisponivel)';
-  siteurl = '(indisponivel)';
+if (/myclabs|phpunit\/phpunit|deep-copy/i.test(autoloadSnapshot)) {
+  fail('autoload de producao ainda referencia vendor de desenvolvimento (myclabs/phpunit)');
 }
 
 const style = readFileSync(join(wpContentDir, 'themes/petshop-theme/style.css'), 'utf8');
 if (!style.includes('Template: blocksy')) {
   fail('style.css do tema nao declara Template: blocksy');
 }
-const versionLine = style.split(/\r?\n/).find((line) => line.startsWith('Version:')) || 'Version: ?';
+
+const uploadsTar = join(outDir, '.uploads.tar');
+const dbSql = join(outDir, 'petshop-db.sql');
+
+console.log('prepare-deploy: exportando uploads e SQL do contêiner wordpress');
+run('docker', [
+  'compose',
+  'exec',
+  '-T',
+  'wordpress',
+  'sh',
+  '-c',
+  'tar -C /var/www/html/wp-content -cf /tmp/petshop-uploads.tar uploads && wp db export /tmp/petshop-db.sql --add-drop-table',
+]);
+run('docker', ['compose', 'cp', 'wordpress:/tmp/petshop-uploads.tar', uploadsTar]);
+run('docker', ['compose', 'cp', 'wordpress:/tmp/petshop-db.sql', dbSql]);
+run('tar', ['-xf', '.uploads.tar', '-C', 'wp-content'], { cwd: outDir });
+rmSync(uploadsTar, { force: true });
+run('docker', [
+  'compose',
+  'exec',
+  '-T',
+  'wordpress',
+  'rm',
+  '-f',
+  '/tmp/petshop-uploads.tar',
+  '/tmp/petshop-db.sql',
+]);
 
 const required = [
   'wp-content/themes/petshop-theme/style.css',
@@ -280,43 +217,38 @@ const required = [
   'wp-content/plugins/petshop-core/assets/js/category-icon-media.js',
   'wp-content/plugins/petshop-core/vendor/autoload.php',
   'wp-content/uploads',
-  'petshop-theme.zip',
-  'petshop-core.zip',
-  'uploads.tar.gz',
   'petshop-db.sql',
-  'wp-content-deploy.tar.gz',
 ];
 
 for (const relative of required) {
   mustExist(relative);
 }
 
+const branch = run('git', ['branch', '--show-current'], { capture: true }) || 'DETACHED';
+const commit = run('git', ['rev-parse', '--short', 'HEAD'], { capture: true });
+const versionLine = style.split(/\r?\n/).find((line) => line.startsWith('Version:')) || 'Version: ?';
+
 const manifest = [
   `stamp=${stamp}`,
   `branch=${branch}`,
   `commit=${commit}`,
   `generated=${new Date().toISOString()}`,
-  `home=${home}`,
-  `siteurl=${siteurl}`,
   `theme=${versionLine}`,
-  'contents=wp-content/{themes/petshop-theme,plugins/petshop-core,uploads} + zips + db',
+  'contents=wp-content/{themes/petshop-theme,plugins/petshop-core,uploads} + petshop-db.sql',
 ].join('\n');
 writeFileSync(join(outDir, 'MANIFEST.txt'), `${manifest}\n`);
 
 const abs = resolve(outDir);
-const summary = [
-  '',
-  '=== Pacote de deploy pronto ===',
-  `Pasta: ${abs}`,
-  `Tema ZIP: ${join(abs, 'petshop-theme.zip')} (${humanSize(statSync(join(abs, 'petshop-theme.zip')).size)})`,
-  `Plugin ZIP: ${join(abs, 'petshop-core.zip')} (${humanSize(statSync(join(abs, 'petshop-core.zip')).size)})`,
-  `Uploads: ${join(abs, 'uploads.tar.gz')} (${humanSize(statSync(join(abs, 'uploads.tar.gz')).size)})`,
-  `Banco: ${join(abs, 'petshop-db.sql')} (${humanSize(statSync(join(abs, 'petshop-db.sql')).size)})`,
-  `wp-content (copiar): ${join(abs, 'wp-content')}`,
-  `wp-content (tar): ${join(abs, 'wp-content-deploy.tar.gz')} (${humanSize(statSync(join(abs, 'wp-content-deploy.tar.gz')).size)})`,
-  `Manifest: ${join(abs, 'MANIFEST.txt')}`,
-  '',
-].join('\n');
-
-console.log(summary);
 writeFileSync(join(outDir, 'WHERE.txt'), `${abs}\n`);
+
+console.log(
+  [
+    '',
+    '=== Pacote de deploy pronto ===',
+    `Pasta: ${abs}`,
+    `wp-content: ${join(abs, 'wp-content')} (${humanSize(dirSize(wpContentDir))})`,
+    `Banco: ${join(abs, 'petshop-db.sql')} (${humanSize(statSync(dbSql).size)})`,
+    `Manifest: ${join(abs, 'MANIFEST.txt')}`,
+    '',
+  ].join('\n')
+);

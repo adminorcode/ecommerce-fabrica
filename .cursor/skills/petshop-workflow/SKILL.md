@@ -18,6 +18,7 @@ Skill de projeto para a loja WordPress/WooCommerce do petshop. Aplique **antes e
 - criar migrações, shortcodes, hooks WooCommerce ou ajustes de storefront
 - validar persistência editorial ou executar scripts de teste
 - decidir onde colocar regra de negócio vs apresentação
+- preparar pacote HostGator/cPanel (seguir `preparar-deploy`; nunca zipar `vendor/` do worktree)
 
 ## Leitura obrigatória (nesta ordem)
 
@@ -182,12 +183,19 @@ Classes centrais do plugin:
 Este repo também inclui skills oficiais. Use quando o trabalho exigir profundidade além desta skill:
 
 - `wordpress-router` / `wp-project-triage` — classificar o repo antes de agir
-- `wp-plugin-development` — arquitetura de plugin, hooks, segurança
+- `wp-plugin-development` — arquitetura de plugin, hooks, segurança (não empacota HostGator)
+- `preparar-deploy` — pacote cPanel/HostGator (`npm run prepare:deploy`)
 - `wp-wpcli-and-ops` — automação WP-CLI (adaptar para Docker)
 - `wp-block-development` — se criar blocos Gutenberg próprios
 - `ui-design-brain` — padrões de componente (modal, form, nav); **adaptar** tokens do petshop
 
 Guia completo: `docs/cursor-ai-guide.md`
+
+## Deploy HostGator / cPanel
+
+Publicar a loja: skill `preparar-deploy` (`npm run prepare:deploy`). O script copia o plugin, remove vendor de desenvolvimento e **regenera** o Composer no pacote com `dump-autoload --no-dev --optimize`.
+
+**Proibido:** zipar ou copiar `wp-content/plugins/petshop-core/vendor` do worktree; apagar `myclabs`/`phpunit` sem regenerar o autoload; rodar `composer dump-autoload --no-dev` no plugin do worktree (quebra o PHPUnit local). Pacote inválido se `autoload_*.php` ainda citar `myclabs`, `phpunit/phpunit` ou `deep-copy`.
 
 ## O que não fazer
 
@@ -198,6 +206,7 @@ Guia completo: `docs/cursor-ai-guide.md`
 - sobrescrever conteúdo editado pelo cliente em migrações
 - implementar Elementor ou editar Blocksy/WooCommerce core
 - adicionar `abilities-api-implement` ou skills de operação REST da loja (fora do escopo de desenvolvimento)
+- publicar `petshop-core` cujo Composer autoload ainda referencia PHPUnit, myclabs ou deep-copy
 
 ## Estado atual (consultar `Plans/STATUS.md` para atualização)
 

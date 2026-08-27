@@ -51,7 +51,7 @@ Sequência padrão:
 npm run prepare:deploy
 ```
 
-Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável, ZIPs do tema/plugin, `uploads.tar.gz` e `petshop-db.sql`. O caminho absoluto é impresso ao final e gravado em `WHERE.txt`. Skill: `.cursor/skills/preparar-deploy/`.
+Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin do worktree, uploads do volume) e `petshop-db.sql`. Remove vendor de desenvolvimento e regenera o Composer no pacote com `dump-autoload --no-dev --optimize`; o script falha se `autoload_*.php` ainda citar `myclabs`, `phpunit/phpunit` ou `deep-copy`. Não rode esse dump no plugin do worktree. O caminho absoluto é impresso ao final e gravado em `WHERE.txt`. Skill: `.cursor/skills/preparar-deploy/`.
 
 ## Catálogo por plano
 

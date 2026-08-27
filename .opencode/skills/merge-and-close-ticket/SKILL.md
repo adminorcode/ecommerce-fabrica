@@ -28,3 +28,4 @@ description: Finaliza uma entrega: confirma o PR, faz merge autorizado, atualiza
 - Não fechar o ticket se o merge falhar ou se os gates obrigatórios estiverem pendentes.
 - Se o status padrão não existir no ClickUp, consultar os status válidos da lista antes de atualizar.
 - Não assumir `develop`, `main`, `master`, estratégia squash ou lista ClickUp específica.
+- Merge não empacota HostGator. Publicação usa `preparar-deploy`. Não zipar `vendor/` do worktree nem apagar `myclabs` sem `dump-autoload --no-dev` no pacote.
