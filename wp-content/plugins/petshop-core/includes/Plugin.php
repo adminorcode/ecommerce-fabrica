@@ -13,6 +13,7 @@ use Petshop\Core\WooCommerce\Routes;
 use Petshop\Core\WooCommerce\ProductDetails;
 use Petshop\Core\WooCommerce\CartCheckout;
 use Petshop\Core\WooCommerce\OrderTracking;
+use Petshop\Core\WooCommerce\OrderReceivedMessage;
 use Petshop\Core\WooCommerce\GuestAccount;
 use Petshop\Core\Analytics\FunnelEvents;
 
@@ -33,6 +34,7 @@ final class Plugin
         ProductDetails::bootstrap();
         CartCheckout::bootstrap();
         OrderTracking::bootstrap();
+        OrderReceivedMessage::bootstrap();
         GuestAccount::bootstrap();
         FunnelEvents::bootstrap();
         HomeCampaignBlocks::bootstrap();

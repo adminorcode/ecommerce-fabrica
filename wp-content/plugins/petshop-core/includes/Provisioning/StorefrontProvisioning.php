@@ -141,6 +141,12 @@ trait StorefrontProvisioning
         if (get_theme_mod('petshop_wishlist_label', null) === null) {
             set_theme_mod('petshop_wishlist_label', \Petshop\Core\Settings\DefaultSettings::get('petshop_wishlist_label'));
         }
+        if (get_theme_mod('petshop_order_received_text', null) === null) {
+            set_theme_mod(
+                'petshop_order_received_text',
+                \Petshop\Core\Settings\DefaultSettings::get('petshop_order_received_text')
+            );
+        }
         if (get_theme_mod('petshop_support_page', null) === null) {
             $supportPage = get_page_by_path('atendimento');
             if ($supportPage instanceof \WP_Post) {

@@ -1,6 +1,6 @@
 # Plano 030 — Frase da confirmação de pedido
 
-**Status:** Pendente  
+**Status:** Implementado na branch
 **Data:** 2026-08-22  
 **Branch sugerida:** `030-frase-pedido-recebido`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (página de pedido recebido / Checkout Block)  
@@ -55,23 +55,25 @@ Sem imagem. Sem texto fixo em PHP/CSS/JS depois do primeiro provisionamento.
 
 | Área | Onde | Responsabilidade |
 |---|---|---|
-| Setting | `DefaultSettings` + Customizer | option/theme_mod, sanitizar, não sobrescrever |
-| Render | classe pequena no `petshop-core` | filtros WooCommerce / Blocks |
-| Docs | guia operacional | onde editar a frase |
-| Gates | PHP + browser na confirmação | texto inicial, bloco e clássico, persistência |
+| Setting | `DefaultSettings` (`petshop_order_received_text`) + Customizer `petshop_store_content` | theme_mod, sanitizar vazio → frase inicial, não sobrescrever |
+| Render | `Petshop\Core\WooCommerce\OrderReceivedMessage` | `woocommerce_thankyou_order_received_text` (clássico e bloco `order-confirmation-status`); só substitui a string nativa de “pedido recebido”, sem alterar recusado/cancelado |
+| Docs | `docs/guia-edicao-home.md`, `docs/guia-operacional-woocommerce-plano-013.md` | onde editar a frase |
+| Gates | `scripts/validate-030.php`, `scripts/validate-030-order-received-browser.mjs` | texto inicial, bloco e clássico, persistência |
+
+O Checkout Block usa o mesmo filtro oficial na classe `OrderConfirmation\Status`. Não há filtro equivalente separado para copiar.
 
 ## 7. Sessão única
 
-- [ ] Provisionar a frase inicial no setting administrável.
-- [ ] Aplicar na confirmação clássica e no Checkout Block.
-- [ ] Documentar no guia; gates de persistência.
+- [x] Provisionar a frase inicial no setting administrável.
+- [x] Aplicar na confirmação clássica e no Checkout Block.
+- [x] Documentar no guia; gates de persistência.
 
 **Gate**
 
-- [ ] Pedido de teste mostra **Parabéns! Seu pedido foi recebido!** no lugar de “Obrigado. Seu pedido foi recebido.”
-- [ ] A mesma frase aparece com Checkout Block.
-- [ ] Editar no Personalizar sobrevive a migrate/reprovisionar.
-- [ ] WooCommerce e Blocksy não foram copiados nem editados.
+- [x] Pedido de teste mostra **Parabéns! Seu pedido foi recebido!** no lugar de “Obrigado. Seu pedido foi recebido.”
+- [x] A mesma frase aparece com Checkout Block.
+- [x] Editar no Personalizar sobrevive a migrate/reprovisionar.
+- [x] WooCommerce e Blocksy não foram copiados nem editados.
 
 ## 8. Riscos
 
@@ -79,3 +81,10 @@ Sem imagem. Sem texto fixo em PHP/CSS/JS depois do primeiro provisionamento.
 |---|---|
 | Bloco ignora o filtro clássico | Usar o filtro/extensão documentada do order-confirmation; gate nos dois renders |
 | Translate Press / gettext sobrescreve | Setting da loja tem prioridade sobre a string nativa |
+
+## 9. Validação (2026-08-26)
+
+- PHPUnit: 32 testes, 75 asserções.
+- `wp eval-file scripts/validate-030.php` — sucesso.
+- `validate-030-order-received-browser.mjs` — sucesso; evidência em `.local/evidence/030/order-received.png`.
+- Commit, PR, merge e ClickUp permanecem pendentes de pedido explícito.

@@ -350,4 +350,14 @@ Se uma atualizacao preservar o banner antigo como imagem unica, substitua manual
 
 | Rodapé — institucional | **Aparência → Menus** (localização `petshop-footer`) |
 
+| Frase da confirmação de pedido | **Personalizar → Conteúdo da loja** |
+
+## Frase da confirmação de pedido
+
+A frase no topo de `/finalizar-compra/order-received/` (clássica e Checkout Block) não é editada no Gutenberg da página Finalizar compra.
+
+**Onde:** **Aparência → Personalizar → Conteúdo da loja → Frase da confirmação de pedido**
+
+Valor inicial: `Parabéns! Seu pedido foi recebido!`. Campo em branco volta a essa frase. O reprovisionamento não desfaz uma edição posterior.
+
 Guia dedicado: [guia-edicao-rodape.md](./guia-edicao-rodape.md).
