@@ -1,11 +1,11 @@
 # Plano 030 — Frase da confirmação de pedido
 
-**Status:** Implementado na branch
+**Status:** Concluído
 **Data:** 2026-08-22  
 **Branch sugerida:** `030-frase-pedido-recebido`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (página de pedido recebido / Checkout Block)  
 **Origem:** pedido do cliente (Ruivo): trocar “Obrigado. Seu pedido foi recebido.” por **“Parabéns! Seu pedido foi recebido!”** na confirmação (pedido 2904 na referência).  
-**ClickUp:** [86e2xzmck](https://app.clickup.com/t/86e2xzmck) — Open  
+**ClickUp:** [86e2xzmck](https://app.clickup.com/t/86e2xzmck) — Closed  
 
 ## 1. Objetivo
 
@@ -87,4 +87,4 @@ O Checkout Block usa o mesmo filtro oficial na classe `OrderConfirmation\Status`
 - PHPUnit: 32 testes, 75 asserções.
 - `wp eval-file scripts/validate-030.php` — sucesso.
 - `validate-030-order-received-browser.mjs` — sucesso; evidência em `.local/evidence/030/order-received.png`.
-- Commit, PR, merge e ClickUp permanecem pendentes de pedido explícito.
+- Commit `9783f3e`, PR https://github.com/adminorcode/ecommerce-fabrica/pull/3 mergeado em `master`; ticket ClickUp Closed.
