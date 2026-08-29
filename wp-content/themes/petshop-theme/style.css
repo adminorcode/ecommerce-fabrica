@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.13
+Version: 0.6.14
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -2859,10 +2859,73 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 
 .petshop-shipping-calculator__result ul {
   display: grid;
-  gap: .35rem;
+  gap: var(--space-2);
   margin: 0 0 var(--space-2);
   padding: 0;
   list-style: none;
+}
+
+.petshop-shipping-calculator__destination {
+  margin-bottom: var(--space-2);
+  color: var(--color-muted);
+  font-size: .95rem;
+  font-weight: 700;
+}
+
+.petshop-shipping-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: .75rem .85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+}
+
+.petshop-shipping-option__details {
+  min-width: 0;
+}
+
+.petshop-shipping-option__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+}
+
+.petshop-shipping-option__title {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.petshop-shipping-option__badge {
+  padding: .15rem .5rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-brand-teal-dark) 12%, #fff);
+  color: var(--color-brand-teal-dark);
+  font-size: .75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.petshop-shipping-option__estimate {
+  display: block;
+  margin-top: .2rem;
+  color: var(--color-muted);
+  font-size: .92rem;
+}
+
+.petshop-shipping-option__price {
+  color: var(--color-ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.petshop-shipping-calculator__production,
+.petshop-shipping-calculator__note {
+  color: var(--color-muted);
+  font-size: .94rem;
 }
 
 .single-product #shipping-calc,
@@ -3943,6 +4006,15 @@ footer.ct-footer .ct-footer-copyright {
 
   .petshop-shipping-calculator form > div {
     grid-template-columns: 1fr;
+  }
+
+  .petshop-shipping-option {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .petshop-shipping-option__price {
+    justify-self: start;
   }
 
   .petshop-order-tracking dl > div {

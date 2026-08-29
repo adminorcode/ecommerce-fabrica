@@ -7,6 +7,7 @@
   const defaultLead = lead?.textContent || '';
   const shippingForm = document.querySelector('[data-petshop-shipping-form]');
   const result = document.querySelector('[data-petshop-shipping-result]');
+  const formatPostcode = (postcode) => postcode.replace(/^(\d{5})(\d{3})$/, '$1-$2');
 
   if (form && window.jQuery) {
     const colorSelect = form.querySelector('select[name="attribute_pa_color"]');
@@ -83,20 +84,58 @@
       const payload = await response.json();
       if (!response.ok || !payload.success) throw new Error(payload.data?.message || config.genericError);
       result.replaceChildren();
+      const destination = document.createElement('p');
+      destination.className = 'petshop-shipping-calculator__destination';
+      destination.textContent = `${config.deliveryTo} ${formatPostcode(postcode)}`;
+      result.append(destination);
       const list = document.createElement('ul');
+      list.className = 'petshop-shipping-options';
       payload.data.rates.forEach((rate) => {
         const item = document.createElement('li');
-        const delivery = rate.deliveryEstimate ? ` (${rate.deliveryEstimate})` : '';
-        item.textContent = `${rate.label}: ${rate.costText}${delivery}`;
+        item.className = 'petshop-shipping-option';
+
+        const details = document.createElement('div');
+        details.className = 'petshop-shipping-option__details';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'petshop-shipping-option__title-row';
+
+        const title = document.createElement('strong');
+        title.className = 'petshop-shipping-option__title';
+        title.textContent = rate.badge
+          ? `${rate.carrierLabel || rate.displayLabel || rate.label} `
+          : rate.carrierLabel || rate.displayLabel || rate.label;
+        titleRow.append(title);
+
+        if (rate.badge) {
+          const badge = document.createElement('span');
+          badge.className = 'petshop-shipping-option__badge';
+          badge.textContent = rate.badge;
+          titleRow.append(badge);
+        }
+
+        const estimate = document.createElement('span');
+        estimate.className = 'petshop-shipping-option__estimate';
+        estimate.textContent = rate.deliveryEstimate ? `${config.receiveIn} ${rate.deliveryEstimate}` : config.deliveryAtCheckout;
+
+        details.append(titleRow, estimate);
+
+        const price = document.createElement('span');
+        price.className = 'petshop-shipping-option__price';
+        price.textContent = rate.costText;
+
+        item.append(details, price);
         list.append(item);
       });
       result.append(list);
       if (payload.data.productionLead) {
         const production = document.createElement('p');
-        production.textContent = `Produção: ${payload.data.productionLead}`;
+        production.className = 'petshop-shipping-calculator__production';
+        production.textContent = `${config.productionLabel}: ${payload.data.productionLead}`;
         result.append(production);
       }
       const note = document.createElement('p');
+      note.className = 'petshop-shipping-calculator__note';
       note.textContent = payload.data.transportNote;
       result.append(note);
     } catch (error) {

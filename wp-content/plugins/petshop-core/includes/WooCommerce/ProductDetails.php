@@ -205,6 +205,10 @@ final class ProductDetails
             'invalidPostcode' => __('Informe um CEP brasileiro com 8 números.', 'petshop-core'),
             'genericError' => __('Não foi possível calcular agora. Revise o CEP e tente novamente.', 'petshop-core'),
             'selectVariation' => __('Escolha as opções obrigatórias antes de adicionar ao carrinho.', 'petshop-core'),
+            'deliveryTo' => __('Entrega para', 'petshop-core'),
+            'receiveIn' => __('Receba em', 'petshop-core'),
+            'deliveryAtCheckout' => __('Prazo confirmado no carrinho', 'petshop-core'),
+            'productionLabel' => __('Produção', 'petshop-core'),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
     }
 
