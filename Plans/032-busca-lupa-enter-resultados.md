@@ -1,6 +1,6 @@
 # Plano 032 — Busca: lupa e Enter listam produtos
 
-**Status:** Pendente  
+**Status:** Concluído
 **Data:** 2026-08-24  
 **Branch sugerida:** `032-busca-lupa-enter-resultados`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (formulário, sugestões Store API, estado vazio, SKU exato)  
@@ -90,28 +90,35 @@ Não editar Core, WooCommerce ou Blocksy.
 
 ### Sessão 01 — Query string e submit
 
-- [ ] Inspecionar o HTML real do form (nomes dos campos, `action`, `method`, tipo do botão) na Home, loja e PDP.
-- [ ] Corrigir montagem da URL para `/?s={termo}&post_type=product`.
-- [ ] Impedir que JS, canonical ou `CatalogFilter` removam `s`/`post_type` ou troquem por `search`.
-- [ ] Lupa e Enter (sem destaque) abrem a lista de produtos para um termo conhecido (ex.: Bandana).
+- [x] Inspecionar o HTML real do form (nomes dos campos, `action`, `method`, tipo do botão) na Home, loja e PDP.
+- [x] Corrigir montagem da URL para `/?s={termo}&post_type=product`.
+- [x] Impedir que JS, canonical ou `CatalogFilter` removam `s`/`post_type` ou troquem por `search`.
+- [x] Lupa e Enter (sem destaque) abrem a lista de produtos para um termo conhecido (ex.: Bandana).
 
 **Gate**
 
-- [ ] Clique na lupa: a URL contém `s` com o termo e `post_type=product`; `main ul.products li.product` lista os itens correspondentes.
-- [ ] Enter no campo (sem seta em sugestão): o mesmo resultado.
-- [ ] Submit sem JS (ou com JS desabilitado no gate PHP) ainda usa `s` + `post_type=product`.
+- [x] Clique na lupa: a URL contém `s` com o termo e `post_type=product`; `main ul.products li.product` lista os itens correspondentes.
+- [x] Enter no campo (sem seta em sugestão): o mesmo resultado.
+- [x] Submit sem JS (ou com JS desabilitado no gate PHP) ainda usa `s` + `post_type=product`.
 
 ### Sessão 02 — Sugestões e regressão 013
 
-- [ ] Digitar ≥2 caracteres continua mostrando sugestões da Store API.
-- [ ] Clique na sugestão abre a PDP; Enter com destaque também.
-- [ ] Termo inexistente mostra o estado vazio do 013.
-- [ ] SKU exato do 013 continua redirecionando à PDP.
+- [x] Digitar ≥2 caracteres continua mostrando sugestões da Store API.
+- [x] Clique na sugestão abre a PDP; Enter com destaque também.
+- [x] Termo inexistente mostra o estado vazio do 013.
+- [x] SKU exato do 013 continua redirecionando à PDP.
 
 **Gate**
 
-- [ ] Browser 1440 e 390: lupa, Enter, sugestão e vazio.
-- [ ] Atualizar `Plans/STATUS.md`.
+- [x] Browser 1440 e 390: lupa, Enter, sugestão e vazio.
+- [x] Atualizar `Plans/STATUS.md`.
+
+### Evidência de validação
+
+- `docker compose build wordpress node`; `docker compose up -d --force-recreate --wait wordpress`; cópia de `petshop-core`/`petshop-theme` para o runtime.
+- `docker compose --profile test run --rm test-runner`: 36 testes, 80 assertions.
+- `npm run validate`: gates PHP completos, incluindo `validate-032-search.php`.
+- `npm run validate:changed:browser`: `validate-032-search-browser.mjs` em 1440 e 390, mais regressão `validate-021-catalog-filters-browser.mjs`.
 
 ## 8. Riscos
 

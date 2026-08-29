@@ -65,23 +65,17 @@ docker compose up -d --build --wait
 docker compose ps
 ```
 
-Para desenvolvimento contínuo, com sincronização do plugin e tema próprios:
+Para desenvolvimento contínuo, com rebuild das imagens e sincronização do plugin e tema próprios:
 
 ```powershell
-docker compose up --watch
+docker compose up --watch --build
 ```
 
-Após alterar plugin, tema, Dockerfiles ou lockfiles — e antes de validar — **sempre**
-reconstrua as imagens e entregue o código no volume de runtime (o `init` não
-sobrescreve `petshop-core`/`petshop-theme` já existentes):
+Após alterar plugin, tema, Dockerfiles ou lockfiles — e antes de validar — use esse
+comando (o `init` não sobrescreve `petshop-core`/`petshop-theme` já existentes no
+volume). One-shot sem watch: skill `docker-compose-watch-build`.
 
-```powershell
-docker compose build wordpress node
-docker compose up -d --force-recreate --wait wordpress
-docker compose exec wordpress sh -lc "cp -a /opt/project-source/plugins/petshop-core/. /var/www/html/wp-content/plugins/petshop-core/ && cp -a /opt/project-source/themes/petshop-theme/. /var/www/html/wp-content/themes/petshop-theme/ && chown -R www-data:www-data /var/www/html/wp-content/plugins/petshop-core /var/www/html/wp-content/themes/petshop-theme"
-```
-
-Detalhe operacional: `.cursor/skills/petshop-workflow/SKILL.md`.
+Detalhe operacional: `.cursor/skills/docker-compose-watch-build/SKILL.md`.
 
 URLs locais:
 

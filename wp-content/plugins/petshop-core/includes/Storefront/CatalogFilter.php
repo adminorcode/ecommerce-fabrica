@@ -40,6 +40,11 @@ final class CatalogFilter
         echo '<div class="petshop-catalog-filter-backdrop" data-petshop-filter-backdrop hidden></div>';
         echo '<aside id="petshop-catalog-filter-panel" class="petshop-catalog-sidebar" role="dialog" aria-modal="false" aria-labelledby="petshop-catalog-filter-title" tabindex="-1">';
         echo '<form class="petshop-catalog-filter" action="' . esc_url(wc_get_page_permalink('shop')) . '" method="get">';
+        $productSearch = self::productSearchTermFromRequest($_GET);
+        if ($productSearch !== '') {
+            echo '<input type="hidden" name="s" value="' . esc_attr($productSearch) . '">';
+            echo '<input type="hidden" name="post_type" value="product">';
+        }
         echo '<div class="petshop-catalog-filter__header"><h2 id="petshop-catalog-filter-title" class="petshop-catalog-filter__title">' . esc_html__('Filtros', 'petshop-core') . '</h2>';
         echo '<button type="button" class="petshop-catalog-filter__close" data-petshop-filter-close aria-label="' . esc_attr__('Fechar filtros', 'petshop-core') . '"><span aria-hidden="true">&times;</span></button></div>';
         echo '<div class="petshop-catalog-filter__body">';
@@ -176,6 +181,11 @@ final class CatalogFilter
     public static function canonicalParametersFromRequest(array $source): array
     {
         $parameters = [];
+        $productSearch = self::productSearchTermFromRequest($source);
+        if ($productSearch !== '') {
+            $parameters['s'] = $productSearch;
+            $parameters['post_type'] = 'product';
+        }
         $categorySource = $source['product_cat'] ?? $source['petshop_categories'] ?? [];
         $categories = self::sanitizeSlugValues($categorySource);
         if ($categories !== []) {
@@ -241,6 +251,17 @@ final class CatalogFilter
         if ($productId <= 0) return $searchSql;
         global $wpdb;
         return $wpdb->prepare(" AND {$wpdb->posts}.ID = %d", $productId);
+    }
+
+    public static function allowSingleSearchResultRedirect(bool $redirect): bool
+    {
+        if (!$redirect) {
+            return false;
+        }
+
+        global $wp_query;
+
+        return $wp_query instanceof \WP_Query && (int) $wp_query->get('_petshop_exact_sku_product_id') > 0;
     }
 
     /** @return list<\WP_Term> */
@@ -368,10 +389,15 @@ final class CatalogFilter
             }
         }
         foreach ($current as $key => $value) {
+            if ($key === 'post_type') {
+                continue;
+            }
             $values = is_array($value) ? $value : explode(',', (string) $value);
             foreach ($values as $item) {
                 $args = $current;
-                if (count($values) > 1) {
+                if ($key === 's') {
+                    unset($args['s'], $args['post_type']);
+                } elseif (count($values) > 1) {
                     $remaining = array_values(array_diff($values, [$item]));
                     $args[$key] = is_array($value) ? $remaining : implode(',', $remaining);
                 } else {
@@ -385,6 +411,9 @@ final class CatalogFilter
 
     private static function filterLabel(string $key, string $value): string
     {
+        if ($key === 's') {
+            return __('Busca', 'petshop-core') . ': ' . $value;
+        }
         $prefixes = ['product_cat' => __('Categoria', 'petshop-core'), 'petshop_categories' => __('Categoria', 'petshop-core'), 'filter_pa_color' => __('Cor', 'petshop-core'), 'filter_pa_size' => __('Tamanho', 'petshop-core'), 'min_price' => __('Preço mínimo', 'petshop-core'), 'max_price' => __('Preço máximo', 'petshop-core'), 'stock_status' => __('Estoque', 'petshop-core'), 'orderby' => __('Ordem', 'petshop-core')];
         $termTaxonomy = in_array($key, ['product_cat', 'petshop_categories'], true) ? 'product_cat' : (self::ATTRIBUTE_FILTERS[$key]['taxonomy'] ?? '');
         if ($termTaxonomy !== '') {
@@ -396,10 +425,33 @@ final class CatalogFilter
 
     private static function knownRequestParametersPresent(): bool
     {
-        foreach (['product_cat', 'petshop_categories', 'min_price', 'max_price', 'filter_pa_color', 'filter_pa_size', 'stock_status', 'orderby'] as $key) {
+        foreach (['s', 'post_type', 'product_cat', 'petshop_categories', 'min_price', 'max_price', 'filter_pa_color', 'filter_pa_size', 'stock_status', 'orderby'] as $key) {
             if (isset($_GET[$key])) return true;
         }
         return false;
+    }
+
+    /** @param array<string, mixed> $source */
+    private static function productSearchTermFromRequest(array $source): string
+    {
+        $postType = $source['post_type'] ?? '';
+        if (is_array($postType)) {
+            $postType = reset($postType);
+        }
+        $postType = is_scalar($postType) ? sanitize_key(wp_unslash((string) $postType)) : '';
+        if ($postType !== 'product') {
+            return '';
+        }
+
+        $search = $source['s'] ?? '';
+        if (is_array($search)) {
+            $search = reset($search);
+        }
+        if (!is_scalar($search)) {
+            return '';
+        }
+
+        return sanitize_text_field(wp_unslash((string) $search));
     }
 
     private static function requestTargetsShop(): bool

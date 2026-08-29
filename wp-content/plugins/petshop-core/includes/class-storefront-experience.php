@@ -35,6 +35,7 @@ final class StorefrontExperience
         add_action('pre_get_posts', [self::class, 'resolveExactSkuSearch']);
         add_action('pre_get_posts', [self::class, 'applyCatalogCategoryFilter'], 20);
         add_filter('posts_search', [self::class, 'filterExactSkuSearch'], 20, 2);
+        add_filter('woocommerce_redirect_single_search_result', [self::class, 'allowSingleSearchResultRedirect']);
         add_action('wp_head', [self::class, 'renderMetaDescription'], 1);
         add_action('wp_head', [self::class, 'renderArchiveCanonical'], 2);
         add_shortcode('petshop_categories', [self::class, 'renderCategoryGrid']);

@@ -74,6 +74,8 @@ const syncChangedRuntimeFiles = (files) => {
             continue;
         }
 
+        const destinationDirectory = destination.split('/').slice(0, -1).join('/');
+        run('docker', ['exec', 'petshop-wordpress-1', 'mkdir', '-p', destinationDirectory]);
         run('docker', ['cp', file, `petshop-wordpress-1:${destination}`]);
     }
 };
@@ -100,9 +102,14 @@ const runFocusedProvision = (suites) => {
         return;
     }
 
-    if (suites.has('storefront') || suites.has('commercial') || suites.has('product-grid') || suites.has('order-received-030')) {
+    if (suites.has('storefront') || suites.has('commercial') || suites.has('product-grid') || suites.has('order-received-030') || suites.has('search-032')) {
         dockerCli('eval', 'Petshop\\Core\\StorefrontCatalog::maybeEnsureCategories();');
         dockerCli('eval', 'Petshop\\Core\\StorefrontExperience::maybeEnsureStorefront();');
+    }
+
+    if (suites.has('commercial') || suites.has('search-032')) {
+        evalFile('seed-storefront-placeholders.php');
+        evalFile('seed-013-catalog-samples.php');
     }
 
     if (suites.has('commercial')) {
@@ -170,6 +177,17 @@ const classifySuites = (files) => {
             || file.startsWith('wp-content/themes/petshop-theme/')
         ) {
             browserScripts.add('validate-021-catalog-filters-browser.mjs');
+        }
+        if (
+            file.includes('032-busca-lupa-enter-resultados')
+            || file.includes('SearchExperience.php')
+            || file.includes('CatalogFilter.php')
+            || file.includes('storefront-search.js')
+            || file.includes('validate-032-search')
+            || file.startsWith('wp-content/themes/petshop-theme/')
+        ) {
+            suites.add('search-032');
+            browserScripts.add('validate-032-search-browser.mjs');
         }
         if (file.includes('005-pdp')) {
             browserScripts.add('validate-005-pdp-browser.mjs');
@@ -301,6 +319,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('shipping-hub-027')) {
         evalFile('validate-027-shipping-hub.php');
+    }
+    if (suites.has('search-032')) {
+        evalFile('validate-032-search.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

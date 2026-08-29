@@ -45,6 +45,7 @@ Entregar a implementação completa do escopo aceito, com critérios de aceite a
 
 ## Fase 5 — revisão e testes
 
+- Antes de validar no storefront: skill `docker-compose-watch-build` (`docker compose up --watch --build`) se plugin, tema ou Docker mudaram.
 - Executar revisão de código conforme as ferramentas disponíveis no projeto.
 - Corrigir achados críticos e relevantes e revisar novamente se a correção for ampla.
 - Rodar os comandos reais de build, lint, testes unitários e testes de integração/E2E aplicáveis.

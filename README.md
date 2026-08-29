@@ -37,8 +37,8 @@ Credenciais: ver `.env.example` (somente ambiente local).
 ## Desenvolvimento
 
 ```powershell
-# Sync contínuo do plugin e tema
-docker compose up --watch
+# Rebuild das imagens + sync contínuo do plugin e tema
+docker compose up --watch --build
 
 # WP-CLI
 npm run wp -- plugin list
@@ -61,7 +61,7 @@ npm run test
 | Script | Ação |
 |--------|------|
 | `bootstrap` | `docker compose up -d --build --wait` |
-| `up` | `docker compose up --watch` |
+| `up` | `docker compose up --watch --build` |
 | `down` | `docker compose down` |
 | `validate` | gate completo: `scripts/run-gates.sh` (bash) ou `scripts/run-gates.ps1` |
 | `validate:changed` | lint/check sintatico + validators PHP mapeados pelos arquivos alterados no Git |

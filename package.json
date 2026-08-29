@@ -5,7 +5,7 @@
   "description": "E-commerce do petshop baseado em WordPress e WooCommerce.",
   "scripts": {
     "bootstrap": "docker compose up -d --build --wait",
-    "up": "docker compose up --watch",
+    "up": "docker compose up --watch --build",
     "down": "docker compose down",
     "validate": "node scripts/run-gates.mjs",
     "validate:changed": "node scripts/run-gates.mjs --changed",

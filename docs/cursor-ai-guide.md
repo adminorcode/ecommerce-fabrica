@@ -43,6 +43,12 @@ Entrega um ticket ou plano de ponta a ponta: entendimento, enriquecimento, branc
 
 Vinculam PR ao ticket e fecham o ticket após merge autorizado. Só com pedido explícito.
 
+### `/docker-compose-watch-build`
+
+Sobe e atualiza a stack com `docker compose up --watch --build` (imagens + sync de `petshop-core` e `petshop-theme`).
+
+**Invoque quando:** iniciar o ambiente, após editar plugin/tema/Docker, antes de validar, ou quando o contêiner estiver com código antigo.
+
 ### `/petshop-workflow`
 
 Workflow completo do repositório: leitura de planos, Docker/WP-CLI, migrações, persistência editorial, scripts de validação, gates de sessão.
@@ -114,8 +120,8 @@ Padrões de 60+ componentes UI (modal, toast, form, nav). **Adaptar** aos tokens
 ## Comandos úteis
 
 ```powershell
-# Desenvolvimento
-docker compose up --watch
+# Desenvolvimento (imagens + sync contínuo)
+docker compose up --watch --build
 
 # WP-CLI
 docker compose --profile tools run --rm --no-deps cli wp plugin list

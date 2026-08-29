@@ -16,6 +16,7 @@ final class StorefrontExperienceTest extends TestCase
     {
         unset($_GET['petshop_categories']);
         unset($_GET['product_cat'], $_GET['filter_pa_color'], $_GET['filter_pa_size'], $_GET['stock_status']);
+        unset($GLOBALS['wp_query']);
     }
 
     #[DataProvider('categoryQueryProvider')]
@@ -119,6 +120,32 @@ final class StorefrontExperienceTest extends TestCase
         ], $parameters);
     }
 
+    public function testCanonicalCatalogParametersPreserveProductSearch(): void
+    {
+        $parameters = CatalogFilter::canonicalParametersFromRequest([
+            's' => ' Bandana Azul ',
+            'post_type' => 'product',
+            'product_cat' => 'lacos',
+            'search' => 'discard-me',
+        ]);
+
+        self::assertSame([
+            's' => 'Bandana Azul',
+            'post_type' => 'product',
+            'petshop_categories' => ['lacos'],
+        ], $parameters);
+    }
+
+    public function testCanonicalCatalogParametersIgnoreNonProductSearch(): void
+    {
+        $parameters = CatalogFilter::canonicalParametersFromRequest([
+            's' => 'Bandana Azul',
+            'post_type' => 'post',
+        ]);
+
+        self::assertSame([], $parameters);
+    }
+
     public function testLocalizedWooCommerceRouteRegistryIsDeterministic(): void
     {
         self::assertSame([
@@ -164,6 +191,21 @@ final class StorefrontExperienceTest extends TestCase
         StorefrontExperience::resolveExactSkuSearch($query);
 
         self::assertSame(42, $query->get('_petshop_exact_sku_product_id'));
+    }
+
+    public function testSingleSearchResultRedirectIsLimitedToExactSku(): void
+    {
+        $GLOBALS['wp_query'] = new WP_Query(['_petshop_exact_sku_product_id' => 0]);
+
+        self::assertFalse(CatalogFilter::allowSingleSearchResultRedirect(true));
+    }
+
+    public function testSingleSearchResultRedirectAllowsExactSku(): void
+    {
+        $GLOBALS['wp_query'] = new WP_Query(['_petshop_exact_sku_product_id' => 42]);
+
+        self::assertTrue(CatalogFilter::allowSingleSearchResultRedirect(true));
+        self::assertFalse(CatalogFilter::allowSingleSearchResultRedirect(false));
     }
 
     public function testHomeMigratorExposesTheCanonicalSchemaRegistry(): void

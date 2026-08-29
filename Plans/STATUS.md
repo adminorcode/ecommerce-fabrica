@@ -34,7 +34,7 @@
 | [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md) | Pendente | Após Pix aprovado, voltar à loja: Pedidos (logado) ou confirmação (visitante). ClickUp [86e2xzgqb](https://app.clickup.com/t/86e2xzgqb) |
 | [030-frase-pedido-recebido.md](./030-frase-pedido-recebido.md) | Concluído | Confirmação: “Parabéns! Seu pedido foi recebido!” editável no Personalizar. ClickUp [86e2xzmck](https://app.clickup.com/t/86e2xzmck) |
 | [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
-| [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Pendente | Lupa e Enter abrem a lista de produtos; URL com `s` + `post_type=product`. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
+| [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Concluído | Lupa e Enter abrem resultados com `s` + `post_type=product`; canonical/filtros preservam busca; SKU exato segue PDP. Gates PHP/browser validados. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Pendente | Casco HTML dos e-mails de compra (pagamento confirmado e atualizações); composição do mockup, cores do 014. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
 ## Ordem recomendada de execução
@@ -115,4 +115,4 @@ Plano 033 derivado do print do rodapé (2026-08-24): aproximar a composição vi
 
 Plano 034 derivado do mockup de e-mail “Pagamento confirmado” (2026-08-24): redesenhar o casco HTML dos avisos de compra; composição da arte, tokens da loja (não os hex do PNG).
 
-**Última atualização:** 2026-08-27 (Planos 032–034 restaurados em `master`; 027 e 030 concluídos; 025, 026, 028, 029 e 031–034 pendentes; 012 em andamento)
+**Última atualização:** 2026-08-27 (Plano 032 concluído em `codex/032-busca-lupa-enter-resultados`; 027 e 030 concluídos; 025, 026, 028, 029 e 031, 033–034 pendentes; 012 em andamento)
