@@ -27,6 +27,10 @@ cp -a /opt/dependencies/themes/. "$themes/"
 if [ ! -d "$plugins/petshop-core" ]; then
   cp -a /opt/project-source/plugins/petshop-core "$plugins/"
 fi
+for plugin in melhor-envio-cotacao woo-better-shipping-calculator-for-brazil; do
+  rm -rf "$plugins/$plugin"
+  cp -a "/opt/project-source/plugins/$plugin" "$plugins/"
+done
 if [ ! -d "$themes/petshop-theme" ]; then
   cp -a /opt/project-source/themes/petshop-theme "$themes/"
 fi
@@ -60,7 +64,15 @@ wp language plugin install blocksy-companion pt_BR --path="$runtime" --allow-roo
 wp language plugin install fluentform pt_BR --path="$runtime" --allow-root || true
 wp language plugin install stackable-ultimate-gutenberg-blocks pt_BR --path="$runtime" --allow-root || true
 wp language theme install blocksy pt_BR --path="$runtime" --allow-root || true
-wp plugin activate woocommerce blocksy-companion stackable-ultimate-gutenberg-blocks fluentform petshop-core --path="$runtime" --allow-root
+wp plugin activate woocommerce blocksy-companion stackable-ultimate-gutenberg-blocks fluentform petshop-core woo-better-shipping-calculator-for-brazil melhor-envio-cotacao --path="$runtime" --allow-root
+
+if ! wp option get petshop_shipping_dependencies_036_configured --path="$runtime" --allow-root >/dev/null 2>&1; then
+  wp option update woo_better_calc_enable_product_page no --path="$runtime" --allow-root
+  wp option update woo_better_calc_enable_cart_page no --path="$runtime" --allow-root
+  wp option update woo_better_calc_enable_auto_address_fill no --path="$runtime" --allow-root
+  wp option update petshop_shipping_dependencies_036_configured 1 --path="$runtime" --allow-root
+fi
+
 wp theme activate petshop-theme --path="$runtime" --allow-root
 
 wp core version --path="$runtime" --allow-root > "$runtime/.petshop-runtime-manifest"

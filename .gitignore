@@ -3,6 +3,10 @@ node_modules/
 **/vendor/
 !wp-content/plugins/petshop-core/assets/personalizer/vendor/
 !wp-content/plugins/petshop-core/assets/personalizer/vendor/**
+!wp-content/plugins/melhor-envio-cotacao/vendor/
+!wp-content/plugins/melhor-envio-cotacao/vendor/**
+!wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor/
+!wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor/**
 .npm/
 .composer/
 .phpunit.cache/

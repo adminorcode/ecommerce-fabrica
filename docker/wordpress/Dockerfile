@@ -41,6 +41,8 @@ COPY docker/scripts/backup.sh /usr/local/bin/backup.sh
 COPY docker/scripts/restore.sh /usr/local/bin/restore.sh
 COPY docker/scripts/test-runner.sh /usr/local/bin/test-runner
 COPY wp-content/plugins/petshop-core /opt/project-source/plugins/petshop-core
+COPY wp-content/plugins/melhor-envio-cotacao /opt/project-source/plugins/melhor-envio-cotacao
+COPY wp-content/plugins/woo-better-shipping-calculator-for-brazil /opt/project-source/plugins/woo-better-shipping-calculator-for-brazil
 COPY wp-content/themes/petshop-theme /opt/project-source/themes/petshop-theme
 
 RUN set -eux; \

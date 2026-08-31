@@ -1,0 +1,44 @@
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-top-color: #0073aa;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 5px;
+    vertical-align: middle;
+    position: absolute;
+    top: 25%;
+    left: 45%;
+}
+
+/* O segredo está aqui 👇 */
+@keyframes spin {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+.lkn-wc-shipping-address-summary {
+    background-color: rgba(0, 0, 0, 0.205);
+}
+
+/* Estilo para campos readonly que devem parecer disabled */
+.wc-better-readonly-disabled {
+    background-color: #e0e0e0 !important;
+    color: #808080 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+}
+
+/* Wrapper do campo Número (Gutenberg) */
+.wc-better-number-main-wrapper {
+    flex: 1 0 calc(100%) !important;
+}

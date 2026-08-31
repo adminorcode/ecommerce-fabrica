@@ -5,7 +5,7 @@ repositorio inteiro para `public_html`.
 
 Suba apenas estes artefatos:
 
-- `wp-content/` (tema `petshop-theme`, plugin `petshop-core` e `uploads`)
+- `wp-content/` (tema `petshop-theme`, plugins versionados e `uploads`)
 - `petshop-db.sql`
 
 Nao envie `.git`, `.local`, `node_modules`, `tests`, `Plans`, `scripts`, `outputs`,
@@ -45,6 +45,10 @@ O `wp-content` gerado deve conter:
 wp-content/themes/petshop-theme/style.css
 wp-content/plugins/petshop-core/petshop-core.php
 wp-content/plugins/petshop-core/vendor/autoload.php
+wp-content/plugins/melhor-envio-cotacao/melhor-envio-beta.php
+wp-content/plugins/melhor-envio-cotacao/vendor/autoload.php
+wp-content/plugins/woo-better-shipping-calculator-for-brazil/wc-better-shipping-calculator-for-brazil.php
+wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor/autoload.php
 wp-content/uploads/
 ```
 
@@ -79,6 +83,10 @@ Test-Path "$pkg\wp-content\themes\petshop-theme\style.css"
 Select-String "$pkg\wp-content\themes\petshop-theme\style.css" -Pattern "Template: blocksy"
 Test-Path "$pkg\wp-content\plugins\petshop-core\petshop-core.php"
 Test-Path "$pkg\wp-content\plugins\petshop-core\vendor\autoload.php"
+Test-Path "$pkg\wp-content\plugins\melhor-envio-cotacao\melhor-envio-beta.php"
+Test-Path "$pkg\wp-content\plugins\melhor-envio-cotacao\vendor\autoload.php"
+Test-Path "$pkg\wp-content\plugins\woo-better-shipping-calculator-for-brazil\wc-better-shipping-calculator-for-brazil.php"
+Test-Path "$pkg\wp-content\plugins\woo-better-shipping-calculator-for-brazil\vendor\autoload.php"
 Test-Path "$pkg\wp-content\plugins\petshop-core\vendor\myclabs"
 Select-String "$pkg\wp-content\plugins\petshop-core\vendor\composer\autoload_*.php" -Pattern "myclabs|phpunit/phpunit|deep-copy"
 Test-Path "$pkg\wp-content\plugins\petshop-core\node_modules"
@@ -86,9 +94,10 @@ Test-Path "$pkg\wp-content\plugins\petshop-core\tests"
 Test-Path "$pkg\petshop-db.sql"
 ```
 
+Os quatro `Test-Path` dos plugins de frete versionados devem retornar `True`.
 `node_modules`, `tests` e `vendor/myclabs` devem retornar `False`. O
-`Select-String` no autoload nao pode achar `myclabs`, `phpunit/phpunit` nem
-`deep-copy`.
+`Select-String` no autoload do `petshop-core` nao pode achar `myclabs`,
+`phpunit/phpunit` nem `deep-copy`.
 
 ## 3. Enviar arquivos no cPanel
 
@@ -103,6 +112,8 @@ public_html/wp-content/themes/petshop-theme/style.css
 public_html/wp-content/plugins/petshop-core/petshop-core.php
 public_html/wp-content/plugins/petshop-core/assets/js/wishlist.js
 public_html/wp-content/plugins/petshop-core/vendor/autoload.php
+public_html/wp-content/plugins/melhor-envio-cotacao/melhor-envio-beta.php
+public_html/wp-content/plugins/woo-better-shipping-calculator-for-brazil/wc-better-shipping-calculator-for-brazil.php
 public_html/wp-content/uploads/2026/
 public_html/wp-content/uploads/woocommerce-placeholder.webp
 ```
@@ -113,7 +124,15 @@ No WordPress Admin:
 
 1. Ative `WooCommerce`.
 2. Ative `Petshop Core`.
-3. Ative `Petshop Theme`.
+3. Ative `Calculadora de Frete e Campos Checkout para o Brasil`.
+4. Ative `Melhor Envio`.
+5. Ative `Petshop Theme`.
+
+Nao ative `Brazilian Market on WooCommerce` junto com a Calculadora BR. No painel da
+Calculadora BR, mantenha desativadas as calculadoras de produto e carrinho; a PDP
+usa a calculadora propria do `petshop-core`. Configure token, origem, agencias e
+servicos do Melhor Envio somente no painel do WordPress de destino, sem copiar
+credenciais para o Git.
 
 Se `Petshop Core` falhar com erro fatal, nao continue no escuro. Ative log e leia o
 erro real.
