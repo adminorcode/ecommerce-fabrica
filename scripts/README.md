@@ -77,6 +77,7 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin
 | `validate-024-home-campaigns-carousel-browser.mjs` | 024 | Browser: overlay de setas/indicadores, 44px, 1440/1024/768/390 |
 | `validate-027-shipping-hub.php` | 027 | Calculadora PDP como hub WooCommerce: taxas ativas sem filtro, preço sem entidades, prazo e CEP persistente |
 | `validate-027-shipping-hub-browser.mjs` | 027 | Browser: uma UI de frete na PDP, widgets extras ocultos em PDP/carrinho/checkout e CEP no checkout |
+| `validate-036-versioned-shipping-dependencies.php` | 036 | Melhor Envio e base brasileira versionados: plugins ativos, vendors presentes e aviso de dependencia ausente |
 | `validate-030.php` | 030 | Frase da confirmação: setting, filtros WC/bloco, persistência e HTML do pedido recebido |
 | `validate-030-order-received-browser.mjs` | 030 | Browser: Checkout Block + página de pedido recebido com a frase do Personalizar |
 | `test-004b-persistence.php` | 004b | Persistência editorial |

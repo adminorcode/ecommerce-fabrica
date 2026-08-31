@@ -38,6 +38,7 @@
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
 | [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Pendente | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
+| [036-dependencias-frete-checkout-versionadas.md](./036-dependencias-frete-checkout-versionadas.md) | Concluído | Melhor Envio 2.16.6 e Calculadora BR 4.17.1 versionados com vendor, Docker/deploy/gates reconciliados e Brazilian Market mantido fora para evitar conflito |
 ## Ordem recomendada de execução
 
 ```
@@ -78,7 +79,8 @@
   ├── 032 (busca: lupa e Enter listam produtos; query `s` + `post_type=product`)
   ├── 033 (rodapé: aproximação visual ao mockup de três faixas)
   ├── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
-  └── 035 (dropdown de subcategorias no menu comercial do header)
+  ├── 035 (dropdown de subcategorias no menu comercial do header)
+  └── 036 (dependencias de frete e checkout versionadas)
 ```
 
 ## Origem
@@ -119,4 +121,6 @@ Plano 034 derivado do mockup de e-mail “Pagamento confirmado” (2026-08-24): 
 
 Plano 035 derivado do print da Moda Bicho (2026-08-30): no menu comercial do header (`menu-navegacao-comercial-container`), as subcategorias abrem em dropdown vertical sob o pai, não na faixa.
 
-**Última atualização:** 2026-08-30 (Plano 035 aberto: dropdown de subcategorias no menu comercial)
+Plano 036 derivado do aviso administrativo do Melhor Envio (2026-08-31): o plugin exige uma base brasileira de checkout/frete ativa e precisa deixar de depender de instalacao manual no runtime; Melhor Envio e a base escolhida passam a ser versionados sem credenciais.
+
+**Última atualização:** 2026-08-31 (Plano 036 concluído: dependencias de frete e checkout versionadas)

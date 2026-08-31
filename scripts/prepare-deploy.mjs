@@ -116,6 +116,14 @@ console.log('prepare-deploy: copiando tema e plugin do worktree');
 
 copyFiltered(join(root, 'wp-content/themes/petshop-theme'), join(wpContentDir, 'themes/petshop-theme'));
 copyFiltered(join(root, 'wp-content/plugins/petshop-core'), join(wpContentDir, 'plugins/petshop-core'));
+copyFiltered(
+  join(root, 'wp-content/plugins/melhor-envio-cotacao'),
+  join(wpContentDir, 'plugins/melhor-envio-cotacao')
+);
+copyFiltered(
+  join(root, 'wp-content/plugins/woo-better-shipping-calculator-for-brazil'),
+  join(wpContentDir, 'plugins/woo-better-shipping-calculator-for-brazil')
+);
 
 const pluginOut = join(wpContentDir, 'plugins/petshop-core');
 
@@ -216,6 +224,10 @@ const required = [
   'wp-content/plugins/petshop-core/assets/js/catalog-filter.js',
   'wp-content/plugins/petshop-core/assets/js/category-icon-media.js',
   'wp-content/plugins/petshop-core/vendor/autoload.php',
+  'wp-content/plugins/melhor-envio-cotacao/melhor-envio-beta.php',
+  'wp-content/plugins/melhor-envio-cotacao/vendor/autoload.php',
+  'wp-content/plugins/woo-better-shipping-calculator-for-brazil/wc-better-shipping-calculator-for-brazil.php',
+  'wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor/autoload.php',
   'wp-content/uploads',
   'petshop-db.sql',
 ];
@@ -234,7 +246,7 @@ const manifest = [
   `commit=${commit}`,
   `generated=${new Date().toISOString()}`,
   `theme=${versionLine}`,
-  'contents=wp-content/{themes/petshop-theme,plugins/petshop-core,uploads} + petshop-db.sql',
+  'contents=wp-content/{themes/petshop-theme,plugins/petshop-core,plugins/melhor-envio-cotacao,plugins/woo-better-shipping-calculator-for-brazil,uploads} + petshop-db.sql',
 ].join('\n');
 writeFileSync(join(outDir, 'MANIFEST.txt'), `${manifest}\n`);
 

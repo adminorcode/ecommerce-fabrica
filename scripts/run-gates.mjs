@@ -67,6 +67,13 @@ const runtimePath = (file) => {
     return null;
 };
 
+const versionedThirdPartyPluginPrefixes = [
+    'wp-content/plugins/melhor-envio-cotacao/',
+    'wp-content/plugins/woo-better-shipping-calculator-for-brazil/',
+];
+
+const isVersionedThirdPartyPluginFile = (file) => versionedThirdPartyPluginPrefixes.some((prefix) => file.startsWith(prefix));
+
 const syncChangedRuntimeFiles = (files) => {
     for (const file of files) {
         const destination = runtimePath(file);
@@ -82,6 +89,10 @@ const syncChangedRuntimeFiles = (files) => {
 
 const lintChangedFiles = (files) => {
     for (const file of files) {
+        if (isVersionedThirdPartyPluginFile(file)) {
+            continue;
+        }
+
         if (file.endsWith('.mjs') || file.endsWith('.js')) {
             if (file.startsWith('scripts/') && existsSync(join(root, file))) {
                 run('node', ['--check', file]);
@@ -249,12 +260,17 @@ const classifySuites = (files) => {
         }
         if (
             file.includes('027-calculadora-frete-hub')
+            || file.includes('036-dependencias-frete-checkout-versionadas')
             || file.includes('ShippingQuotes')
             || file.includes('ProductDetails.php')
             || file.includes('product-experience.js')
             || file.includes('validate-027-shipping-hub')
+            || file.includes('validate-036-versioned-shipping-dependencies')
+            || file.startsWith('wp-content/plugins/melhor-envio-cotacao/')
+            || file.startsWith('wp-content/plugins/woo-better-shipping-calculator-for-brazil/')
         ) {
             suites.add('shipping-hub-027');
+            suites.add('shipping-dependencies-036');
             browserScripts.add('validate-027-shipping-hub-browser.mjs');
         }
         if (
@@ -327,6 +343,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('shipping-hub-027')) {
         evalFile('validate-027-shipping-hub.php');
+    }
+    if (suites.has('shipping-dependencies-036')) {
+        evalFile('validate-036-versioned-shipping-dependencies.php');
     }
     if (suites.has('search-032')) {
         evalFile('validate-032-search.php');
