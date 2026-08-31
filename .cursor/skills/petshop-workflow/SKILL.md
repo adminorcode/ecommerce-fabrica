@@ -18,6 +18,7 @@ Skill de projeto para a loja WordPress/WooCommerce do petshop. Aplique **antes e
 - criar migrações, shortcodes, hooks WooCommerce ou ajustes de storefront
 - validar persistência editorial ou executar scripts de teste
 - decidir onde colocar regra de negócio vs apresentação
+- preparar pacote HostGator/cPanel (seguir `preparar-deploy`; nunca zipar `vendor/` do worktree)
 
 ## Leitura obrigatória (nesta ordem)
 
@@ -27,6 +28,7 @@ Skill de projeto para a loja WordPress/WooCommerce do petshop. Aplique **antes e
 4. `Plans/STATUS.md` — plano ativo e bloqueios
 5. O arquivo do plano solicitado (inteiro, incluindo gates e sessões)
 6. `Plans/README.md` — se o plano tocar interface ou conteúdo editorial
+7. `.cursor/CLICKUP_USAGE_RULE.md` e `write-kanban-tickets` — se o trabalho for criar ou revisar ticket
 
 Não marque checkboxes do plano nem declare conclusão sem evidência de validação.
 
@@ -39,18 +41,20 @@ Não marque checkboxes do plano nem declare conclusão sem evidência de valida�
 | Conteúdo de páginas | Gutenberg (Stackable importado) |
 | Produtos, categorias, preços, estoque | WooCommerce |
 | Menus | Aparência → Menus |
-| Textos globais de cabeçalho/rodapé | Customizer (`petshop_store_content`) |
+| Textos globais de cabeçalho/rodapé | Customizer (`petshop_store_content`, `petshop_footer`) |
 
 **Proibido:** editar WordPress Core, WooCommerce, Blocksy ou plugins de terceiros; colocar regra de negócio no `functions.php` do tema; instalar plugins sem registro em plano; versionar segredos.
 
 ## Ambiente e comandos
 
-O host **não** tem PHP/WP-CLI. Use Docker Compose:
+O host **não** tem PHP/WP-CLI. Subir ou atualizar a stack: skill
+`docker-compose-watch-build`. Comando canônico:
 
 ```powershell
-# Subir ambiente de desenvolvimento (sync plugin + tema)
-docker compose up --watch
+docker compose up --watch --build
+```
 
+```powershell
 # WP-CLI
 docker compose --profile tools run --rm --no-deps cli wp <comando>
 
@@ -62,6 +66,10 @@ docker compose --profile tools run --rm --no-deps cli wp plugin list
 URLs locais: loja `http://localhost:8888`, admin `http://localhost:8888/wp-admin`.
 
 Nunca use `docker compose down --volumes` sem autorização explícita.
+
+O volume `wordpress_runtime` **não** é bind mount. Sem `--watch --build` (ou o
+one-shot da skill), o contêiner fica com código antigo. Não declare validação
+concluída se o gate falhar por código ausente no runtime.
 
 ## Padrões de código deste repo
 
@@ -100,13 +108,14 @@ Todo texto comercial/institucional e toda imagem de conteúdo exibida em página
 
 ### Depois (gate da sessão)
 
-1. Verificar ambiente sobe sem erro fatal (`docker compose logs`)
-2. Executar validações do plano (scripts abaixo)
-3. Testar fluxo funcional afetado (desktop + mobile quando aplicável)
-4. Testar persistência editorial se houver conteúdo administrável
-5. Executar `/ecommerce-design-review` ou aplicar `.cursor/rules/ecommerce-ui-ux.mdc` em alterações visuais
-6. Atualizar checkboxes do plano **somente** após gate passar
-7. Atualizar `Plans/STATUS.md` se o status do plano mudou
+1. **Entregar imagens/runtime** com a skill `docker-compose-watch-build` se plugin, tema ou Docker mudaram
+2. Verificar ambiente sobe sem erro fatal (`docker compose logs`)
+3. Executar validações do plano (scripts abaixo)
+4. Testar fluxo funcional afetado (desktop + mobile quando aplicável)
+5. Testar persistência editorial se houver conteúdo administrável
+6. Executar `/ecommerce-design-review` ou aplicar `.cursor/rules/ecommerce-ui-ux.mdc` em alterações visuais
+7. Atualizar checkboxes do plano **somente** após gate passar
+8. Atualizar `Plans/STATUS.md` se o status do plano mudou
 
 Se uma verificação falhar: diagnosticar, corrigir, repetir. Parar e pedir decisão do usuário apenas para bloqueios editoriais/destrutivos após segunda tentativa.
 
@@ -140,29 +149,42 @@ Classes centrais do plugin:
 - Gutenberg + Stackable na Home — não remover Stackable sem verificar dependências
 - JS próprio: `petshop-core/assets/js/catalog-filter.js`
 
-## Skills WordPress complementares (`.agents/skills/`)
+## Skills complementares
+
+- `docker-compose-watch-build` — subir/atualizar a stack (`up --watch --build`)
 
 Este repo também inclui skills oficiais. Use quando o trabalho exigir profundidade além desta skill:
 
 - `wordpress-router` / `wp-project-triage` — classificar o repo antes de agir
-- `wp-plugin-development` — arquitetura de plugin, hooks, segurança
+- `wp-plugin-development` — arquitetura de plugin, hooks, segurança (não empacota HostGator)
+- `preparar-deploy` — pacote cPanel/HostGator (`npm run prepare:deploy`)
 - `wp-wpcli-and-ops` — automação WP-CLI (adaptar para Docker)
 - `wp-block-development` — se criar blocos Gutenberg próprios
 - `ui-design-brain` — padrões de componente (modal, form, nav); **adaptar** tokens do petshop
 
 Guia completo: `docs/cursor-ai-guide.md`
 
+## Deploy HostGator / cPanel
+
+Publicar a loja: skill `preparar-deploy` (`npm run prepare:deploy`). O script copia o plugin, remove vendor de desenvolvimento e **regenera** o Composer no pacote com `dump-autoload --no-dev --optimize`.
+
+**Proibido:** zipar ou copiar `wp-content/plugins/petshop-core/vendor` do worktree; apagar `myclabs`/`phpunit` sem regenerar o autoload; rodar `composer dump-autoload --no-dev` no plugin do worktree (quebra o PHPUnit local). Pacote inválido se `autoload_*.php` ainda citar `myclabs`, `phpunit/phpunit` ou `deep-copy`.
+
 ## O que não fazer
 
 - commit, push ou PR sem solicitação explícita
 - marcar plano/sessão concluído sem validação
+- validar/smoke com código antigo no volume — **sempre** `docker compose up --watch --build` (skill `docker-compose-watch-build`) quando plugin/tema mudarem
 - bind mount do repo inteiro no contêiner (Compose Watch sync só plugin + tema)
 - sobrescrever conteúdo editado pelo cliente em migrações
 - implementar Elementor ou editar Blocksy/WooCommerce core
 - adicionar `abilities-api-implement` ou skills de operação REST da loja (fora do escopo de desenvolvimento)
+- publicar `petshop-core` cujo Composer autoload ainda referencia PHPUnit, myclabs ou deep-copy
 
 ## Estado atual (consultar `Plans/STATUS.md` para atualização)
 
-- Plano **005** bloqueado na Sessão 03 (aguarda fotografias reais)
-- Sessões 01–02 do 005 concluídas; filtro lateral do catálogo validado
-- Plano **003** (Docker) em andamento
+- Consulte `Plans/STATUS.md` — não confie em resumos embutidos nesta skill
+- Ambiente Docker: após mudanças no repo, skill `docker-compose-watch-build`
+
+Base directory for this skill: .cursor/skills/petshop-workflow
+Relative paths in this skill (e.g., scripts/, reference/) are relative to this base directory.

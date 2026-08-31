@@ -12,6 +12,7 @@ import {
 	TextControl,
 	TextareaControl,
 	Notice,
+	RangeControl,
 	RadioControl,
 } from '@wordpress/components';
 
@@ -62,12 +63,13 @@ export default function Edit({ attributes, setAttributes }) {
 		mobileImageUrl,
 		imageAlt,
 		linkUrl,
-		editorLabel,
+		editorLabel = '',
 		eyebrow,
 		title,
 		text,
 		benefit,
 		ctaLabel,
+		durationSeconds = 10,
 	} = attributes;
 	const isEditorial = campaignMode === 'editorial';
 
@@ -106,6 +108,19 @@ export default function Edit({ attributes, setAttributes }) {
 	return (
 		<>
 			<InspectorControls>
+				<PanelBody title={__('Carrossel', 'petshop-core')} initialOpen>
+					<RangeControl
+						label={__('Tempo de visualização (segundos)', 'petshop-core')}
+						help={__(
+							'Quanto tempo esta imagem permanece visível no carrossel. Padrão: 10 segundos. Com um único banner, a loja exibe uma imagem estática.',
+							'petshop-core'
+						)}
+						value={durationSeconds}
+						min={3}
+						max={60}
+						onChange={(value) => setAttributes({ durationSeconds: value ?? 10 })}
+					/>
+				</PanelBody>
 				<PanelBody title={__('Tipo de campanha', 'petshop-core')} initialOpen>
 					<RadioControl
 						label={__('Modalidade', 'petshop-core')}

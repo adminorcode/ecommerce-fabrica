@@ -45,6 +45,14 @@ Sequência padrão:
 
 **Git Bash (Windows):** `run-gates.sh` exporta `MSYS_NO_PATHCONV=1` para preservar paths `/var/www/html/scripts` no contêiner.
 
+## Deploy (HostGator/cPanel)
+
+```powershell
+npm run prepare:deploy
+```
+
+Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin do worktree, uploads do volume) e `petshop-db.sql`. Remove vendor de desenvolvimento e regenera o Composer no pacote com `dump-autoload --no-dev --optimize`; o script falha se `autoload_*.php` ainda citar `myclabs`, `phpunit/phpunit` ou `deep-copy`. Não rode esse dump no plugin do worktree. O caminho absoluto é impresso ao final e gravado em `WHERE.txt`. Skill: `.cursor/skills/preparar-deploy/`.
+
 ## Catálogo por plano
 
 | Script | Plano | Descrição |
@@ -63,6 +71,15 @@ Sequência padrão:
 | `validate-005-cart-browser.mjs` | 008 | Browser: adicionar ao carrinho/minicarrinho |
 | `validate-005-session-02-editor.mjs` | 005 S02 | Editor Gutenberg |
 | `validate-009-cart-checkout-browser.mjs` | 009 | Browser: cart/checkout tokens e a11y |
+| `validate-023-footer.php` | 023 | Rodapé: settings Customizer e render preenchido/vazio |
+| `validate-023-footer-browser.mjs` | 023 | Browser: composição do rodapé (4 colunas, redes na marca, ícones, 1440/390) |
+| `validate-024-home-campaigns-carousel.php` | 024 | Carrossel promocional: limite 3, duração por imagem, persistência |
+| `validate-024-home-campaigns-carousel-browser.mjs` | 024 | Browser: overlay de setas/indicadores, 44px, 1440/1024/768/390 |
+| `validate-027-shipping-hub.php` | 027 | Calculadora PDP como hub WooCommerce: taxas ativas sem filtro, preço sem entidades, prazo e CEP persistente |
+| `validate-027-shipping-hub-browser.mjs` | 027 | Browser: uma UI de frete na PDP, widgets extras ocultos em PDP/carrinho/checkout e CEP no checkout |
+| `validate-036-versioned-shipping-dependencies.php` | 036 | Melhor Envio e base brasileira versionados: plugins ativos, vendors presentes e aviso de dependencia ausente |
+| `validate-030.php` | 030 | Frase da confirmação: setting, filtros WC/bloco, persistência e HTML do pedido recebido |
+| `validate-030-order-received-browser.mjs` | 030 | Browser: Checkout Block + página de pedido recebido com a frase do Personalizar |
 | `test-004b-persistence.php` | 004b | Persistência editorial |
 | `test-005-session-01-persistence.php` | 005 S01 | Persistência header |
 | `test-005-session-02-persistence.php` | 005 S02 | Persistência hero |

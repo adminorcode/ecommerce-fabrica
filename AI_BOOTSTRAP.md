@@ -65,11 +65,17 @@ docker compose up -d --build --wait
 docker compose ps
 ```
 
-Para desenvolvimento contínuo, com sincronização do plugin e tema próprios:
+Para desenvolvimento contínuo, com rebuild das imagens e sincronização do plugin e tema próprios:
 
 ```powershell
-docker compose up --watch
+docker compose up --watch --build
 ```
+
+Após alterar plugin, tema, Dockerfiles ou lockfiles — e antes de validar — use esse
+comando (o `init` não sobrescreve `petshop-core`/`petshop-theme` já existentes no
+volume). One-shot sem watch: skill `docker-compose-watch-build`.
+
+Detalhe operacional: `.cursor/skills/docker-compose-watch-build/SKILL.md`.
 
 URLs locais:
 
@@ -144,6 +150,20 @@ npm run validate
 
 Equivalente a `bash scripts/run-gates.sh` (PowerShell: `./scripts/run-gates.ps1`).
 Scripts ficam montados em `/var/www/html/scripts` no serviço `cli`.
+
+Durante desenvolvimento, prefira o gate focado nos arquivos alterados:
+
+```powershell
+npm run validate:changed
+```
+
+Esse modo detecta arquivos modificados ou novos pelo Git, sincroniza plugin/tema/scripts para o runtime local, roda lint/check sintático e executa apenas os validators PHP associados. Quando a alteração tiver superfície visual, use:
+
+```powershell
+npm run validate:changed:browser
+```
+
+O gate completo `npm run validate` continua sendo o fechamento antes de concluir planos ou publicar uma entrega.
 
 Validação individual:
 

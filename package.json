@@ -5,12 +5,15 @@
   "description": "E-commerce do petshop baseado em WordPress e WooCommerce.",
   "scripts": {
     "bootstrap": "docker compose up -d --build --wait",
-    "up": "docker compose up --watch",
+    "up": "docker compose up --watch --build",
     "down": "docker compose down",
     "validate": "node scripts/run-gates.mjs",
+    "validate:changed": "node scripts/run-gates.mjs --changed",
+    "validate:changed:browser": "node scripts/run-gates.mjs --changed --browser",
     "test": "docker compose --profile test run --rm test-runner",
     "wp": "docker compose --profile tools run --rm --no-deps cli wp",
-    "bootstrap:legacy": "node scripts/bootstrap-wp-env.mjs"
+    "bootstrap:legacy": "node scripts/bootstrap-wp-env.mjs",
+    "prepare:deploy": "node scripts/prepare-deploy.mjs"
   },
   "devDependencies": {
     "@wordpress/env": "^10.0.0",

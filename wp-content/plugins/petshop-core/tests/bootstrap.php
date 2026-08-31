@@ -129,6 +129,42 @@ function __(string $text, string $domain = 'default'): string
     return $text;
 }
 
+function esc_html(string $text): string
+{
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+function sanitize_text_field(string $value): string
+{
+    return trim(strip_tags($value));
+}
+
+function wp_strip_all_tags(string $text): string
+{
+    return trim(strip_tags($text));
+}
+
+function get_theme_mod(string $name, mixed $default = false): mixed
+{
+    $mods = $GLOBALS['petshop_test_theme_mods'] ?? [];
+    if (is_array($mods) && array_key_exists($name, $mods)) {
+        return $mods[$name];
+    }
+
+    return $default;
+}
+
+function add_filter(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
+{
+    $GLOBALS['petshop_test_filters'][$hook][] = [
+        'callback' => $callback,
+        'priority' => $priority,
+        'accepted_args' => $acceptedArgs,
+    ];
+
+    return true;
+}
+
 /** @param array<string, mixed> $pairs @param array<string, mixed> $attributes */
 function shortcode_atts(array $pairs, array $attributes): array
 {

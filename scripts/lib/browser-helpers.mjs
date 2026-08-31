@@ -47,7 +47,7 @@ export const routeCanonicalNavigation = async (page, baseUrl) => {
   await page.route('**/*', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
-    const isCanonicalLocalUrl = url.hostname === 'localhost' && url.port === '8888';
+    const isCanonicalLocalUrl = ['localhost', '127.0.0.1'].includes(url.hostname) && ['', '8888'].includes(url.port);
     const isBaseHostWithCanonicalPort = url.hostname === base.hostname && url.origin !== base.origin;
 
     if (url.origin === base.origin) {
