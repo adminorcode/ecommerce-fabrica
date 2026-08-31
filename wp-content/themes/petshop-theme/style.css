@@ -1974,6 +1974,7 @@ html.petshop-menu-drawer-open {
   color: var(--white);
   font-size: 3rem;
   line-height: 1.05;
+  margin-bottom: 1.5rem;
 }
 
 .petshop-support-banner__text {

@@ -15,6 +15,7 @@ use Petshop\Core\WooCommerce\CartCheckout;
 use Petshop\Core\WooCommerce\OrderTracking;
 use Petshop\Core\WooCommerce\OrderReceivedMessage;
 use Petshop\Core\WooCommerce\GuestAccount;
+use Petshop\Core\WooCommerce\TransactionalEmails;
 use Petshop\Core\Analytics\FunnelEvents;
 
 defined('ABSPATH') || exit;
@@ -36,6 +37,7 @@ final class Plugin
         OrderTracking::bootstrap();
         OrderReceivedMessage::bootstrap();
         GuestAccount::bootstrap();
+        TransactionalEmails::bootstrap();
         FunnelEvents::bootstrap();
         HomeCampaignBlocks::bootstrap();
         ProductGridBlock::bootstrap();

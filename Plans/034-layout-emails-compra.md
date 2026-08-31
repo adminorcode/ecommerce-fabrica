@@ -1,6 +1,6 @@
 # Plano 034 — Layout dos e-mails de compra
 
-**Status:** Pendente  
+**Status:** Concluído  
 **Data:** 2026-08-24  
 **Branch sugerida:** `034-layout-emails-compra`  
 **Dependências:** [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) (tokens); [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (pedido, rastreio em e-mail); [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) (canais de atendimento no rodapé)  
@@ -10,7 +10,7 @@
 
 ## 1. Objetivo
 
-Os e-mails HTML que o cliente recebe nas **atualizações de compra** passam a usar o casco da referência: logo, saudação, título, caixa de status, resumo do pedido, linha do tempo, CTA e rodapé de marca — com a paleta AUTeliê já aplicada no site.
+Os e-mails HTML do WooCommerce passam a usar o casco da referência como padrão global: logo, saudação quando houver pedido, título, conteúdo do e-mail e rodapé de marca — com a paleta AUTeliê já aplicada no site. Nos e-mails de compra, o casco inclui também caixa de status, resumo do pedido, linha do tempo, CTA e caixas de apoio.
 
 User story: como comprador, quero abrir o e-mail de pagamento confirmado (e os demais avisos do pedido) e reconhecer a mesma loja que vi no site, com o resumo do pedido e um botão para acompanhar.
 
@@ -29,7 +29,7 @@ Exceção documentada: e-mail transacional **não** é página Gutenberg. Ediç�
 
 ## 3. Escopo comprometido
 
-O mesmo casco HTML (largura 600 px, tabelas, CSS inline) vale para estes IDs WooCommerce:
+O casco HTML global (largura 600 px, tabelas, CSS inline, logo/nome da loja e rodapé de marca) vale para todos os `WC_Email` HTML registrados pelo WooCommerce. A composição completa de compra vale para estes IDs WooCommerce:
 
 | ID | Título inicial (heading) | Tracker |
 |---|---|---|
@@ -133,27 +133,27 @@ Não editar Core, WooCommerce ou Blocksy. Override de `email-header.php` / `emai
 
 ### Sessão 01 — Casco e pagamento confirmado
 
-- [ ] Wrapper HTML + CSS com tokens 014.
-- [ ] `customer_processing_order` com a composição da referência (passos 1–13 aplicáveis).
-- [ ] Heading/adicional iniciais provisionados sem sobrescrever.
+- [x] Wrapper HTML + CSS com tokens 014 aplicado globalmente aos `WC_Email` HTML.
+- [x] `customer_processing_order` com a composição da referência (passos 1–13 aplicáveis).
+- [x] Heading/adicional iniciais provisionados sem sobrescrever.
 
 **Gate**
 
-- [ ] HTML do processing contém logo ou nome da loja, “Pagamento confirmado!”, Pedido #{id}, resumo com total, tracker com passo 1 atual, CTA “Acompanhar meu pedido” com URL do pedido.
-- [ ] CSS do e-mail usa `#126E70`, `#C94B0B` e `#004F50`; **não** contém `#5bc1c3` nem `#f37d35`.
+- [x] HTML do processing contém logo ou nome da loja, “Pagamento confirmado!”, Pedido #{id}, resumo com total, tracker com passo 1 atual, CTA “Acompanhar meu pedido” com URL do pedido.
+- [x] CSS do e-mail usa `#126E70`, `#C94B0B` e `#004F50`; **não** contém `#5bc1c3` nem `#f37d35`.
 
 ### Sessão 02 — Demais atualizações de compra
 
-- [ ] Aplicar o casco aos outros IDs da lista, com heading e regra de tracker/CTA da tabela.
-- [ ] Caixas Informação importante e Precisa de ajuda? com persistência; vazio oculta só a de informação.
-- [ ] Documentar no guia operacional onde editar heading, caixas e logo.
+- [x] Aplicar o casco global aos demais e-mails WooCommerce e a composição de compra aos outros IDs da lista, com heading e regra de tracker/CTA da tabela.
+- [x] Caixas Informação importante e Precisa de ajuda? com persistência; vazio oculta só a de informação.
+- [x] Documentar no guia operacional onde editar heading, caixas e logo.
 
 **Gate**
 
-- [ ] Cada ID da lista gera HTML com o casco; invoice e on-hold usam “Pagar agora” e URL de pagamento.
-- [ ] completed mostra os quatro passos preenchidos.
-- [ ] Alterar heading no WooCommerce e o texto da caixa no Personalizar sobrevive a migrate/reprovisionar.
-- [ ] Atualizar `Plans/STATUS.md`.
+- [x] Cada `WC_Email` HTML recebe o casco global; cada ID da lista gera HTML com a composição de compra; invoice e on-hold usam “Pagar agora” e URL de pagamento.
+- [x] completed mostra os quatro passos preenchidos.
+- [x] Alterar heading no WooCommerce e o texto da caixa no Personalizar sobrevive a migrate/reprovisionar.
+- [x] Atualizar `Plans/STATUS.md`.
 
 ## 8. Riscos
 

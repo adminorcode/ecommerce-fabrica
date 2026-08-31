@@ -96,6 +96,7 @@ run_eval_file validate-023-footer.php
 run_eval_file validate-024-home-campaigns-carousel.php
 run_eval_file validate-030.php
 run_eval_file validate-032-search.php
+run_eval_file validate-034-emails.php
 run_eval_file smoke-012-order-flow.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then

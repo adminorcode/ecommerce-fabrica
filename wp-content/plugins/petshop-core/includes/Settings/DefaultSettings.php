@@ -104,6 +104,27 @@ final class DefaultSettings
                 'sanitize' => 'Petshop\\Core\\WooCommerce\\OrderReceivedMessage::sanitize',
                 'description' => __('Título da página de pedido recebido. Em branco, a loja volta à frase inicial.', 'petshop-core'),
             ],
+            'petshop_email_info_title' => [
+                'label' => __('E-mails de compra: título da informação importante', 'petshop-core'),
+                'default' => 'Informação importante',
+                'type' => 'text',
+                'sanitize' => 'sanitize_text_field',
+                'description' => __('Vazio, junto com o corpo, oculta a caixa nos e-mails de compra.', 'petshop-core'),
+            ],
+            'petshop_email_info_text' => [
+                'label' => __('E-mails de compra: informação importante', 'petshop-core'),
+                'default' => 'Pedidos com item personalizado seguem o prazo descrito na página do produto.',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+                'description' => __('Texto global exibido nos e-mails de compra. Vazio, junto com o título, oculta a caixa.', 'petshop-core'),
+            ],
+            'petshop_email_help_text' => [
+                'label' => __('E-mails de compra: texto de ajuda', 'petshop-core'),
+                'default' => 'Se tiver qualquer dúvida sobre o pedido, fale com o atendimento da loja.',
+                'type' => 'textarea',
+                'sanitize' => 'sanitize_textarea_field',
+                'description' => __('A caixa usa também o WhatsApp e o e-mail preenchidos em Rodapé da loja.', 'petshop-core'),
+            ],
             'petshop_shop_description' => [
                 'label' => __('Descrição resumida da loja para buscadores', 'petshop-core'),
                 'default' => 'Acessórios pet com acabamento cuidadoso para tutores e profissionais.',

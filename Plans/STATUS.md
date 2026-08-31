@@ -36,7 +36,7 @@
 | [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md) | Pendente | Card variável: chips, um preço, Comprar agora; sem faixa nem “Ver opções”. ClickUp [86e2xzn0r](https://app.clickup.com/t/86e2xzn0r) |
 | [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Concluído | Lupa e Enter abrem resultados com `s` + `post_type=product`; canonical/filtros preservam busca; SKU exato segue PDP. Gates PHP/browser validados. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
-| [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Pendente | Casco HTML dos e-mails de compra (pagamento confirmado e atualizações); composição do mockup, cores do 014. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
+| [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
 ## Ordem recomendada de execução
 
 ```

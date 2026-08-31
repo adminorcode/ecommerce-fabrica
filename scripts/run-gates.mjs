@@ -240,6 +240,14 @@ const classifySuites = (files) => {
             browserScripts.add('validate-030-order-received-browser.mjs');
         }
         if (
+            file.includes('034-layout-emails-compra')
+            || file.includes('TransactionalEmails')
+            || file.includes('validate-034-emails')
+            || file.includes('petshop_email_')
+        ) {
+            suites.add('emails-034');
+        }
+        if (
             file.includes('027-calculadora-frete-hub')
             || file.includes('ShippingQuotes')
             || file.includes('ProductDetails.php')
@@ -322,6 +330,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('search-032')) {
         evalFile('validate-032-search.php');
+    }
+    if (suites.has('emails-034')) {
+        evalFile('validate-034-emails.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -65,6 +65,7 @@ Invoke-EvalFile 'validate-023-footer.php'
 Invoke-EvalFile 'validate-024-home-campaigns-carousel.php'
 Invoke-EvalFile 'validate-030.php'
 Invoke-EvalFile 'validate-032-search.php'
+Invoke-EvalFile 'validate-034-emails.php'
 Invoke-EvalFile 'smoke-012-order-flow.php'
 
 if ($ContentAudit) {

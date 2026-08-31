@@ -30,6 +30,15 @@ Ticket, plano e branch compartilham o mesmo `{numero}-{slug}`.
 - Todo trabalho com ticket mantém vínculo entre ClickUp, plano, branch, commits e Pull Request.
 - Ler o plano antes de implementar e atualizar checkboxes só após validação.
 - Não marcar item concluído sem evidência.
+- Antes de implementar, registrar o alcance do plano: global, rota/componente
+  específico ou lista fechada. Palavras como "padrão", "global", "todos" e
+  "cada" prevalecem sobre exemplos isolados.
+- A evidência de aceite deve cobrir o alcance real do plano. Se a entrega cria
+  um padrão global, o gate deve testar pelo menos uma amostra fora do exemplo
+  principal para impedir implementação estreita.
+- Validação deve ser econômica: uma baseline mínima, gates focados na iteração
+  e um fechamento completo quando exigido. Não repetir suite completa sem nova
+  causa material.
 
 ## Branches e PR
 
