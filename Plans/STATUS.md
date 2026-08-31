@@ -37,6 +37,7 @@
 | [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Concluído | Lupa e Enter abrem resultados com `s` + `post_type=product`; canonical/filtros preservam busca; SKU exato segue PDP. Gates PHP/browser validados. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
+| [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Pendente | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
 ## Ordem recomendada de execução
 
 ```
@@ -76,7 +77,8 @@
   ├── 031 (card variável: Comprar agora + preço único)
   ├── 032 (busca: lupa e Enter listam produtos; query `s` + `post_type=product`)
   ├── 033 (rodapé: aproximação visual ao mockup de três faixas)
-  └── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
+  ├── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
+  └── 035 (dropdown de subcategorias no menu comercial do header)
 ```
 
 ## Origem
@@ -115,4 +117,6 @@ Plano 033 derivado do print do rodapé (2026-08-24): aproximar a composição vi
 
 Plano 034 derivado do mockup de e-mail “Pagamento confirmado” (2026-08-24): redesenhar o casco HTML dos avisos de compra; composição da arte, tokens da loja (não os hex do PNG).
 
-**Última atualização:** 2026-08-27 (Plano 032 concluído em `codex/032-busca-lupa-enter-resultados`; 027 e 030 concluídos; 025, 026, 028, 029 e 031, 033–034 pendentes; 012 em andamento)
+Plano 035 derivado do print da Moda Bicho (2026-08-30): no menu comercial do header (`menu-navegacao-comercial-container`), as subcategorias abrem em dropdown vertical sob o pai, não na faixa.
+
+**Última atualização:** 2026-08-30 (Plano 035 aberto: dropdown de subcategorias no menu comercial)
