@@ -22,6 +22,7 @@ final class CartCheckout
     {
         self::migrateBlockPages();
         self::configureAccountOptions();
+        self::configureAccountOptions025();
         self::ensurePolicyPages();
         self::ensureLocalShippingMethod();
     }
@@ -130,6 +131,19 @@ final class CartCheckout
         update_option('petshop_account_options_013_configured', '1', false);
     }
 
+    private static function configureAccountOptions025(): void
+    {
+        if (get_option('petshop_account_options_025_configured', false) !== false) return;
+
+        update_option('woocommerce_enable_guest_checkout', 'yes');
+        update_option('woocommerce_enable_myaccount_registration', 'yes');
+        update_option('woocommerce_enable_signup_and_login_from_checkout', 'yes');
+        update_option('woocommerce_enable_signup_from_checkout', 'yes');
+        update_option('woocommerce_registration_generate_username', 'yes');
+        update_option('woocommerce_registration_generate_password', 'no');
+
+        update_option('petshop_account_options_025_configured', '1', false);
+    }
     private static function ensurePolicyPages(): void
     {
         $privacyId = self::ensureAssignedPolicyPage('wp_page_for_privacy_policy', 'politica-de-privacidade', 'Política de privacidade', 'privacy-policy');
