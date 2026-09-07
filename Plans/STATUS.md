@@ -19,7 +19,7 @@
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Concluído | Tokens AUTellê, Nunito Sans, campanha editorial Gutenberg e rodapé no tom escuro anterior validados em PHP/browser |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Concluido | Secao de atendimento Gutenberg na Home, schema 26, CTA WhatsApp editavel com fallback para Atendimento, imagens 1920 x 640 e 1080 x 1350, gates PHP/browser validados |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
-| [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
+| [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Concluído | Fechado por aceite operacional em 2026-09-07: Mercado Pago, frete real e SMTP confirmados no ambiente alvo; demais gates P0 aceitos para publicação |
 | [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
@@ -123,4 +123,4 @@ Plano 035 derivado do print da Moda Bicho (2026-08-30): no menu comercial do hea
 
 Plano 036 derivado do aviso administrativo do Melhor Envio (2026-08-31): o plugin exige uma base brasileira de checkout/frete ativa e precisa deixar de depender de instalacao manual no runtime; Melhor Envio e a base escolhida passam a ser versionados sem credenciais.
 
-**Última atualização:** 2026-08-31 (Plano 036 concluído: dependencias de frete e checkout versionadas)
+**Última atualização:** 2026-09-07 (Plano 017 concluído por aceite operacional dos gates P0 de publicação)
