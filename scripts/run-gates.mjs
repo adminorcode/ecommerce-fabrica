@@ -259,6 +259,15 @@ const classifySuites = (files) => {
             suites.add('emails-034');
         }
         if (
+            file.includes('039-quantidade-carrinho')
+            || file.includes('CartQuantityStability')
+            || file.includes('cart-quantity-stability')
+            || file.includes('validate-039-cart-qty')
+        ) {
+            suites.add('cart-qty-039');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
+        }
+        if (
             file.includes('027-calculadora-frete-hub')
             || file.includes('036-dependencias-frete-checkout-versionadas')
             || file.includes('ShippingQuotes')
@@ -349,6 +358,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('search-032')) {
         evalFile('validate-032-search.php');
+    }
+    if (suites.has('cart-qty-039')) {
+        evalFile('validate-039-cart-qty.php');
     }
     if (suites.has('emails-034')) {
         evalFile('validate-034-emails.php');
