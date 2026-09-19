@@ -176,31 +176,41 @@
         showMessage(postcode, 'Consultando CEP...');
 
         try {
+            const body = new URLSearchParams({
+                action: petshopAddressLookup.action,
+                nonce: petshopAddressLookup.nonce,
+                cep
+            });
+
             const response = await fetch(
-                `https://viacep.com.br/ws/${cep}/json/`,
+                petshopAddressLookup.ajaxUrl,
                 {
+                    method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
-                        Accept: 'application/json'
-                    }
+                        Accept: 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: body.toString()
                 }
             );
 
-            if (!response.ok) {
-                throw new Error('ViaCEP indisponível');
-            }
+            const result = await response.json();
 
-            const data = await response.json();
+            if (!response.ok || !result.success) {
+                delete postcode.dataset.petshopLastCep;
 
-            if (data.erro) {
                 showMessage(
                     postcode,
-                    'CEP não encontrado. Confira o número informado.',
+                    result?.data?.message ||
+                        'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
                     true
                 );
 
                 return;
             }
 
+            const data = result.data;
             const fields = getAddressFields(postcode);
 
             setNativeValue(fields.address, data.logradouro);
@@ -221,7 +231,7 @@
                 true
             );
         }
-    };
+};
 
     const bindPostcode = (postcode) => {
         if (postcode.dataset.petshopCepBound === '1') {

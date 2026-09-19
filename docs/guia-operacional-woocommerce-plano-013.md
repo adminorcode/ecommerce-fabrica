@@ -48,6 +48,8 @@ Na edição do pedido WooCommerce, o card **Rastreamento da entrega** aceita tra
 
 O texto global de próximos passos é editável no Personalizador. A frase de confirmação **Parabéns! Seu pedido foi recebido!** fica em **Aparência → Personalizar → Conteúdo da loja → Frase da confirmação de pedido**. Em branco, a loja volta à frase inicial; o reprovisionamento não sobrescreve uma edição posterior. Compra como visitante permanece habilitada; na confirmação, o comprador pode criar uma conta para o e-mail novo do pedido e recebe o fluxo oficial de definição de senha.
 
+Desde o Plano 025, o cadastro em `/minha-conta/` permite informar e-mail, telefone, tipo PF/PJ, CPF ou CNPJ, endereço brasileiro e escolher e confirmar a própria senha. Um cadastro válido autentica o cliente imediatamente, sem senha temporária e sem exigir abertura de e-mail. O ViaCEP preenche logradouro, bairro, cidade e UF, enquanto o número permanece sob controle do cliente. No Checkout Block, ao marcar a criação de conta, o cliente define e confirma a própria senha. Em pedidos feitos como visitante, a confirmação do pedido permite criar a conta com o e-mail do pedido, senha e confirmação; a nova conta é autenticada imediatamente e o pedido é associado ao cliente.
+
 ## Validação antes de publicar
 
 1. Execute `npm test` e `npm run validate -- --browser`.

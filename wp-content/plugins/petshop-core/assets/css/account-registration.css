@@ -1,0 +1,41 @@
+#customer_login.petshop-account-ux-ready {
+    display: block;
+}
+
+#customer_login.petshop-account-ux-ready > .u-column1,
+#customer_login.petshop-account-ux-ready > .u-column2 {
+    float: none;
+    width: 100%;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#customer_login.petshop-account-ux-ready > .u-column2 {
+    display: none;
+}
+
+#customer_login.petshop-account-ux-ready.petshop-register-open > .u-column1 {
+    display: none;
+}
+
+#customer_login.petshop-account-ux-ready.petshop-register-open > .u-column2 {
+    display: block;
+}
+
+.petshop-account-create,
+.petshop-account-back {
+    margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+    #customer_login.petshop-account-ux-ready > .u-column1,
+    #customer_login.petshop-account-ux-ready > .u-column2 {
+        max-width: 100%;
+    }
+
+    .petshop-account-create,
+    .petshop-account-back {
+        width: 100%;
+    }
+}

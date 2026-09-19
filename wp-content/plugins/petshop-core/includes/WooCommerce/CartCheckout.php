@@ -58,6 +58,16 @@ final class CartCheckout
         wp_add_inline_script('petshop-checkout-translations', 'window.petshopCheckoutTranslations=' . wp_json_encode([
             'I would like to receive exclusive emails with discounts and product information' => __('Quero receber e-mails exclusivos com descontos e informações sobre produtos.', 'petshop-core'),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
+
+        $passwordConfirmationPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/checkout-account-password-confirmation.js';
+
+        wp_enqueue_script(
+            'petshop-checkout-account-password-confirmation',
+            plugins_url('assets/js/checkout-account-password-confirmation.js', PETSHOP_CORE_FILE),
+            ['wp-data', 'wc-blocks-data-store'],
+            is_file($passwordConfirmationPath) ? (string) filemtime($passwordConfirmationPath) : '1.0.0',
+            true
+        );
     }
 
     /**
@@ -135,11 +145,7 @@ final class CartCheckout
     {
         if (get_option('petshop_account_options_025_configured', false) !== false) return;
 
-        update_option('woocommerce_enable_guest_checkout', 'yes');
-        update_option('woocommerce_enable_myaccount_registration', 'yes');
-        update_option('woocommerce_enable_signup_and_login_from_checkout', 'yes');
-        update_option('woocommerce_enable_signup_from_checkout', 'yes');
-        update_option('woocommerce_registration_generate_username', 'yes');
+
         update_option('woocommerce_registration_generate_password', 'no');
 
         update_option('petshop_account_options_025_configured', '1', false);

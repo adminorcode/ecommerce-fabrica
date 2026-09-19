@@ -13,7 +13,40 @@ final class AccountRegistration
         add_action('woocommerce_register_form', [self::class, 'renderFields']);
         add_filter('woocommerce_registration_errors', [self::class, 'validateRegistration'], 10, 3);
         add_action('woocommerce_created_customer', [self::class, 'saveCustomer'], 10, 1);
+        add_filter('woocommerce_billing_fields', [self::class, 'addBillingAddressFields']);
+        add_action('woocommerce_edit_account_form_fields', [self::class, 'renderAccountFields']);
+        add_action('woocommerce_save_account_details_errors', [self::class, 'validateAccountDetails'], 10, 2);
+        add_action('woocommerce_save_account_details', [self::class, 'saveAccountDetails'], 10, 1);
+        add_action('wp_enqueue_scripts', [self::class, 'enqueueAccountAssets']);
     }
+    public static function enqueueAccountAssets(): void
+    {
+        if (!is_account_page() || is_user_logged_in()) {
+            return;
+        }
+
+        $jsRelative = 'assets/js/account-registration.js';
+        $jsPath = plugin_dir_path(PETSHOP_CORE_FILE) . $jsRelative;
+
+        $cssRelative = 'assets/css/account-registration.css';
+        $cssPath = plugin_dir_path(PETSHOP_CORE_FILE) . $cssRelative;
+
+        wp_enqueue_style(
+            'petshop-account-registration',
+            plugins_url($cssRelative, PETSHOP_CORE_FILE),
+            [],
+            is_file($cssPath) ? (string) filemtime($cssPath) : '1.0.0'
+        );
+
+        wp_enqueue_script(
+            'petshop-account-registration',
+            plugins_url($jsRelative, PETSHOP_CORE_FILE),
+            [],
+            is_file($jsPath) ? (string) filemtime($jsPath) : '1.0.0',
+            true
+        );
+    }
+
 
     public static function renderFields(): void
     {
@@ -114,14 +147,14 @@ final class AccountRegistration
         string $username,
         string $email
     ): \WP_Error {
-        if (
-    isset($_POST['action'])
-    && is_scalar($_POST['action'])
-    && sanitize_key(wp_unslash((string) $_POST['action'])) === 'petshop_create_order_account'
-) {
+ $nonce = isset($_POST['woocommerce-register-nonce']) && is_scalar($_POST['woocommerce-register-nonce'])
+    ? sanitize_text_field(wp_unslash((string) $_POST['woocommerce-register-nonce']))
+    : '';
+
+if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
     return $errors;
 }
-        $required = [
+    $required = [
             'billing_first_name' => 'Informe seu nome.',
             'billing_last_name' => 'Informe seu sobrenome.',
             'billing_phone' => 'Informe seu telefone.',
@@ -204,16 +237,137 @@ final class AccountRegistration
 
         return $errors;
     }
+    public static function renderAccountFields(): void
+    {
+        $customerId = get_current_user_id();
+
+        if ($customerId <= 0) {
+            return;
+        }
+
+        $type = isset($_POST['petshop_person_type'])
+            ? strtoupper(self::postValue('petshop_person_type'))
+            : (string) get_user_meta($customerId, 'petshop_person_type', true);
+
+        $document = isset($_POST['petshop_document'])
+            ? self::postValue('petshop_document')
+            : (string) get_user_meta($customerId, 'petshop_document', true);
+
+        woocommerce_form_field('petshop_person_type', [
+            'type' => 'select',
+            'required' => true,
+            'label' => 'Tipo de pessoa',
+            'options' => [
+                '' => 'Selecione',
+                'PF' => 'Pessoa física',
+                'PJ' => 'Pessoa jurídica',
+            ],
+        ], $type);
+
+        woocommerce_form_field('petshop_document', [
+            'type' => 'text',
+            'required' => true,
+            'label' => 'CPF ou CNPJ',
+            'placeholder' => 'Digite apenas números',
+        ], $document);
+    }
+    public static function validateAccountDetails(\WP_Error $errors, \stdClass $user): void
+    {
+        $type = strtoupper(self::postValue('petshop_person_type'));
+        $document = self::digits(self::postValue('petshop_document'));
+
+        if ($type === '') {
+            $errors->add(
+                'petshop_person_type_required',
+                'Escolha pessoa física ou jurídica.'
+            );
+        } elseif (!in_array($type, ['PF', 'PJ'], true)) {
+            $errors->add(
+                'petshop_person_type_invalid',
+                'Tipo de pessoa inválido.'
+            );
+        }
+
+        if ($document === '') {
+            $errors->add(
+                'petshop_document_required',
+                'Informe seu CPF ou CNPJ.'
+            );
+        } elseif ($type === 'PF' && !self::isValidCpf($document)) {
+            $errors->add(
+                'petshop_cpf_invalid',
+                'Informe um CPF válido.'
+            );
+        } elseif ($type === 'PJ' && !self::isValidCnpj($document)) {
+            $errors->add(
+                'petshop_cnpj_invalid',
+                'Informe um CNPJ válido.'
+            );
+        }
+
+        if ($document !== '') {
+            $existing = get_users([
+                'meta_key' => 'petshop_document',
+                'meta_value' => $document,
+                'number' => 1,
+                'fields' => 'ids',
+                'exclude' => [(int) $user->ID],
+            ]);
+
+            if ($existing !== []) {
+                $errors->add(
+                    'petshop_document_exists',
+                    'Este CPF ou CNPJ já está cadastrado.'
+                );
+            }
+        }
+    }
+    public static function saveAccountDetails(int $customerId): void
+    {
+        $type = strtoupper(self::postValue('petshop_person_type'));
+        $document = self::digits(self::postValue('petshop_document'));
+
+        update_user_meta($customerId, 'petshop_person_type', $type);
+        update_user_meta($customerId, 'petshop_document', $document);
+
+        if ($type === 'PF') {
+            update_user_meta($customerId, 'billing_cpf', $document);
+            delete_user_meta($customerId, 'billing_cnpj');
+        }
+
+        if ($type === 'PJ') {
+            update_user_meta($customerId, 'billing_cnpj', $document);
+            delete_user_meta($customerId, 'billing_cpf');
+        }
+    }
+    public static function addBillingAddressFields(array $fields): array
+    {
+        $fields['billing_number'] = [
+            'label' => 'Número',
+            'required' => true,
+            'class' => ['form-row-first'],
+            'priority' => 55,
+        ];
+
+        $fields['billing_neighborhood'] = [
+            'label' => 'Bairro',
+            'required' => true,
+            'class' => ['form-row-last'],
+            'priority' => 65,
+        ];
+
+        return $fields;
+    }
 
     public static function saveCustomer(int $customerId): void
     {
         if (
-    !isset($_POST['petshop_person_type'])
-    && !isset($_POST['billing_first_name'])
-    && !isset($_POST['billing_phone'])
-) {
-    return;
-}
+            !isset($_POST['petshop_person_type'])
+            && !isset($_POST['billing_first_name'])
+            && !isset($_POST['billing_phone'])
+        ) {
+            return;
+        }
         $fields = [
             'billing_first_name',
             'billing_last_name',
