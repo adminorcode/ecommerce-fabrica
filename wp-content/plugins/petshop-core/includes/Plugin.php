@@ -12,6 +12,7 @@ use Petshop\Core\Storefront\SearchExperience;
 use Petshop\Core\WooCommerce\Routes;
 use Petshop\Core\WooCommerce\ProductDetails;
 use Petshop\Core\WooCommerce\CartCheckout;
+use Petshop\Core\WooCommerce\CheckoutCustomerData;
 use Petshop\Core\WooCommerce\AccountRegistration;
 use Petshop\Core\WooCommerce\AccountPrivacy;
 use Petshop\Core\WooCommerce\AddressLookup;
@@ -38,6 +39,7 @@ final class Plugin
         SearchExperience::bootstrap();
         ProductDetails::bootstrap();
         CartCheckout::bootstrap();
+        CheckoutCustomerData::bootstrap();
         AccountRegistration::bootstrap();
         AccountPrivacy::bootstrap();
         AddressLookup::bootstrap();

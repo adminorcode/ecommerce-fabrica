@@ -1,6 +1,6 @@
 # Plano 026 — Checkout com dados salvos e ViaCEP
 
-**Status:** Pendente  
+**Status:** Validado localmente — pronto para commit/PR
 **Data:** 2026-08-22  
 **Branch sugerida:** `026-checkout-dados-salvos-viacep`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (Checkout Block, conta, endereços); [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) (telefone, CPF/CNPJ, endereço e lookup ViaCEP no plugin)  
@@ -79,41 +79,43 @@ Não editar WordPress Core, WooCommerce ou Blocksy. Dados pessoais não vão par
 
 ### Sessão 01 — Prefill do cliente autenticado
 
-- [ ] Hidratar Checkout Block com e-mail, nome, telefone, tipo, CPF ou CNPJ e endereço salvos.
-- [ ] Visitante sem conta continua com formulário vazio.
-- [ ] Campo ausente na base permanece vazio e editável.
+- [x] Hidratar Checkout Block com e-mail, nome, telefone, tipo, CPF ou CNPJ e endereço salvos.
+- [x] Visitante sem conta continua com formulário vazio.
+- [x] Campo ausente na base permanece vazio e editável.
 
 **Gate**
 
-- [ ] Cliente com cadastro 025 abre `/finalizar-compra/` e vê os dados gravados sem redigitar.
-- [ ] Visitante não recebe dado de outra conta.
-- [ ] Reprovisionar não apaga endereço/documento já salvos.
+- [x] Cliente com cadastro 025 abre `/finalizar-compra/` e vê os dados gravados sem redigitar.
+- [x] Visitante não recebe dado de outra conta.
+- [x] Reprovisionar não apaga endereço/documento já salvos.
 
 ### Sessão 02 — ViaCEP no CEP do checkout
 
-- [ ] CEP com 8 dígitos consulta ViaCEP pelo `petshop-core`.
-- [ ] Preencher rua, bairro, cidade e UF; complemento quando a API devolver.
-- [ ] Número continua com o cliente.
-- [ ] CEP inválido ou API fora: aviso no campo; endereço manual permitido.
+- [x] CEP com 8 dígitos consulta ViaCEP pelo `petshop-core`.
+- [x] Preencher rua, bairro, cidade e UF; complemento quando a API devolver.
+- [x] Número continua com o cliente.
+- [x] CEP inválido ou API fora: aviso no campo; endereço manual permitido.
 
 **Gate**
 
-- [ ] CEP válido conhecido pela ViaCEP preenche rua, bairro, cidade e UF no bloco.
-- [ ] Trocar o CEP atualiza esses campos.
-- [ ] CEP inexistente não inventa endereço e mostra erro em pt-BR.
-- [ ] Frete do checkout usa o CEP preenchido.
+- [x] CEP válido conhecido pela ViaCEP preenche rua, bairro, cidade e UF no bloco.
+- [x] Trocar o CEP atualiza esses campos.
+- [x] CEP inexistente não inventa endereço e mostra erro em pt-BR.
+- [x] Frete do checkout usa o CEP preenchido.
 
 ### Sessão 03 — Validação e handoff
 
-- [ ] Gates PHP/browser de prefill, ViaCEP e falha.
-- [ ] Confirmar Checkout Block e Store API intactos.
-- [ ] Atualizar `Plans/STATUS.md`.
+- [x] Gates PHP/browser de prefill, ViaCEP e falha.
+- [x] Confirmar Checkout Block e Store API intactos.
+- [x] Atualizar `Plans/STATUS.md`.
 
 **Gate**
 
-- [ ] Logado: dados da base + CEP novo via ViaCEP no mesmo fluxo.
-- [ ] Visitante: só ViaCEP, sem prefill de conta.
-- [ ] 1440 e 390 sem overflow; teclado e leitor de tela anunciam o preenchimento.
+- [x] Logado: dados da base + CEP novo via ViaCEP no mesmo fluxo.
+- [x] Visitante: só ViaCEP, sem prefill de conta.
+- [x] 1440 e 390 sem overflow; teclado e leitor de tela anunciam o preenchimento.
+
+Validação local final: PHP lint dos arquivos de produção OK; `node --check` OK; ViaCEP isolado EXIT 0; gate browser completo aprovado com PF desktop, PJ mobile, visitante e ViaCEP; fixtures `ticket026-*` removidas por WP-CLI.
 
 ## 8. Riscos
 

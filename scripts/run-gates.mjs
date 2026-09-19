@@ -291,6 +291,16 @@ const classifySuites = (files) => {
             browserScripts.add('validate-035-menu-dropdown-browser.mjs');
         }
         if (
+            file.includes('026-checkout-dados-salvos-viacep')
+            || file.includes('CheckoutCustomerData')
+            || file.includes('AddressLookup')
+            || file.includes('address-lookup')
+            || file.includes('validate-026-checkout')
+        ) {
+            suites.add('checkout-026');
+            browserScripts.add('validate-026-checkout-browser.mjs');
+        }
+        if (
             file.includes('027-calculadora-frete-hub')
             || file.includes('036-dependencias-frete-checkout-versionadas')
             || file.includes('ShippingQuotes')
@@ -393,6 +403,10 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('menu-035')) {
         evalFile('validate-035-menu-dropdown.php');
+    }
+    if (suites.has('checkout-026')) {
+        evalFile('validate-025-account-registration.php');
+        evalFile('validate-026-checkout.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

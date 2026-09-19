@@ -49,6 +49,8 @@ final class AddressLookup
                     'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
                     'petshop-core'
                 ),
+                'storeApiCartUrl' => rest_url('wc/store/v1/cart'),
+                'storeApiUpdateCustomerUrl' => rest_url('wc/store/v1/cart/update-customer'),
             ]
         );
     }
@@ -76,9 +78,13 @@ final class AddressLookup
         $result = self::lookupCep($cep);
 
         if (is_wp_error($result)) {
+            $status = in_array($result->get_error_code(), ['petshop_invalid_cep', 'petshop_cep_not_found'], true)
+                ? 400
+                : 502;
+
             wp_send_json_error(
                 ['message' => $result->get_error_message()],
-                502
+                $status
             );
         }
 
@@ -97,6 +103,23 @@ final class AddressLookup
                 'petshop_invalid_cep',
                 __('Informe um CEP válido com 8 dígitos.', 'petshop-core')
             );
+        }
+
+        $preempt = apply_filters('petshop_address_lookup_pre_http_result', null, $cep);
+
+        if ($preempt instanceof \WP_Error) {
+            return $preempt;
+        }
+
+        if (is_array($preempt)) {
+            return self::sanitizeLookupResult($preempt);
+        }
+
+        $cacheKey = 'petshop_viacep_' . md5($cep);
+        $cached = get_transient($cacheKey);
+
+        if (is_array($cached)) {
+            return self::sanitizeLookupResult($cached);
         }
 
         $response = wp_remote_get(
@@ -151,6 +174,19 @@ final class AddressLookup
             );
         }
 
+        $result = self::sanitizeLookupResult($data);
+
+        set_transient($cacheKey, $result, 12 * HOUR_IN_SECONDS);
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array{logradouro:string,bairro:string,localidade:string,uf:string,complemento:string}
+     */
+    private static function sanitizeLookupResult(array $data): array
+    {
         return [
             'logradouro' => sanitize_text_field((string) ($data['logradouro'] ?? '')),
             'bairro' => sanitize_text_field((string) ($data['bairro'] ?? '')),
