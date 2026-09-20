@@ -262,10 +262,20 @@ const classifySuites = (files) => {
             file.includes('039-quantidade-carrinho')
             || file.includes('CartQuantityStability')
             || file.includes('cart-quantity-stability')
-            || file.includes('validate-039-cart-qty')
+            ||             file.includes('validate-039-cart-qty')
         ) {
             suites.add('cart-qty-039');
             browserScripts.add('validate-039-cart-qty-browser.mjs');
+        }
+        if (
+            file.includes('035-dropdown-subcategorias-menu-comercial')
+            || file.includes('commercial-menu')
+            || file.includes('validate-035-menu-dropdown')
+            || file === 'wp-content/themes/petshop-theme/functions.php'
+            || file === 'wp-content/themes/petshop-theme/style.css'
+        ) {
+            suites.add('menu-035');
+            browserScripts.add('validate-035-menu-dropdown-browser.mjs');
         }
         if (
             file.includes('027-calculadora-frete-hub')
@@ -364,6 +374,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('emails-034')) {
         evalFile('validate-034-emails.php');
+    }
+    if (suites.has('menu-035')) {
+        evalFile('validate-035-menu-dropdown.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -344,6 +344,8 @@ Se uma atualizacao preservar o banner antigo como imagem unica, substitua manual
 
 | Logo | **Personalizar → Identidade do site** |
 
+| Menu comercial do header (categorias e subcategorias) | **Aparência → Menus** (localização `petshop-primary`) |
+
 | Rodapé — descrição, redes, atendimento, selos, legal | **Personalizar → Rodapé da loja** |
 
 | Rodapé — categorias | **Aparência → Menus** (localização `petshop-primary`) |
@@ -351,6 +353,16 @@ Se uma atualizacao preservar o banner antigo como imagem unica, substitua manual
 | Rodapé — institucional | **Aparência → Menus** (localização `petshop-footer`) |
 
 | Frase da confirmação de pedido | **Personalizar → Conteúdo da loja** |
+
+## Menu comercial e subcategorias
+
+O menu do header usa a localização `petshop-primary` (**Aparência → Menus → Navegação comercial**).
+
+- Item de primeiro nível **sem filhos**: aparece só como link, sem caixa e sem seta.
+- Item de primeiro nível **com filhos**: no desktop, as subcategorias abrem em dropdown vertical sob o pai; no celular, a seta ao lado do nome revela a lista. O nome do pai continua sendo o link da categoria.
+- Para uma subcategoria aparecer no dropdown, ela precisa estar aninhada como item filho nesse menu. O código não puxa sozinho as categorias do WooCommerce.
+
+O rodapé mostra só o primeiro nível do mesmo menu.
 
 ## Frase da confirmação de pedido
 
