@@ -5,6 +5,9 @@ declare(strict_types=1);
 defined('ABSPATH') || exit;
 
 require_once __DIR__ . '/inc/institutional-footer.php';
+require_once __DIR__ . '/inc/commercial-menu.php';
+
+Petshop_Commercial_Menu::bootstrap();
 
 add_filter('blocksy:builder:header:enabled', '__return_false');
 add_filter('blocksy:builder:footer:enabled', '__return_false');
@@ -254,94 +257,11 @@ add_action(
 );
 
 add_action(
-    'wp_footer',
-    static function (): void {
-        ?>
-        <script>
-            (() => {
-                const header = document.querySelector('.petshop-commercial-header');
-                const toggle = header?.querySelector('.petshop-commercial-header__menu-toggle');
-                const panel = header?.querySelector('#petshop-commercial-menu-panel');
-                const overlay = header?.querySelector('[data-petshop-menu-overlay]');
-                const closeButton = header?.querySelector('.petshop-commercial-header__drawer-close');
-                const desktopQuery = window.matchMedia('(min-width: 768px)');
-
-                if (!header || !toggle || !panel) {
-                    return;
-                }
-
-                const close = () => {
-                    toggle.setAttribute('aria-expanded', 'false');
-                    header.classList.remove('is-menu-open');
-                    document.documentElement.classList.remove('petshop-menu-drawer-open');
-                    if (!desktopQuery.matches) {
-                        panel.setAttribute('aria-hidden', 'true');
-                    }
-                    if (overlay instanceof HTMLElement) {
-                        overlay.hidden = true;
-                    }
-                };
-
-                const open = () => {
-                    toggle.setAttribute('aria-expanded', 'true');
-                    header.classList.add('is-menu-open');
-                    document.documentElement.classList.add('petshop-menu-drawer-open');
-                    panel.setAttribute('aria-hidden', 'false');
-                    if (overlay instanceof HTMLElement) {
-                        overlay.hidden = false;
-                    }
-                };
-
-                toggle.addEventListener('click', () => {
-                    const expanded = toggle.getAttribute('aria-expanded') === 'true';
-                    if (expanded) {
-                        close();
-                    } else {
-                        open();
-                    }
-                });
-
-                panel.addEventListener('click', (event) => {
-                    if (event.target instanceof HTMLAnchorElement) {
-                        close();
-                    }
-                });
-
-                closeButton?.addEventListener('click', () => {
-                    close();
-                    toggle.focus();
-                });
-
-                overlay?.addEventListener('click', close);
-
-                document.addEventListener('keydown', (event) => {
-                    if (event.key === 'Escape') {
-                        close();
-                        toggle.focus();
-                    }
-                });
-
-                desktopQuery.addEventListener('change', () => {
-                    close();
-                    if (desktopQuery.matches) {
-                        panel.removeAttribute('aria-hidden');
-                    }
-                });
-
-                if (!desktopQuery.matches) {
-                    panel.setAttribute('aria-hidden', 'true');
-                }
-            })();
-        </script>
-        <?php
-    },
-    20
-);
-
-
-add_action(
     'wp_enqueue_scripts',
     static function (): void {
+        $theme = wp_get_theme();
+        $version = (string) $theme->get('Version');
+
         wp_enqueue_style(
             'petshop-theme-fonts',
             'https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap',
@@ -353,7 +273,15 @@ add_action(
             'petshop-theme',
             get_stylesheet_uri(),
             ['petshop-theme-fonts'],
-            wp_get_theme()->get('Version')
+            $version
+        );
+
+        wp_enqueue_script(
+            'petshop-commercial-menu',
+            get_stylesheet_directory_uri() . '/assets/js/commercial-menu.js',
+            [],
+            $version,
+            true
         );
     }
 );

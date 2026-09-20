@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.17
+Version: 0.6.18
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -1424,6 +1424,77 @@ html.petshop-menu-drawer-open {
 .petshop-commercial-menu .current-menu-item > a {
   background: var(--color-surface-soft);
   color: var(--color-brand-orange-dark);
+}
+
+.petshop-commercial-menu > .menu-item-has-children {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+}
+
+.petshop-commercial-menu > .menu-item-has-children > a {
+  justify-content: flex-start;
+  width: 100%;
+  text-align: left;
+}
+
+.petshop-commercial-menu__submenu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.petshop-commercial-menu__submenu-toggle:hover,
+.petshop-commercial-menu__submenu-toggle:focus-visible {
+  background: var(--color-surface-soft);
+  color: var(--color-brand-orange-dark);
+}
+
+.petshop-commercial-menu__chevron {
+  display: block;
+  width: .45rem;
+  height: .45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  translate: 0 -.12rem;
+}
+
+.petshop-commercial-menu__submenu-toggle[aria-expanded="true"] .petshop-commercial-menu__chevron {
+  transform: rotate(225deg);
+  translate: 0 .12rem;
+}
+
+.petshop-commercial-menu .sub-menu {
+  display: none;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0 0 .25rem .25rem;
+  list-style: none;
+}
+
+.petshop-commercial-menu > .menu-item-has-children.is-submenu-open > .sub-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.petshop-commercial-menu .sub-menu a {
+  justify-content: flex-start;
+  width: 100%;
+  padding-inline: 1rem;
+  font-weight: 600;
+  text-align: left;
 }
 
 .petshop-footer-nav {
@@ -3627,12 +3698,16 @@ footer.ct-footer .ct-footer-copyright {
     white-space: nowrap;
   }
 
+  .petshop-commercial-header,
+  .petshop-commercial-header__navigation,
+  .petshop-commercial-header__navigation .ct-container,
+  .petshop-commercial-header__menu-panel {
+    overflow: visible;
+  }
+
   .petshop-commercial-header__navigation .ct-container {
     max-width: 100%;
     padding-block: .5rem;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
   }
 
   .petshop-commercial-header__menu-toggle {
@@ -3672,6 +3747,17 @@ footer.ct-footer .ct-footer-copyright {
     padding-inline: 0;
   }
 
+  .petshop-commercial-menu > .menu-item {
+    position: relative;
+  }
+
+  .petshop-commercial-menu > .menu-item-has-children {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0;
+  }
+
   .petshop-commercial-menu a {
     justify-content: flex-start;
     padding-inline: .15rem;
@@ -3684,6 +3770,53 @@ footer.ct-footer .ct-footer-copyright {
   .petshop-commercial-menu a:focus-visible,
   .petshop-commercial-menu .current-menu-item > a {
     background: transparent;
+  }
+
+  .petshop-commercial-menu a:focus-visible,
+  .petshop-commercial-menu__submenu-toggle:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .petshop-commercial-menu .sub-menu {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: 0;
+    z-index: 130;
+    display: none;
+    min-width: max(100%, 13.5rem);
+    padding: var(--space-1) 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  .petshop-commercial-menu > .menu-item-has-children.is-submenu-open > .sub-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .petshop-commercial-menu .sub-menu a {
+    min-height: 44px;
+    padding: .65rem 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .petshop-commercial-menu .sub-menu a:hover,
+  .petshop-commercial-menu .sub-menu a:focus-visible,
+  .petshop-commercial-menu .sub-menu .current-menu-item > a {
+    background: var(--color-surface-soft);
+    color: var(--color-brand-orange-dark);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .petshop-commercial-menu__submenu-toggle {
+      display: none;
+    }
   }
 
   .woocommerce ul.products.columns-4 {

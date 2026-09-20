@@ -37,7 +37,7 @@
 | [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Concluído | Lupa e Enter abrem resultados com `s` + `post_type=product`; canonical/filtros preservam busca; SKU exato segue PDP. Gates PHP/browser validados. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
-| [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Pendente | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
+| [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Concluído | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. Gates PHP/browser validados. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
 | [036-dependencias-frete-checkout-versionadas.md](./036-dependencias-frete-checkout-versionadas.md) | Concluído | Melhor Envio 2.16.6 e Calculadora BR 4.17.1 versionados com vendor, Docker/deploy/gates reconciliados e Brazilian Market mantido fora para evitar conflito |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 
@@ -128,4 +128,4 @@ Plano 036 derivado do aviso administrativo do Melhor Envio (2026-08-31): o plugi
 
 Plano 039 derivado do ticket 86e31yvgj (2026-09-10): depois do CEP no carrinho a quantidade voltava a 1; o JS do plugin brasileiro reconsulta o frete e invalida o Cart Block.
 
-**Última atualização:** 2026-09-11 (Plano 039 sessão 04: frete 1 s após quantidade, gates aprovados)
+**Última atualização:** 2026-09-18 (Plano 035: dropdown de subcategorias no menu comercial, gates PHP/browser aprovados)
