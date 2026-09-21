@@ -53,6 +53,44 @@ final class PetshopTestWpdb
 
 final class WooCommerce
 {
+    public mixed $session = null;
+}
+
+class WC_Order
+{
+    public function __construct(
+        private readonly int $id = 0,
+        private readonly string $paymentMethod = '',
+        private readonly bool $needsPayment = false,
+        private readonly string $receivedUrl = '',
+        private readonly string $paymentUrl = ''
+    ) {
+    }
+
+    public function get_id(): int
+    {
+        return $this->id;
+    }
+
+    public function get_payment_method(): string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function needs_payment(): bool
+    {
+        return $this->needsPayment;
+    }
+
+    public function get_checkout_order_received_url(): string
+    {
+        return $this->receivedUrl !== '' ? $this->receivedUrl : 'https://store.test/checkout/order-received/' . $this->id . '/?key=wc_order_' . $this->id;
+    }
+
+    public function get_checkout_payment_url(): string
+    {
+        return $this->paymentUrl !== '' ? $this->paymentUrl : 'https://store.test/checkout/order-pay/' . $this->id . '/?pay_for_order=true&key=wc_order_' . $this->id;
+    }
 }
 
 final class PetshopTestProduct
@@ -165,6 +203,63 @@ function add_filter(string $hook, mixed $callback, int $priority = 10, int $acce
     return true;
 }
 
+function add_action(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
+{
+    return add_filter($hook, $callback, $priority, $acceptedArgs);
+}
+
+function home_url(string $path = ''): string
+{
+    $home = rtrim((string) ($GLOBALS['petshop_test_home_url'] ?? 'https://store.test'), '/');
+    if ($path === '') {
+        return $home;
+    }
+
+    return $home . '/' . ltrim($path, '/');
+}
+
+function add_query_arg(string $key, string $value, string $url): string
+{
+    $separator = str_contains($url, '?') ? '&' : '?';
+
+    return $url . $separator . rawurlencode($key) . '=' . rawurlencode($value);
+}
+
+/** @return array<string, mixed>|int|string|null|false */
+function wp_parse_url(string $url, int $component = -1): mixed
+{
+    return $component === -1 ? parse_url($url) : parse_url($url, $component);
+}
+
+function get_query_var(string $key, mixed $default = ''): mixed
+{
+    return $GLOBALS['petshop_test_query_vars'][$key] ?? $default;
+}
+
+function wc_get_order(int $orderId): ?WC_Order
+{
+    return $GLOBALS['petshop_test_orders'][$orderId] ?? null;
+}
+
+function wc_get_account_endpoint_url(string $endpoint): string
+{
+    return 'https://store.test/minha-conta/' . trim($endpoint, '/') . '/';
+}
+
+function is_user_logged_in(): bool
+{
+    return (bool) ($GLOBALS['petshop_test_logged_in'] ?? false);
+}
+
+function WC(): WooCommerce
+{
+    if (!isset($GLOBALS['petshop_test_wc']) || !$GLOBALS['petshop_test_wc'] instanceof WooCommerce) {
+        $GLOBALS['petshop_test_wc'] = new WooCommerce();
+    }
+
+    return $GLOBALS['petshop_test_wc'];
+}
+
 /** @param array<string, mixed> $pairs @param array<string, mixed> $attributes */
 function shortcode_atts(array $pairs, array $attributes): array
 {
@@ -190,5 +285,10 @@ function wc_get_product(int $productId): ?PetshopTestProduct
 $GLOBALS['wpdb'] = new PetshopTestWpdb();
 $GLOBALS['petshop_test_skus'] = [];
 $GLOBALS['petshop_test_products'] = [];
+$GLOBALS['petshop_test_orders'] = [];
+$GLOBALS['petshop_test_logged_in'] = false;
+$GLOBALS['petshop_test_query_vars'] = [];
+$GLOBALS['petshop_test_home_url'] = 'https://store.test';
+$GLOBALS['petshop_test_wc'] = new WooCommerce();
 
 require_once __DIR__ . '/../vendor/autoload.php';
