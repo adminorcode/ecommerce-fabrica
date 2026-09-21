@@ -121,13 +121,21 @@
 
         return {
             address: findField(scope, addressSelectors),
-            neighborhood:
-                findField(scope, [
-                    '#billing_neighborhood',
-                    '#shipping_neighborhood',
-                    'input[name="billing_neighborhood"]',
-                    'input[name="shipping_neighborhood"]'
-                ]),
+            neighborhood: findField(scope, [
+                '#billing_neighborhood',
+                '#shipping_neighborhood',
+                'input[name="billing_neighborhood"]',
+                'input[name="shipping_neighborhood"]'
+            ]),
+            complement: findField(scope, [
+                '#billing_address_2',
+                '#shipping_address_2',
+                '#billing-address_2',
+                '#shipping-address_2',
+                'input[name="billing_address_2"]',
+                'input[name="shipping_address_2"]',
+                'input[autocomplete="address-line2"]'
+            ]),
             city: findField(scope, citySelectors),
             state: findField(scope, stateSelectors)
         };
@@ -173,17 +181,30 @@
 
         postcode.dataset.petshopLastCep = cep;
 
-        showMessage(postcode, 'Consultando CEP...');
+        const config = window.petshopAddressLookup || {};
+
+        showMessage(postcode, config.consulting || 'Consultando CEP...');
+
+        if (!config.ajaxUrl || !config.action || !config.nonce) {
+            delete postcode.dataset.petshopLastCep;
+            showMessage(
+                postcode,
+                config.unavailable ||
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                true
+            );
+            return;
+        }
 
         try {
             const body = new URLSearchParams({
-                action: petshopAddressLookup.action,
-                nonce: petshopAddressLookup.nonce,
+                action: config.action,
+                nonce: config.nonce,
                 cep
             });
 
             const response = await fetch(
-                petshopAddressLookup.ajaxUrl,
+                config.ajaxUrl,
                 {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -203,6 +224,7 @@
                 showMessage(
                     postcode,
                     result?.data?.message ||
+                        config.unavailable ||
                         'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
                     true
                 );
@@ -218,20 +240,25 @@
             setNativeValue(fields.city, data.localidade);
             setNativeValue(fields.state, data.uf);
 
+            if (data.complemento) {
+                setNativeValue(fields.complement, data.complemento);
+            }
+
             showMessage(
                 postcode,
-                'Endereço encontrado pelo CEP.'
+                config.found || 'Endereço encontrado pelo CEP.'
             );
         } catch (error) {
             delete postcode.dataset.petshopLastCep;
 
             showMessage(
                 postcode,
-                'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                config.unavailable ||
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
                 true
             );
         }
-};
+    };
 
     const bindPostcode = (postcode) => {
         if (postcode.dataset.petshopCepBound === '1') {
@@ -254,93 +281,105 @@
             }
         });
     };
+
     const formatBrazilianPhone = (value) => {
-    const phone = digits(value).slice(0, 11);
+        const phone = digits(value).slice(0, 11);
 
-    if (phone.length === 0) {
-        return '';
-    }
+        if (phone.length === 0) {
+            return '';
+        }
 
-    if (phone.length <= 2) {
-        return `(${phone}`;
-    }
+        if (phone.length <= 2) {
+            return `(${phone}`;
+        }
 
-    if (phone.length <= 6) {
-        return `(${phone.slice(0, 2)}) ${phone.slice(2)}`;
-    }
+        if (phone.length <= 6) {
+            return `(${phone.slice(0, 2)}) ${phone.slice(2)}`;
+        }
 
-    if (phone.length <= 10) {
-        return `(${phone.slice(0, 2)}) ${phone.slice(2, 6)}-${phone.slice(6)}`;
-    }
+        if (phone.length <= 10) {
+            return `(${phone.slice(0, 2)}) ${phone.slice(2, 6)}-${phone.slice(6)}`;
+        }
 
-    return `(${phone.slice(0, 2)}) ${phone.slice(2, 7)}-${phone.slice(7)}`;
-};
+        return `(${phone.slice(0, 2)}) ${phone.slice(2, 7)}-${phone.slice(7)}`;
+    };
 
-const bindPhone = (field) => {
-    if (field.dataset.petshopPhoneBound === '1') {
-        return;
-    }
-
-    field.dataset.petshopPhoneBound = '1';
-
-    field.addEventListener('input', () => {
-        const formatted = formatBrazilianPhone(field.value);
-
-        if (field.value === formatted) {
+    const bindPhone = (field) => {
+        if (field.dataset.petshopPhoneBound === '1') {
             return;
         }
 
-        const setter = Object.getOwnPropertyDescriptor(
-            HTMLInputElement.prototype,
-            'value'
-        )?.set;
+        field.dataset.petshopPhoneBound = '1';
 
-        if (setter) {
-            setter.call(field, formatted);
-        } else {
-            field.value = formatted;
-        }
+        field.addEventListener('input', () => {
+            const formatted = formatBrazilianPhone(field.value);
 
-        field.dispatchEvent(
-            new Event('input', { bubbles: true })
-        );
-    });
-};
-   const initialize = () => {
-    const postcodeSelectors = [
-        '#billing_postcode',
-        '#shipping_postcode',
-        '#billing-postcode',
-        '#shipping-postcode',
-        'input[name="billing_postcode"]',
-        'input[name="shipping_postcode"]',
-        'input[autocomplete="postal-code"]'
-    ];
+            if (field.value === formatted) {
+                return;
+            }
 
-    document
-        .querySelectorAll(postcodeSelectors.join(','))
-        .forEach(bindPostcode);
+            const selectionStart = field.selectionStart;
+            const previousLength = field.value.length;
+            const setter = Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                'value'
+            )?.set;
 
-    const phoneSelectors = [
-        '#billing_phone',
-        '#shipping_phone',
-        '#billing-phone',
-        '#shipping-phone',
-        'input[name="billing_phone"]',
-        'input[name="shipping_phone"]',
-        'input[autocomplete="tel"]'
-    ];
+            if (setter) {
+                setter.call(field, formatted);
+            } else {
+                field.value = formatted;
+            }
 
-    document
-        .querySelectorAll(phoneSelectors.join(','))
-        .forEach(bindPhone);
-};
+            if (typeof selectionStart === 'number') {
+                const next = Math.max(0, selectionStart + (formatted.length - previousLength));
+                field.setSelectionRange(next, next);
+            }
+        });
+    };
+
+    const initialize = () => {
+        const postcodeSelectors = [
+            '#billing_postcode',
+            '#shipping_postcode',
+            '#billing-postcode',
+            '#shipping-postcode',
+            'input[name="billing_postcode"]',
+            'input[name="shipping_postcode"]',
+            'input[autocomplete="postal-code"]'
+        ];
+
+        document
+            .querySelectorAll(postcodeSelectors.join(','))
+            .forEach(bindPostcode);
+
+        const phoneSelectors = [
+            '#billing_phone',
+            '#shipping_phone',
+            '#billing-phone',
+            '#shipping-phone',
+            'input[name="billing_phone"]',
+            'input[name="shipping_phone"]',
+            'input[autocomplete="tel"]'
+        ];
+
+        document
+            .querySelectorAll(phoneSelectors.join(','))
+            .forEach(bindPhone);
+    };
+
+    const debounce = (fn, wait) => {
+        let timer = 0;
+
+        return () => {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(fn, wait);
+        };
+    };
 
     initialize();
 
-    const observer = new MutationObserver(() => {
-        initialize();
-    });
+    const observer = new MutationObserver(debounce(initialize, 80));
 
     observer.observe(document.body, {
         childList: true,

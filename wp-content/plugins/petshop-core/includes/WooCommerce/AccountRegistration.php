@@ -8,9 +8,14 @@ defined('ABSPATH') || exit;
 
 final class AccountRegistration
 {
+    public const CHECKOUT_EXTENSION_NAMESPACE = 'petshop-account';
+
+    private static string $documentLockName = '';
+
     public static function bootstrap(): void
     {
         add_action('woocommerce_register_form', [self::class, 'renderFields']);
+        add_filter('woocommerce_form_field_args', [self::class, 'pairRegisterPasswordField'], 10, 3);
         add_filter('woocommerce_registration_errors', [self::class, 'validateRegistration'], 10, 3);
         add_action('woocommerce_created_customer', [self::class, 'saveCustomer'], 10, 1);
         add_filter('woocommerce_billing_fields', [self::class, 'addBillingAddressFields']);
@@ -18,6 +23,18 @@ final class AccountRegistration
         add_action('woocommerce_save_account_details_errors', [self::class, 'validateAccountDetails'], 10, 2);
         add_action('woocommerce_save_account_details', [self::class, 'saveAccountDetails'], 10, 1);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAccountAssets']);
+        add_action(
+            'woocommerce_store_api_checkout_update_order_from_request',
+            [self::class, 'validateCheckoutAccountPassword'],
+            5,
+            2
+        );
+
+        if (did_action('woocommerce_blocks_loaded') > 0) {
+            self::registerCheckoutEndpointData();
+        } else {
+            add_action('woocommerce_blocks_loaded', [self::class, 'registerCheckoutEndpointData']);
+        }
     }
     public static function enqueueAccountAssets(): void
     {
@@ -45,101 +62,43 @@ final class AccountRegistration
             is_file($jsPath) ? (string) filemtime($jsPath) : '1.0.0',
             true
         );
-    }
 
+        wp_localize_script(
+            'petshop-account-registration',
+            'petshopAccountRegistration',
+            [
+                'createAccount' => __('Criar conta', 'petshop-core'),
+                'backToLogin' => __('Voltar para entrar', 'petshop-core'),
+            ]
+        );
+    }
 
     public static function renderFields(): void
     {
-        $states = WC()->countries->get_states('BR');
+        if (!function_exists('woocommerce_form_field')) {
+            return;
+        }
 
         woocommerce_form_field('password_confirm', [
             'type' => 'password',
             'required' => true,
-            'label' => 'Confirmar senha',
+            'label' => __('Confirmar senha', 'petshop-core'),
+            'class' => ['form-row-last'],
         ]);
-
 
         woocommerce_form_field('billing_first_name', [
             'type' => 'text',
             'required' => true,
-            'label' => 'Nome',
+            'label' => __('Nome', 'petshop-core'),
+            'class' => ['form-row-first'],
         ], self::postValue('billing_first_name'));
 
         woocommerce_form_field('billing_last_name', [
             'type' => 'text',
             'required' => true,
-            'label' => 'Sobrenome',
+            'label' => __('Sobrenome', 'petshop-core'),
+            'class' => ['form-row-last'],
         ], self::postValue('billing_last_name'));
-
-        woocommerce_form_field('billing_phone', [
-            'type' => 'tel',
-            'required' => true,
-            'label' => 'Telefone com DDD',
-            'placeholder' => '(51) 99999-9999',
-        ], self::postValue('billing_phone'));
-
-        woocommerce_form_field('petshop_person_type', [
-            'type' => 'select',
-            'required' => true,
-            'label' => 'Tipo de pessoa',
-            'options' => [
-                '' => 'Selecione',
-                'PF' => 'Pessoa física',
-                'PJ' => 'Pessoa jurídica',
-            ],
-        ], self::postValue('petshop_person_type'));
-
-        woocommerce_form_field('petshop_document', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'CPF ou CNPJ',
-            'placeholder' => 'Digite apenas números',
-        ], self::postValue('petshop_document'));
-
-        woocommerce_form_field('billing_postcode', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'CEP',
-            'placeholder' => '00000-000',
-        ], self::postValue('billing_postcode'));
-
-        woocommerce_form_field('billing_address_1', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'Logradouro',
-        ], self::postValue('billing_address_1'));
-
-        woocommerce_form_field('billing_number', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'Número',
-        ], self::postValue('billing_number'));
-
-        woocommerce_form_field('billing_address_2', [
-            'type' => 'text',
-            'required' => false,
-            'label' => 'Complemento',
-        ], self::postValue('billing_address_2'));
-
-        woocommerce_form_field('billing_neighborhood', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'Bairro',
-        ], self::postValue('billing_neighborhood'));
-
-        woocommerce_form_field('billing_city', [
-            'type' => 'text',
-            'required' => true,
-            'label' => 'Cidade',
-        ], self::postValue('billing_city'));
-
-        woocommerce_form_field('billing_state', [
-            'type' => 'select',
-            'required' => true,
-            'label' => 'UF',
-            'options' => ['' => 'Selecione'] + $states,
-        ], self::postValue('billing_state'));
-
     }
 
     public static function validateRegistration(
@@ -147,25 +106,24 @@ final class AccountRegistration
         string $username,
         string $email
     ): \WP_Error {
- $nonce = isset($_POST['woocommerce-register-nonce']) && is_scalar($_POST['woocommerce-register-nonce'])
-    ? sanitize_text_field(wp_unslash((string) $_POST['woocommerce-register-nonce']))
-    : '';
+        unset($username, $email);
 
-if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
-    return $errors;
-}
-    $required = [
-            'billing_first_name' => 'Informe seu nome.',
-            'billing_last_name' => 'Informe seu sobrenome.',
-            'billing_phone' => 'Informe seu telefone.',
-            'petshop_person_type' => 'Escolha pessoa física ou jurídica.',
-            'petshop_document' => 'Informe seu CPF ou CNPJ.',
-            'billing_postcode' => 'Informe seu CEP.',
-            'billing_address_1' => 'Informe o logradouro.',
-            'billing_number' => 'Informe o número.',
-            'billing_neighborhood' => 'Informe o bairro.',
-            'billing_city' => 'Informe a cidade.',
-            'billing_state' => 'Informe a UF.',
+        $nonce = isset($_POST['woocommerce-register-nonce']) && is_scalar($_POST['woocommerce-register-nonce'])
+            ? sanitize_text_field(wp_unslash((string) $_POST['woocommerce-register-nonce']))
+            : '';
+
+        if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
+            $errors->add(
+                'petshop_nonce_invalid',
+                __('Sessão expirada. Recarregue a página e tente novamente.', 'petshop-core')
+            );
+
+            return $errors;
+        }
+
+        $required = [
+            'billing_first_name' => __('Informe seu nome.', 'petshop-core'),
+            'billing_last_name' => __('Informe seu sobrenome.', 'petshop-core'),
         ];
 
         foreach ($required as $field => $message) {
@@ -176,67 +134,107 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
 
         $type = strtoupper(self::postValue('petshop_person_type'));
         $document = self::digits(self::postValue('petshop_document'));
+        $phone = self::postValue('billing_phone');
+        $postcode = self::postValue('billing_postcode');
 
         if ($type !== '' && !in_array($type, ['PF', 'PJ'], true)) {
-            $errors->add('petshop_person_type_invalid', 'Tipo de pessoa inválido.');
+            $errors->add(
+                'petshop_person_type_invalid',
+                __('Tipo de pessoa inválido.', 'petshop-core')
+            );
         }
 
-        if ($type === 'PF' && !self::isValidCpf($document)) {
-            $errors->add('petshop_cpf_invalid', 'Informe um CPF válido.');
+        self::addDocumentFormatErrors($errors, $type, $document);
+        self::assertUniqueDocument($errors, $document);
+
+        if ($phone !== '' && !self::isValidPhone($phone)) {
+            $errors->add(
+                'petshop_phone_invalid',
+                __('Informe um telefone brasileiro válido com DDD.', 'petshop-core')
+            );
         }
 
-        if ($type === 'PJ' && !self::isValidCnpj($document)) {
-            $errors->add('petshop_cnpj_invalid', 'Informe um CNPJ válido.');
+        if ($postcode !== '' && strlen(self::digits($postcode)) !== 8) {
+            $errors->add(
+                'petshop_postcode_invalid',
+                __('Informe um CEP válido com 8 dígitos.', 'petshop-core')
+            );
         }
 
-        if ($document !== '') {
-            $existing = get_users([
-                'meta_key' => 'petshop_document',
-                'meta_value' => $document,
-                'number' => 1,
-                'fields' => 'ids',
-            ]);
-
-            if ($existing !== []) {
-                $errors->add('petshop_document_exists', 'Este CPF ou CNPJ já está cadastrado.');
-            }
-        }
-
-        if (!self::isValidPhone(self::postValue('billing_phone'))) {
-            $errors->add('petshop_phone_invalid', 'Informe um telefone brasileiro válido com DDD.');
-        }
-
-        if (strlen(self::digits(self::postValue('billing_postcode'))) !== 8) {
-            $errors->add('petshop_postcode_invalid', 'Informe um CEP válido com 8 dígitos.');
-        }
-
-        $states = WC()->countries->get_states('BR');
+        $states = function_exists('WC') && WC() !== null
+            ? WC()->countries->get_states('BR')
+            : [];
         $state = strtoupper(self::postValue('billing_state'));
 
-        if ($state !== '' && !isset($states[$state])) {
-            $errors->add('petshop_state_invalid', 'Informe uma UF válida.');
+        if ($state !== '' && is_array($states) && !isset($states[$state])) {
+            $errors->add(
+                'petshop_state_invalid',
+                __('Informe uma UF válida.', 'petshop-core')
+            );
         }
 
-        $password = isset($_POST['password'])
+        $password = isset($_POST['password']) && is_scalar($_POST['password'])
             ? (string) wp_unslash($_POST['password'])
             : '';
 
-        $confirmation = isset($_POST['password_confirm'])
+        $confirmation = isset($_POST['password_confirm']) && is_scalar($_POST['password_confirm'])
             ? (string) wp_unslash($_POST['password_confirm'])
             : '';
 
         if ($password === '') {
-            $errors->add('petshop_password_required', 'Escolha uma senha.');
+            $errors->add(
+                'petshop_password_required',
+                __('Escolha uma senha.', 'petshop-core')
+            );
         }
 
         if ($confirmation === '') {
-            $errors->add('petshop_password_confirmation_required', 'Confirme sua senha.');
+            $errors->add(
+                'petshop_password_confirmation_required',
+                __('Confirme sua senha.', 'petshop-core')
+            );
         } elseif ($password !== $confirmation) {
-            $errors->add('petshop_password_mismatch', 'As senhas não são iguais.');
+            $errors->add(
+                'petshop_password_mismatch',
+                __('As senhas não são iguais.', 'petshop-core')
+            );
         }
 
         return $errors;
     }
+
+    /**
+     * @param array<string, mixed> $args
+     * @param mixed $value
+     * @return array<string, mixed>
+     */
+    public static function pairRegisterPasswordField(array $args, string $key, $value): array
+    {
+        unset($value);
+
+        if ($key !== 'password' || !is_account_page() || is_user_logged_in()) {
+            return $args;
+        }
+
+        $fieldId = isset($args['id']) && is_scalar($args['id']) ? (string) $args['id'] : '';
+
+        if ($fieldId !== '' && $fieldId !== 'reg_password') {
+            return $args;
+        }
+
+        $classes = isset($args['class']) && is_array($args['class']) ? $args['class'] : [];
+        $classes = array_values(array_filter(
+            $classes,
+            static fn($class): bool => is_string($class)
+                && !in_array($class, ['form-row-wide', 'woocommerce-form-row--wide'], true)
+        ));
+        $classes[] = 'form-row-first';
+        $classes[] = 'woocommerce-form-row--first';
+        $args['class'] = $classes;
+
+        return $args;
+    }
+
     public static function renderAccountFields(): void
     {
         $customerId = get_current_user_id();
@@ -255,20 +253,20 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
 
         woocommerce_form_field('petshop_person_type', [
             'type' => 'select',
-            'required' => true,
-            'label' => 'Tipo de pessoa',
+            'required' => false,
+            'label' => __('Tipo de pessoa', 'petshop-core'),
             'options' => [
-                '' => 'Selecione',
-                'PF' => 'Pessoa física',
-                'PJ' => 'Pessoa jurídica',
+                '' => __('Selecione', 'petshop-core'),
+                'PF' => __('Pessoa física', 'petshop-core'),
+                'PJ' => __('Pessoa jurídica', 'petshop-core'),
             ],
         ], $type);
 
         woocommerce_form_field('petshop_document', [
             'type' => 'text',
-            'required' => true,
-            'label' => 'CPF ou CNPJ',
-            'placeholder' => 'Digite apenas números',
+            'required' => false,
+            'label' => __('CPF ou CNPJ', 'petshop-core'),
+            'placeholder' => __('Digite apenas números', 'petshop-core'),
         ], $document);
     }
     public static function validateAccountDetails(\WP_Error $errors, \stdClass $user): void
@@ -276,56 +274,25 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
         $type = strtoupper(self::postValue('petshop_person_type'));
         $document = self::digits(self::postValue('petshop_document'));
 
-        if ($type === '') {
-            $errors->add(
-                'petshop_person_type_required',
-                'Escolha pessoa física ou jurídica.'
-            );
-        } elseif (!in_array($type, ['PF', 'PJ'], true)) {
+        if ($type !== '' && !in_array($type, ['PF', 'PJ'], true)) {
             $errors->add(
                 'petshop_person_type_invalid',
-                'Tipo de pessoa inválido.'
+                __('Tipo de pessoa inválido.', 'petshop-core')
             );
         }
 
-        if ($document === '') {
-            $errors->add(
-                'petshop_document_required',
-                'Informe seu CPF ou CNPJ.'
-            );
-        } elseif ($type === 'PF' && !self::isValidCpf($document)) {
-            $errors->add(
-                'petshop_cpf_invalid',
-                'Informe um CPF válido.'
-            );
-        } elseif ($type === 'PJ' && !self::isValidCnpj($document)) {
-            $errors->add(
-                'petshop_cnpj_invalid',
-                'Informe um CNPJ válido.'
-            );
-        }
-
-        if ($document !== '') {
-            $existing = get_users([
-                'meta_key' => 'petshop_document',
-                'meta_value' => $document,
-                'number' => 1,
-                'fields' => 'ids',
-                'exclude' => [(int) $user->ID],
-            ]);
-
-            if ($existing !== []) {
-                $errors->add(
-                    'petshop_document_exists',
-                    'Este CPF ou CNPJ já está cadastrado.'
-                );
-            }
-        }
+        self::addDocumentFormatErrors($errors, $type, $document);
+        self::assertUniqueDocument($errors, $document, [(int) $user->ID]);
     }
     public static function saveAccountDetails(int $customerId): void
     {
         $type = strtoupper(self::postValue('petshop_person_type'));
         $document = self::digits(self::postValue('petshop_document'));
+
+        if ($document !== '' && self::documentBelongsToAnotherUser($document, [$customerId])) {
+            self::releaseDocumentLock();
+            return;
+        }
 
         update_user_meta($customerId, 'petshop_person_type', $type);
         update_user_meta($customerId, 'petshop_document', $document);
@@ -339,18 +306,20 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
             update_user_meta($customerId, 'billing_cnpj', $document);
             delete_user_meta($customerId, 'billing_cpf');
         }
+
+        self::releaseDocumentLock();
     }
     public static function addBillingAddressFields(array $fields): array
     {
         $fields['billing_number'] = [
-            'label' => 'Número',
+            'label' => __('Número', 'petshop-core'),
             'required' => true,
             'class' => ['form-row-first'],
             'priority' => 55,
         ];
 
         $fields['billing_neighborhood'] = [
-            'label' => 'Bairro',
+            'label' => __('Bairro', 'petshop-core'),
             'required' => true,
             'class' => ['form-row-last'],
             'priority' => 65,
@@ -385,21 +354,25 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
             update_user_meta($customerId, $field, self::postValue($field));
         }
 
-
         update_user_meta($customerId, 'billing_country', 'BR');
 
         $type = strtoupper(self::postValue('petshop_person_type'));
         $document = self::digits(self::postValue('petshop_document'));
 
+        if ($document !== '' && self::documentBelongsToAnotherUser($document, [$customerId])) {
+            $document = '';
+            $type = '';
+        }
+
         update_user_meta($customerId, 'petshop_person_type', $type);
         update_user_meta($customerId, 'petshop_document', $document);
 
-        if ($type === 'PF') {
+        if ($type === 'PF' && $document !== '') {
             update_user_meta($customerId, 'billing_cpf', $document);
             delete_user_meta($customerId, 'billing_cnpj');
         }
 
-        if ($type === 'PJ') {
+        if ($type === 'PJ' && $document !== '') {
             update_user_meta($customerId, 'billing_cnpj', $document);
             delete_user_meta($customerId, 'billing_cpf');
         }
@@ -415,15 +388,285 @@ if ($nonce === '' || !wp_verify_nonce($nonce, 'woocommerce-register')) {
             'last_name',
             self::postValue('billing_last_name')
         );
+
+        self::releaseDocumentLock();
+    }
+
+    public static function registerCheckoutEndpointData(): void
+    {
+        if (!function_exists('woocommerce_store_api_register_endpoint_data')) {
+            return;
+        }
+
+        if (!class_exists(\Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::class)) {
+            return;
+        }
+
+        woocommerce_store_api_register_endpoint_data([
+            'endpoint' => \Automattic\WooCommerce\StoreApi\Schemas\V1\CheckoutSchema::IDENTIFIER,
+            'namespace' => self::CHECKOUT_EXTENSION_NAMESPACE,
+            'data_callback' => [self::class, 'checkoutExtensionData'],
+            'schema_callback' => [self::class, 'checkoutExtensionSchema'],
+            'schema_type' => ARRAY_A,
+        ]);
+    }
+
+    /**
+     * @return array{password_confirm: string}
+     */
+    public static function checkoutExtensionData(): array
+    {
+        return [
+            'password_confirm' => '',
+        ];
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public static function checkoutExtensionSchema(): array
+    {
+        return [
+            'password_confirm' => [
+                'description' => __(
+                    'Confirmação da senha da conta criada no checkout.',
+                    'petshop-core'
+                ),
+                'type' => 'string',
+                'context' => ['view', 'edit'],
+                'readonly' => false,
+            ],
+        ];
+    }
+
+    public static function validateCheckoutAccountPassword(
+        \WC_Order $order,
+        \WP_REST_Request $request
+    ): void {
+        unset($order);
+
+        if (is_user_logged_in() || !self::requestCreatesCheckoutAccount($request)) {
+            return;
+        }
+
+        $password = self::requestScalar($request, 'customer_password');
+        $confirmation = self::requestPasswordConfirmation($request);
+
+        if ($password === '') {
+            self::throwCheckoutError(
+                'petshop_password_required',
+                __('Escolha uma senha.', 'petshop-core')
+            );
+        }
+
+        if ($confirmation === '') {
+            self::throwCheckoutError(
+                'petshop_password_confirmation_required',
+                __('Confirme sua senha.', 'petshop-core')
+            );
+        }
+
+        if ($password !== $confirmation) {
+            self::throwCheckoutError(
+                'petshop_password_mismatch',
+                __('As senhas não são iguais.', 'petshop-core')
+            );
+        }
+    }
+
+    private static function requestCreatesCheckoutAccount(\WP_REST_Request $request): bool
+    {
+        if (filter_var($request->get_param('create_account'), FILTER_VALIDATE_BOOLEAN)) {
+            return true;
+        }
+
+        $registrationRequired = function_exists('WC')
+            && WC() !== null
+            && WC()->checkout() !== null
+            && filter_var(WC()->checkout()->is_registration_required(), FILTER_VALIDATE_BOOLEAN);
+
+        return $registrationRequired && self::requestScalar($request, 'customer_password') !== '';
+    }
+
+    private static function addDocumentFormatErrors(
+        \WP_Error $errors,
+        string $type,
+        string $document
+    ): void {
+        if ($document === '') {
+            return;
+        }
+
+        if ($type === 'PF' || ($type === '' && strlen($document) === 11)) {
+            if (!self::isValidCpf($document)) {
+                $errors->add(
+                    'petshop_cpf_invalid',
+                    __('Informe um CPF válido.', 'petshop-core')
+                );
+            }
+
+            return;
+        }
+
+        if ($type === 'PJ' || ($type === '' && strlen($document) === 14)) {
+            if (!self::isValidCnpj($document)) {
+                $errors->add(
+                    'petshop_cnpj_invalid',
+                    __('Informe um CNPJ válido.', 'petshop-core')
+                );
+            }
+
+            return;
+        }
+
+        $errors->add(
+            'petshop_document_invalid',
+            __('Informe um CPF ou CNPJ válido.', 'petshop-core')
+        );
+    }
+
+    /**
+     * @param list<int> $excludeIds
+     */
+    private static function assertUniqueDocument(
+        \WP_Error $errors,
+        string $document,
+        array $excludeIds = []
+    ): void {
+        if ($document === '') {
+            return;
+        }
+
+        if (!self::acquireDocumentLock($document)) {
+            $errors->add(
+                'petshop_document_busy',
+                __('Não foi possível validar o CPF ou CNPJ agora. Tente novamente.', 'petshop-core')
+            );
+            return;
+        }
+
+        if (self::documentBelongsToAnotherUser($document, $excludeIds)) {
+            $errors->add(
+                'petshop_document_exists',
+                __('Este CPF ou CNPJ já está cadastrado.', 'petshop-core')
+            );
+            self::releaseDocumentLock();
+        }
+    }
+
+    /**
+     * @param list<int> $excludeIds
+     */
+    private static function documentBelongsToAnotherUser(string $document, array $excludeIds = []): bool
+    {
+        if ($document === '') {
+            return false;
+        }
+
+        $query = [
+            'meta_key' => 'petshop_document',
+            'meta_value' => $document,
+            'number' => 1,
+            'fields' => 'ids',
+        ];
+
+        if ($excludeIds !== []) {
+            $query['exclude'] = $excludeIds;
+        }
+
+        return get_users($query) !== [];
+    }
+
+    private static function acquireDocumentLock(string $document): bool
+    {
+        if ($document === '') {
+            return true;
+        }
+
+        $name = 'petshop_doc_' . hash('sha256', $document);
+
+        if (self::$documentLockName === $name) {
+            return true;
+        }
+
+        if (self::$documentLockName !== '') {
+            self::releaseDocumentLock();
+        }
+
+        global $wpdb;
+
+        $got = $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $name, 5));
+
+        if ((string) $got !== '1') {
+            return false;
+        }
+
+        self::$documentLockName = $name;
+        add_action('shutdown', [self::class, 'releaseDocumentLock'], 1);
+
+        return true;
+    }
+
+    public static function releaseDocumentLock(): void
+    {
+        if (self::$documentLockName === '') {
+            return;
+        }
+
+        global $wpdb;
+
+        $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', self::$documentLockName));
+        self::$documentLockName = '';
+    }
+
+    private static function requestPasswordConfirmation(\WP_REST_Request $request): string
+    {
+        $extensions = $request->get_param('extensions');
+
+        if (!is_array($extensions)) {
+            return '';
+        }
+
+        $payload = $extensions[self::CHECKOUT_EXTENSION_NAMESPACE] ?? null;
+
+        if (!is_array($payload) || !isset($payload['password_confirm']) || !is_scalar($payload['password_confirm'])) {
+            return '';
+        }
+
+        return (string) wp_unslash((string) $payload['password_confirm']);
+    }
+
+    private static function requestScalar(\WP_REST_Request $request, string $key): string
+    {
+        $value = $request->get_param($key);
+
+        if (!is_scalar($value)) {
+            return '';
+        }
+
+        return (string) wp_unslash((string) $value);
+    }
+
+    private static function throwCheckoutError(string $code, string $message): void
+    {
+        if (!class_exists(\Automattic\WooCommerce\StoreApi\Exceptions\RouteException::class)) {
+            throw new \RuntimeException($message);
+        }
+
+        throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
+            $code,
+            $message,
+            400
+        );
     }
 
     private static function postValue(string $key): string
     {
-        if (!isset($_POST[$key])) {
+        if (!isset($_POST[$key]) || !is_scalar($_POST[$key])) {
             return '';
         }
 
-        return sanitize_text_field(wp_unslash($_POST[$key]));
+        return sanitize_text_field(wp_unslash((string) $_POST[$key]));
     }
 
     private static function digits(string $value): string

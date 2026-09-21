@@ -42,6 +42,13 @@ final class AddressLookup
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'action' => self::AJAX_ACTION,
                 'nonce' => wp_create_nonce(self::NONCE_ACTION),
+                'consulting' => __('Consultando CEP...', 'petshop-core'),
+                'found' => __('Endereço encontrado pelo CEP.', 'petshop-core'),
+                'invalid' => __('Informe um CEP válido com 8 dígitos.', 'petshop-core'),
+                'unavailable' => __(
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                    'petshop-core'
+                ),
             ]
         );
     }
@@ -56,7 +63,12 @@ final class AddressLookup
 
         if (!is_string($cep) || strlen($cep) !== 8) {
             wp_send_json_error(
-                ['message' => 'Informe um CEP válido com 8 dígitos.'],
+                [
+                    'message' => __(
+                        'Informe um CEP válido com 8 dígitos.',
+                        'petshop-core'
+                    ),
+                ],
                 400
             );
         }
@@ -73,14 +85,17 @@ final class AddressLookup
         wp_send_json_success($result);
     }
 
-    public static function lookupCep(string $cep)
+    /**
+     * @return array{logradouro: string, bairro: string, localidade: string, uf: string, complemento: string}|\WP_Error
+     */
+    public static function lookupCep(string $cep): array|\WP_Error
     {
         $cep = preg_replace('/\D+/', '', $cep) ?? '';
 
         if (strlen($cep) !== 8) {
             return new \WP_Error(
                 'petshop_invalid_cep',
-                'Informe um CEP válido com 8 dígitos.'
+                __('Informe um CEP válido com 8 dígitos.', 'petshop-core')
             );
         }
 
@@ -97,14 +112,20 @@ final class AddressLookup
         if (is_wp_error($response)) {
             return new \WP_Error(
                 'petshop_viacep_unavailable',
-                'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.'
+                __(
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                    'petshop-core'
+                )
             );
         }
 
         if (wp_remote_retrieve_response_code($response) !== 200) {
             return new \WP_Error(
                 'petshop_viacep_unavailable',
-                'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.'
+                __(
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                    'petshop-core'
+                )
             );
         }
 
@@ -116,14 +137,17 @@ final class AddressLookup
         if (!is_array($data)) {
             return new \WP_Error(
                 'petshop_viacep_invalid_response',
-                'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.'
+                __(
+                    'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+                    'petshop-core'
+                )
             );
         }
 
         if (!empty($data['erro'])) {
             return new \WP_Error(
                 'petshop_cep_not_found',
-                'CEP não encontrado. Confira o número informado.'
+                __('CEP não encontrado. Confira o número informado.', 'petshop-core')
             );
         }
 
@@ -132,6 +156,7 @@ final class AddressLookup
             'bairro' => sanitize_text_field((string) ($data['bairro'] ?? '')),
             'localidade' => sanitize_text_field((string) ($data['localidade'] ?? '')),
             'uf' => sanitize_text_field((string) ($data['uf'] ?? '')),
+            'complemento' => sanitize_text_field((string) ($data['complemento'] ?? '')),
         ];
     }
 }

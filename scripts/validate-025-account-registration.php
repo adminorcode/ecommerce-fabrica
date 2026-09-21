@@ -36,6 +36,10 @@ $record(
     'Hook de validacao do cadastro nao registrado'
 );
 $record(
+    has_filter('woocommerce_form_field_args', [AccountRegistration::class, 'pairRegisterPasswordField']) !== false,
+    'Senha do cadastro deveria entrar no grid de duas colunas'
+);
+$record(
     has_filter('woocommerce_billing_fields', [AccountRegistration::class, 'addBillingAddressFields']) !== false,
     'Campos adicionais de endereco nao registrados'
 );
@@ -55,6 +59,13 @@ $record(
     has_filter('woocommerce_privacy_erase_personal_data_customer', [AccountPrivacy::class, 'eraseCustomerData']) !== false,
     'Apagador de privacidade adicional nao registrado'
 );
+$record(
+    has_action(
+        'woocommerce_store_api_checkout_update_order_from_request',
+        [AccountRegistration::class, 'validateCheckoutAccountPassword']
+    ) !== false,
+    'Validacao server-side de senha do Checkout Block nao registrada'
+);
 
 $originalPost = $_POST;
 try {
@@ -62,8 +73,12 @@ try {
     $errors = new WP_Error();
     AccountRegistration::validateRegistration($errors, '', 'teste025@example.com');
     $record(
-        $errors->get_error_codes() === [],
-        'woocommerce_registration_errors nao deveria validar requisicoes sem nonce do formulario de cadastro'
+        $errors->get_error_codes() === ['petshop_nonce_invalid'],
+        'Requisicao sem nonce deveria falhar so com petshop_nonce_invalid'
+    );
+    $record(
+        !in_array('petshop_billing_first_name', $errors->get_error_codes(), true),
+        'Requisicao sem nonce nao deveria validar campos do cadastro'
     );
 } finally {
     $_POST = $originalPost;
@@ -75,6 +90,14 @@ $registrationHtml = (string) ob_get_clean();
 foreach ([
     'billing_first_name',
     'billing_last_name',
+    'password_confirm',
+] as $fieldName) {
+    $record(
+        str_contains($registrationHtml, 'name="' . $fieldName . '"'),
+        "Campo {$fieldName} ausente no cadastro"
+    );
+}
+foreach ([
     'billing_phone',
     'petshop_person_type',
     'petshop_document',
@@ -84,13 +107,17 @@ foreach ([
     'billing_neighborhood',
     'billing_city',
     'billing_state',
-    'password_confirm',
 ] as $fieldName) {
     $record(
-        str_contains($registrationHtml, 'name="' . $fieldName . '"'),
-        'Cadastro de Minha conta sem o campo ' . $fieldName
+        !str_contains($registrationHtml, 'name="' . $fieldName . '"'),
+        "Campo {$fieldName} nao deveria aparecer no cadastro inicial"
     );
 }
+$record(
+    str_contains($registrationHtml, 'form-row-first')
+        && str_contains($registrationHtml, 'form-row-last'),
+    'Cadastro deveria usar grid de duas colunas (form-row-first/last)'
+);
 
 $billingFields = AccountRegistration::addBillingAddressFields([]);
 $record(
@@ -194,6 +221,252 @@ $guestAccountSource = is_file($guestAccountPath) ? (string) file_get_contents($g
 $record(str_contains($guestAccountSource, 'name="password_confirm"'), 'GuestAccount sem confirmacao de senha');
 $record(str_contains($guestAccountSource, 'wc_set_customer_auth_cookie'), 'GuestAccount sem login imediato');
 $record(str_contains($guestAccountSource, '$order->set_customer_id'), 'GuestAccount sem associacao do pedido ao cliente');
+$record(
+    str_contains($guestAccountSource, "'account', 'create_failed'"),
+    'GuestAccount deveria redirecionar falha de criacao em vez de wp_die'
+);
+$record(
+    str_contains($guestAccountSource, "'account', 'link_failed'"),
+    'GuestAccount deveria redirecionar falha de vinculo em vez de wp_die'
+);
+
+$staleUsers = get_users([
+    'search' => '*ticket025*',
+    'search_columns' => ['user_login', 'user_email'],
+    'number' => 50,
+    'fields' => 'ids',
+]);
+
+foreach ($staleUsers as $staleId) {
+    wp_delete_user((int) $staleId);
+}
+
+$registrationPayload = static function (array $overrides = []): array {
+    return array_merge([
+        'woocommerce-register-nonce' => wp_create_nonce('woocommerce-register'),
+        'billing_first_name' => 'Maria',
+        'billing_last_name' => 'Silva',
+        'billing_phone' => '(51) 99999-9999',
+        'petshop_person_type' => 'PF',
+        'petshop_document' => '39053344705',
+        'billing_postcode' => '01001-000',
+        'billing_address_1' => 'Praca da Se',
+        'billing_number' => '100',
+        'billing_address_2' => '',
+        'billing_neighborhood' => 'Se',
+        'billing_city' => 'Sao Paulo',
+        'billing_state' => 'SP',
+        'password' => 'Senha025@Forte',
+        'password_confirm' => 'Senha025@Forte',
+    ], $overrides);
+};
+
+$originalPost = $_POST;
+
+try {
+    $_POST = $registrationPayload(['petshop_document' => '', 'petshop_person_type' => '']);
+    $emptyDocumentErrors = new WP_Error();
+    AccountRegistration::validateRegistration($emptyDocumentErrors, '', 'vazio025@example.com');
+    $emptyCodes = $emptyDocumentErrors->get_error_codes();
+    $record(
+        !in_array('petshop_petshop_document', $emptyCodes, true)
+            && !in_array('petshop_document_required', $emptyCodes, true),
+        'Documento vazio deveria ser aceito no cadastro'
+    );
+    $record(
+        !in_array('petshop_cpf_invalid', $emptyCodes, true)
+            && !in_array('petshop_cnpj_invalid', $emptyCodes, true),
+        'Documento vazio nao deveria gerar segundo erro de CPF/CNPJ invalido'
+    );
+
+    $_POST = $registrationPayload([
+        'billing_phone' => '',
+        'petshop_person_type' => '',
+        'petshop_document' => '',
+        'billing_postcode' => '',
+        'billing_address_1' => '',
+        'billing_number' => '',
+        'billing_neighborhood' => '',
+        'billing_city' => '',
+        'billing_state' => '',
+    ]);
+    $minimalErrors = new WP_Error();
+    AccountRegistration::validateRegistration($minimalErrors, '', 'minimo025@example.com');
+    $record(
+        $minimalErrors->get_error_codes() === [],
+        'Cadastro com nome, e-mail e senha nao deveria exigir telefone, documento nem endereco: ' . implode(',', $minimalErrors->get_error_codes())
+    );
+
+    $_POST = $registrationPayload();
+    $validPfErrors = new WP_Error();
+    AccountRegistration::validateRegistration($validPfErrors, '', 'pf025@example.com');
+    $record(
+        $validPfErrors->get_error_codes() === [],
+        'Cadastro PF valido nao deveria gerar erro: ' . implode(',', $validPfErrors->get_error_codes())
+    );
+
+    $_POST = $registrationPayload([
+        'petshop_person_type' => 'PJ',
+        'petshop_document' => '04252011000110',
+    ]);
+    $validPjErrors = new WP_Error();
+    AccountRegistration::validateRegistration($validPjErrors, '', 'pj025@example.com');
+    $record(
+        $validPjErrors->get_error_codes() === [],
+        'Cadastro PJ valido nao deveria gerar erro: ' . implode(',', $validPjErrors->get_error_codes())
+    );
+
+    $persistLogin = 'ticket025-persist-' . wp_generate_password(8, false, false);
+    $persistId = wp_insert_user([
+        'user_login' => $persistLogin,
+        'user_email' => $persistLogin . '@example.com',
+        'user_pass' => 'Senha025@Forte',
+        'first_name' => 'Maria',
+        'last_name' => 'Silva',
+    ]);
+
+    if (is_wp_error($persistId)) {
+        $failures[] = 'Nao foi possivel criar usuario para persistencia: ' . $persistId->get_error_message();
+    } else {
+        try {
+            $_POST = $registrationPayload();
+            AccountRegistration::saveCustomer((int) $persistId);
+            $record(
+                (string) get_user_meta((int) $persistId, 'petshop_person_type', true) === 'PF',
+                'saveCustomer nao gravou tipo PF'
+            );
+            $record(
+                (string) get_user_meta((int) $persistId, 'petshop_document', true) === '39053344705',
+                'saveCustomer nao gravou CPF'
+            );
+            $record(
+                (string) get_user_meta((int) $persistId, 'billing_cpf', true) === '39053344705',
+                'saveCustomer nao gravou billing_cpf'
+            );
+            $record(
+                (string) get_user_meta((int) $persistId, 'billing_phone', true) === '(51) 99999-9999',
+                'saveCustomer nao gravou telefone'
+            );
+            $record(
+                (string) get_user_meta((int) $persistId, 'billing_number', true) === '100',
+                'saveCustomer nao gravou numero'
+            );
+            $record(
+                (string) get_user_meta((int) $persistId, 'billing_neighborhood', true) === 'Se',
+                'saveCustomer nao gravou bairro'
+            );
+
+            $_POST = $registrationPayload([
+                'petshop_document' => '39053344705',
+            ]);
+            $duplicateErrors = new WP_Error();
+            AccountRegistration::validateRegistration($duplicateErrors, '', 'dup025@example.com');
+            $record(
+                in_array('petshop_document_exists', $duplicateErrors->get_error_codes(), true),
+                'CPF ja cadastrado deveria ser recusado'
+            );
+            AccountRegistration::releaseDocumentLock();
+        } finally {
+            wp_delete_user((int) $persistId);
+        }
+    }
+} finally {
+    $_POST = $originalPost;
+}
+
+$forceComplement = static function ($preempt, array $args, string $url) {
+    if (!str_contains($url, 'viacep.com.br')) {
+        return $preempt;
+    }
+
+    return [
+        'headers' => [],
+        'body' => wp_json_encode([
+            'logradouro' => 'Praca da Se',
+            'bairro' => 'Se',
+            'localidade' => 'Sao Paulo',
+            'uf' => 'SP',
+            'complemento' => 'lado impar',
+        ]),
+        'response' => [
+            'code' => 200,
+            'message' => 'OK',
+        ],
+        'cookies' => [],
+        'filename' => null,
+    ];
+};
+add_filter('pre_http_request', $forceComplement, 10, 3);
+try {
+    $withComplement = AddressLookup::lookupCep('01001000');
+    $record(
+        is_array($withComplement)
+            && ($withComplement['complemento'] ?? '') === 'lado impar'
+            && ($withComplement['logradouro'] ?? '') === 'Praca da Se',
+        'ViaCEP deveria devolver complemento quando a API enviar valor'
+    );
+} finally {
+    remove_filter('pre_http_request', $forceComplement, 10);
+}
+
+$checkoutOrder = new WC_Order();
+$mismatchRequest = new WP_REST_Request('POST', '/wc/store/v1/checkout');
+$mismatchRequest->set_param('create_account', true);
+$mismatchRequest->set_param('customer_password', 'Senha025@Forte');
+$mismatchRequest->set_param('extensions', [
+    AccountRegistration::CHECKOUT_EXTENSION_NAMESPACE => [
+        'password_confirm' => 'Senha025@ERRADA',
+    ],
+]);
+
+$mismatchCode = '';
+
+try {
+    AccountRegistration::validateCheckoutAccountPassword($checkoutOrder, $mismatchRequest);
+} catch (\Automattic\WooCommerce\StoreApi\Exceptions\RouteException $exception) {
+    $mismatchCode = $exception->getErrorCode();
+} catch (Throwable $exception) {
+    $mismatchCode = $exception->getMessage();
+}
+
+$record(
+    $mismatchCode === 'petshop_password_mismatch',
+    'Checkout Block deveria recusar senhas diferentes no servidor'
+);
+
+$matchRequest = new WP_REST_Request('POST', '/wc/store/v1/checkout');
+$matchRequest->set_param('create_account', true);
+$matchRequest->set_param('customer_password', 'Senha025@Forte');
+$matchRequest->set_param('extensions', [
+    AccountRegistration::CHECKOUT_EXTENSION_NAMESPACE => [
+        'password_confirm' => 'Senha025@Forte',
+    ],
+]);
+
+$matchThrew = false;
+
+try {
+    AccountRegistration::validateCheckoutAccountPassword($checkoutOrder, $matchRequest);
+} catch (Throwable $exception) {
+    $matchThrew = true;
+    $failures[] = 'Senhas iguais no checkout nao deveriam falhar: ' . $exception->getMessage();
+}
+
+$record(!$matchThrew, 'Checkout Block deveria aceitar senha e confirmacao iguais');
+
+$guestWithoutAccount = new WP_REST_Request('POST', '/wc/store/v1/checkout');
+$guestWithoutAccount->set_param('create_account', false);
+$guestWithoutAccount->set_param('customer_password', '');
+$guestSkipped = true;
+
+try {
+    AccountRegistration::validateCheckoutAccountPassword($checkoutOrder, $guestWithoutAccount);
+} catch (Throwable $exception) {
+    $guestSkipped = false;
+    $failures[] = 'Checkout visitante sem criar conta nao deveria validar senha: ' . $exception->getMessage();
+}
+
+$record($guestSkipped, 'Checkout visitante sem criar conta nao deve exigir confirmacao de senha');
 
 if ($failures !== []) {
     foreach ($failures as $failure) {

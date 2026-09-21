@@ -4,9 +4,30 @@
     const FIELD_ID = 'petshop-checkout-password-confirmation';
     const ERROR_ID = 'petshop-checkout-password-confirmation-error';
     const VALIDATION_ID = 'petshop-checkout-password-confirmation';
+    const i18n = window.petshopCheckoutAccountPassword || {};
+    const EXTENSION_NAMESPACE = i18n.namespace || 'petshop-account';
+
+    const debounce = (fn, wait) => {
+        let timer = 0;
+
+        return () => {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(fn, wait);
+        };
+    };
+
+    const getStoreKey = (preferred, fallback) => {
+        const data = window.wc?.wcBlocksData;
+
+        return data?.[preferred] || data?.[fallback] || null;
+    };
 
     const getValidationStore = () => {
-        return window.wc?.wcBlocksData?.validationStore || null;
+        return getStoreKey('validationStore', 'VALIDATION_STORE_KEY');
+    };
+
+    const getCheckoutStore = () => {
+        return getStoreKey('checkoutStore', 'CHECKOUT_STORE_KEY');
     };
 
     const getValidationActions = () => {
@@ -16,7 +37,11 @@
             return null;
         }
 
-        return window.wp.data.dispatch(store);
+        try {
+            return window.wp.data.dispatch(store);
+        } catch (error) {
+            return null;
+        }
     };
 
     const getValidationError = () => {
@@ -26,7 +51,32 @@
             return null;
         }
 
-        return window.wp.data.select(store).getValidationError(VALIDATION_ID);
+        try {
+            return window.wp.data.select(store).getValidationError(VALIDATION_ID);
+        } catch (error) {
+            return null;
+        }
+    };
+
+    const findAccountPassword = () => {
+        const selectors = [
+            '.wc-block-components-address-form__password input[type="password"]',
+            '.wc-block-components-create-account-password input[type="password"]',
+            '.wc-block-components-create-account input[type="password"]',
+            '.wc-block-checkout__create-account input[type="password"]',
+            '#account-password',
+            'input#reg_password',
+        ];
+
+        for (const selector of selectors) {
+            const field = document.querySelector(`${selector}:not(#${FIELD_ID})`);
+
+            if (field instanceof HTMLInputElement) {
+                return field;
+            }
+        }
+
+        return null;
     };
 
     const clearValidation = () => {
@@ -60,12 +110,43 @@
         container.hidden = true;
     };
 
+    let lastExtensionValue;
+
+    const syncExtensionData = (confirmation) => {
+        const value = confirmation?.value || '';
+
+        if (lastExtensionValue === value) {
+            return;
+        }
+
+        const store = getCheckoutStore();
+
+        if (!store || !window.wp?.data) {
+            return;
+        }
+
+        try {
+            const actions = window.wp.data.dispatch(store);
+
+            if (!actions?.setExtensionData) {
+                return;
+            }
+
+            actions.setExtensionData(EXTENSION_NAMESPACE, {
+                password_confirm: value,
+            });
+            lastExtensionValue = value;
+        } catch (error) {
+            return;
+        }
+    };
+
     const validate = () => {
-        const password = document.querySelector(
-            `input[type="password"]:not(#${FIELD_ID})`
-        );
+        const password = findAccountPassword();
         const confirmation = document.getElementById(FIELD_ID);
         const actions = getValidationActions();
+
+        syncExtensionData(confirmation);
 
         if (!password || !confirmation || !actions) {
             clearValidation();
@@ -76,9 +157,9 @@
         let message = '';
 
         if (!confirmation.value) {
-            message = 'Confirme sua senha.';
+            message = i18n.required || 'Confirme sua senha.';
         } else if (password.value !== confirmation.value) {
-            message = 'As senhas não coincidem.';
+            message = i18n.mismatch || 'As senhas não coincidem.';
         }
 
         if (!message) {
@@ -112,6 +193,7 @@
             }
         }
 
+        syncExtensionData(null);
         clearValidation();
     };
 
@@ -139,7 +221,7 @@
 
         const label = document.createElement('label');
         label.htmlFor = FIELD_ID;
-        label.textContent = 'Confirmar senha';
+        label.textContent = i18n.label || 'Confirmar senha';
 
         const error = document.createElement('div');
         error.id = ERROR_ID;
@@ -168,9 +250,7 @@
     };
 
     const sync = () => {
-        const password = document.querySelector(
-            `input[type="password"]:not(#${FIELD_ID})`
-        );
+        const password = findAccountPassword();
 
         if (!password) {
             removeConfirmationField();
@@ -189,7 +269,7 @@
 
         sync();
 
-        const observer = new MutationObserver(sync);
+        const observer = new MutationObserver(debounce(sync, 80));
 
         observer.observe(document.body, {
             childList: true,

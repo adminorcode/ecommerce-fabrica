@@ -1,14 +1,22 @@
 #customer_login.petshop-account-ux-ready {
     display: block;
+    overflow: visible;
+}
+
+#customer_login.petshop-account-ux-ready::before,
+#customer_login.petshop-account-ux-ready::after {
+    content: none;
+    display: none;
 }
 
 #customer_login.petshop-account-ux-ready > .u-column1,
 #customer_login.petshop-account-ux-ready > .u-column2 {
     float: none;
     width: 100%;
-    max-width: 640px;
+    max-width: 52rem;
     margin-left: auto;
     margin-right: auto;
+    overflow: visible;
 }
 
 #customer_login.petshop-account-ux-ready > .u-column2 {
@@ -23,19 +31,100 @@
     display: block;
 }
 
-.petshop-account-create,
-.petshop-account-back {
-    margin-top: 16px;
+.petshop-account-create {
+    margin-top: var(--space-3, 1rem);
 }
 
-@media (max-width: 480px) {
+.petshop-account-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin: 0 0 var(--space-2, 0.75rem);
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--color-brand-teal-dark, #115e59);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.petshop-account-back:hover,
+.petshop-account-back:focus-visible {
+    text-decoration: underline;
+    background: none;
+}
+
+#customer_login.petshop-account-ux-ready form.register {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--space-3, 1rem);
+    row-gap: var(--space-3, 1rem);
+    overflow: visible;
+}
+
+#customer_login.petshop-account-ux-ready form.register > * {
+    grid-column: 1 / -1;
+    float: none;
+    clear: none;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+#customer_login.petshop-account-ux-ready form.register .form-row-first,
+#customer_login.petshop-account-ux-ready form.register .woocommerce-form-row--first,
+#customer_login.petshop-account-ux-ready form.register p:has(#reg_password),
+#customer_login.petshop-account-ux-ready form.register p:has(input[name="password"]) {
+    grid-column: 1;
+}
+
+#customer_login.petshop-account-ux-ready form.register .form-row-last,
+#customer_login.petshop-account-ux-ready form.register .woocommerce-form-row--last,
+#customer_login.petshop-account-ux-ready form.register p:has(#password_confirm),
+#customer_login.petshop-account-ux-ready form.register p:has(input[name="password_confirm"]) {
+    grid-column: 2;
+}
+
+#customer_login.petshop-account-ux-ready form.register .form-row label {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+#customer_login.petshop-account-ux-ready form.register .form-row .woocommerce-input-wrapper,
+#customer_login.petshop-account-ux-ready form.register .form-row input.input-text,
+#customer_login.petshop-account-ux-ready form.register .form-row select {
+    width: 100%;
+    max-width: none;
+}
+
+#customer_login.petshop-account-ux-ready form.register .woocommerce-form-register__submit {
+    justify-self: start;
+    min-height: 44px;
+}
+
+@media (max-width: 640px) {
     #customer_login.petshop-account-ux-ready > .u-column1,
     #customer_login.petshop-account-ux-ready > .u-column2 {
         max-width: 100%;
     }
 
-    .petshop-account-create,
-    .petshop-account-back {
+    #customer_login.petshop-account-ux-ready form.register {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #customer_login.petshop-account-ux-ready form.register .form-row-first,
+    #customer_login.petshop-account-ux-ready form.register .form-row-last,
+    #customer_login.petshop-account-ux-ready form.register .woocommerce-form-row--first,
+    #customer_login.petshop-account-ux-ready form.register .woocommerce-form-row--last,
+    #customer_login.petshop-account-ux-ready form.register p:has(#reg_password),
+    #customer_login.petshop-account-ux-ready form.register p:has(input[name="password"]),
+    #customer_login.petshop-account-ux-ready form.register p:has(#password_confirm),
+    #customer_login.petshop-account-ux-ready form.register p:has(input[name="password_confirm"]) {
+        grid-column: 1 / -1;
+    }
+
+    .petshop-account-create {
         width: 100%;
     }
 }

@@ -49,6 +49,24 @@ final class GuestAccount
                 . '</p>';
         }
 
+        if ($status === 'create_failed') {
+            echo '<p class="woocommerce-error">'
+                . esc_html__(
+                    'Não foi possível criar a conta. Tente novamente ou use outro e-mail.',
+                    'petshop-core'
+                )
+                . '</p>';
+        }
+
+        if ($status === 'link_failed') {
+            echo '<p class="woocommerce-error">'
+                . esc_html__(
+                    'A conta não pôde ser vinculada ao pedido. Nenhuma conta foi mantida.',
+                    'petshop-core'
+                )
+                . '</p>';
+        }
+
         if (email_exists($email)) {
             echo '<p>'
                 . esc_html__('Já existe uma conta para o e-mail deste pedido. Entre para consultar seus pedidos.', 'petshop-core')
@@ -161,7 +179,7 @@ final class GuestAccount
             exit;
         }
 
-        if (!hash_equals($password, $passwordConfirm)) {
+        if ($password !== $passwordConfirm) {
             wp_safe_redirect(add_query_arg('account', 'password_mismatch', $redirect));
             exit;
         }
@@ -177,11 +195,8 @@ final class GuestAccount
         );
 
         if (is_wp_error($userId)) {
-            wp_die(
-                esc_html($userId->get_error_message()),
-                '',
-                ['response' => 400]
-            );
+            wp_safe_redirect(add_query_arg('account', 'create_failed', $redirect));
+            exit;
         }
 
         try {
@@ -206,14 +221,8 @@ final class GuestAccount
             require_once ABSPATH . 'wp-admin/includes/user.php';
             wp_delete_user((int) $userId);
 
-            wp_die(
-                esc_html__(
-                    'A conta não pôde ser vinculada ao pedido. Nenhuma conta foi mantida.',
-                    'petshop-core'
-                ),
-                '',
-                ['response' => 500]
-            );
+            wp_safe_redirect(add_query_arg('account', 'link_failed', $redirect));
+            exit;
         }
 
         if (function_exists('wc_set_customer_auth_cookie')) {

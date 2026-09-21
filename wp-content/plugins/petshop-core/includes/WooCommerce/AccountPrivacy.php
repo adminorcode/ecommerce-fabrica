@@ -47,8 +47,8 @@ final class AccountPrivacy
             'petshop_document' => __('CPF ou CNPJ', 'petshop-core'),
             'billing_number' => __('Número do endereço de cobrança', 'petshop-core'),
             'billing_neighborhood' => __('Bairro do endereço de cobrança', 'petshop-core'),
-        'billing_cpf' => __('CPF de cobrança', 'petshop-core'),
-        'billing_cnpj' => __('CNPJ de cobrança', 'petshop-core'),
+            'billing_cpf' => __('CPF de cobrança', 'petshop-core'),
+            'billing_cnpj' => __('CNPJ de cobrança', 'petshop-core'),
         ];
 
         foreach ($fields as $metaKey => $label) {

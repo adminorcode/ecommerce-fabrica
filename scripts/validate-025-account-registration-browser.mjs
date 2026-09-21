@@ -10,6 +10,11 @@ const recordFailure = (condition, message) => {
   if (!condition) failures.push(message);
 };
 
+const ownPageErrors = (errors) => errors.filter((message) => (
+  !/crypto\.randomUUID is not a function/i.test(message)
+  && !/Melidata client load timed out/i.test(message)
+));
+
 const visible = async (locator) => (await locator.count()) > 0 && await locator.first().isVisible();
 
 try {
@@ -41,9 +46,42 @@ try {
       recordFailure(!(await visible(login)), `${viewport.name}: login deveria ocultar ao abrir cadastro`);
       recordFailure(await register.locator('input[name="password"]').count() === 1, `${viewport.name}: senha ausente no cadastro`);
       recordFailure(await register.locator('input[name="password_confirm"]').count() === 1, `${viewport.name}: confirmacao de senha ausente no cadastro`);
-      recordFailure(await register.locator('input[name="billing_phone"]').count() === 1, `${viewport.name}: telefone ausente no cadastro`);
-      recordFailure(await register.locator('select[name="petshop_person_type"]').count() === 1, `${viewport.name}: tipo PF/PJ ausente no cadastro`);
-      recordFailure(await register.locator('input[name="petshop_document"]').count() === 1, `${viewport.name}: CPF/CNPJ ausente no cadastro`);
+      recordFailure(await register.locator('input[name="billing_first_name"]').count() === 1, `${viewport.name}: nome ausente no cadastro`);
+      recordFailure(await register.locator('input[name="billing_last_name"]').count() === 1, `${viewport.name}: sobrenome ausente no cadastro`);
+      recordFailure(await register.locator('input[name="billing_phone"]').count() === 0, `${viewport.name}: telefone nao deveria aparecer no cadastro inicial`);
+      recordFailure(await register.locator('select[name="petshop_person_type"]').count() === 0, `${viewport.name}: tipo PF/PJ nao deveria aparecer no cadastro inicial`);
+      recordFailure(await register.locator('input[name="petshop_document"]').count() === 0, `${viewport.name}: CPF/CNPJ nao deveria aparecer no cadastro inicial`);
+      recordFailure(await register.locator('input[name="billing_postcode"]').count() === 0, `${viewport.name}: CEP nao deveria aparecer no cadastro inicial`);
+
+      const passwordPair = await page.evaluate(() => {
+        const registerForm = document.querySelector('#customer_login form.register');
+        const passwordRow = registerForm?.querySelector('#reg_password, input[name="password"]')?.closest('p, .form-row');
+        const confirmRow = registerForm?.querySelector('#password_confirm, input[name="password_confirm"]')?.closest('p, .form-row');
+        const nameRow = registerForm?.querySelector('input[name="billing_first_name"]')?.closest('p, .form-row');
+        const lastRow = registerForm?.querySelector('input[name="billing_last_name"]')?.closest('p, .form-row');
+
+        if (!passwordRow || !confirmRow || !nameRow || !lastRow) {
+          return { found: false, passwordSameRow: false, nameSameRow: false };
+        }
+
+        const sameRow = (left, right) => Math.abs(left.getBoundingClientRect().top - right.getBoundingClientRect().top) < 12;
+
+        return {
+          found: true,
+          passwordSameRow: sameRow(passwordRow, confirmRow),
+          nameSameRow: sameRow(nameRow, lastRow),
+        };
+      });
+
+      recordFailure(passwordPair.found, `${viewport.name}: pares de campo do cadastro ausentes para validar o grid`);
+      if (viewport.name === 'desktop-1440') {
+        recordFailure(passwordPair.passwordSameRow, `${viewport.name}: senha e confirmacao deveriam ficar na mesma linha`);
+        recordFailure(passwordPair.nameSameRow, `${viewport.name}: nome e sobrenome deveriam ficar na mesma linha`);
+      }
+      if (viewport.name === 'mobile-390') {
+        recordFailure(!passwordPair.passwordSameRow, `${viewport.name}: senha e confirmacao deveriam empilhar`);
+        recordFailure(!passwordPair.nameSameRow, `${viewport.name}: nome e sobrenome deveriam empilhar`);
+      }
 
       const layout = await page.evaluate(() => {
         const container = document.querySelector('#customer_login .u-column2.col-2');
@@ -107,9 +145,62 @@ try {
       }
     }
 
-    recordFailure(errors.length === 0, `${viewport.name}: ${errors.length} erro(s) JavaScript`);
+    const pageErrors = ownPageErrors(errors);
+    recordFailure(pageErrors.length === 0, `${viewport.name}: ${pageErrors.length} erro(s) JavaScript: ${pageErrors.join(' | ')}`);
     await page.close();
   }
+
+  const happyContext = await browser.newContext();
+  const happyPage = await happyContext.newPage();
+  await happyPage.setViewportSize({ width: 1440, height: 1000 });
+  await routeCanonicalNavigation(happyPage, baseUrl);
+  const happyErrors = [];
+  happyPage.on('pageerror', (error) => happyErrors.push(error.message));
+
+  const happyResponse = await happyPage.goto(`${baseUrl}/minha-conta/`, { waitUntil: 'networkidle', timeout: 30000 });
+  recordFailure(happyResponse?.status() === 200, `happy path: /minha-conta/ HTTP ${happyResponse?.status()}`);
+
+  const happyCreate = happyPage.locator('.petshop-account-create');
+  const happyRegister = happyPage.locator('#customer_login .u-column2.col-2');
+
+  if (await happyCreate.count()) {
+    await happyCreate.click();
+  }
+
+  const suffix = String(Date.now());
+  const happyEmail = `ticket025-browser-${suffix}@example.com`;
+
+  await happyRegister.locator('input[name="email"]').fill(happyEmail);
+  await happyRegister.locator('input[name="password"]').fill('Senha025@Forte');
+  await happyRegister.locator('input[name="password_confirm"]').fill('Senha025@Forte');
+  await happyRegister.locator('input[name="billing_first_name"]').fill('Maria');
+  await happyRegister.locator('input[name="billing_last_name"]').fill('Silva');
+  const privacy = happyRegister.locator('input[name="privacy_policy"], input[name="terms"]');
+  if (await privacy.count()) {
+    await privacy.first().check();
+  }
+  await happyRegister.locator('button[name="register"], input[name="register"]').click();
+
+  const accountNav = happyPage.locator('.woocommerce-MyAccount-navigation');
+  await Promise.race([
+    accountNav.waitFor({ state: 'visible', timeout: 20000 }),
+    happyPage.locator('.woocommerce-error').first().waitFor({ state: 'visible', timeout: 20000 }),
+  ]).catch(() => {});
+  const noticeText = await happyPage.locator('.woocommerce-error, .woocommerce-notices-wrapper').textContent().catch(() => '');
+  recordFailure(
+    await accountNav.count() === 1 && await accountNav.first().isVisible(),
+    `happy path: cadastro valido nao autenticou no painel; url=${happyPage.url()} aviso="${(noticeText || '').trim()}"`
+  );
+
+  const bodyText = await happyPage.locator('body').innerText();
+  recordFailure(
+    !/temporary password|senha tempor[aá]ria|\bResend\b/i.test(bodyText),
+    'happy path: banner de senha temporaria ainda aparece apos cadastro'
+  );
+  const happyPageErrors = ownPageErrors(happyErrors);
+  recordFailure(happyPageErrors.length === 0, `happy path: ${happyPageErrors.length} erro(s) JavaScript: ${happyPageErrors.join(' | ')}`);
+  await happyPage.screenshot({ path: path.join(evidenceDir, 'desktop-1440-minha-conta-cadastro-sucesso.png'), fullPage: true });
+  await happyContext.close();
 
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   await routeCanonicalNavigation(page, baseUrl);
@@ -157,23 +248,27 @@ try {
       await confirmation.fill('Teste025@ERRADA');
       await confirmation.blur();
       const mismatch = page.locator('#petshop-checkout-password-confirmation-error');
-      await page.waitForTimeout(100);
+      await mismatch.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       recordFailure(/As senhas não coincidem\./.test(await mismatch.textContent() || ''), 'checkout: senhas diferentes sem erro');
 
       await confirmation.fill('Teste025@2026');
       await confirmation.blur();
-      await page.waitForTimeout(100);
+      await page.waitForFunction(() => {
+        const error = document.getElementById('petshop-checkout-password-confirmation-error');
+        return !error || error.hidden || (error.textContent || '').trim() === '';
+      }, null, { timeout: 3000 }).catch(() => {});
       recordFailure((await mismatch.textContent() || '').trim() === '', 'checkout: erro nao sumiu com senhas iguais');
     }
 
     await page.screenshot({ path: path.join(evidenceDir, 'desktop-1440-checkout-conta.png'), fullPage: true });
 
     await accountCheckbox.uncheck();
-    await page.waitForTimeout(100);
+    await confirmation.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
     recordFailure(await confirmation.count() === 0 || !(await confirmation.isVisible()), 'checkout: Confirmar senha deveria desaparecer ao desmarcar Criar conta');
   }
 
-  recordFailure(errors.length === 0, `checkout: ${errors.length} erro(s) JavaScript`);
+  const checkoutErrors = ownPageErrors(errors);
+  recordFailure(checkoutErrors.length === 0, `checkout: ${checkoutErrors.length} erro(s) JavaScript: ${checkoutErrors.join(' | ')}`);
   await page.close();
 } finally {
   await browser.close();

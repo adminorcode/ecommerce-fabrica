@@ -68,6 +68,16 @@ final class CartCheckout
             is_file($passwordConfirmationPath) ? (string) filemtime($passwordConfirmationPath) : '1.0.0',
             true
         );
+        wp_localize_script(
+            'petshop-checkout-account-password-confirmation',
+            'petshopCheckoutAccountPassword',
+            [
+                'namespace' => AccountRegistration::CHECKOUT_EXTENSION_NAMESPACE,
+                'required' => __('Confirme sua senha.', 'petshop-core'),
+                'mismatch' => __('As senhas não coincidem.', 'petshop-core'),
+                'label' => __('Confirmar senha', 'petshop-core'),
+            ]
+        );
     }
 
     /**
@@ -144,7 +154,6 @@ final class CartCheckout
     private static function configureAccountOptions025(): void
     {
         if (get_option('petshop_account_options_025_configured', false) !== false) return;
-
 
         update_option('woocommerce_registration_generate_password', 'no');
 

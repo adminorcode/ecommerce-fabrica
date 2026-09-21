@@ -21,19 +21,19 @@
 
         registerColumn.id = 'petshop-register-panel';
 
+        const i18n = window.petshopAccountRegistration || {};
         const createButton = document.createElement('button');
         createButton.type = 'button';
         createButton.className =
             'woocommerce-Button button petshop-account-create';
-        createButton.textContent = 'Criar conta';
+        createButton.textContent = i18n.createAccount || 'Criar conta';
         createButton.setAttribute('aria-controls', 'petshop-register-panel');
         createButton.setAttribute('aria-expanded', 'false');
 
         const backButton = document.createElement('button');
         backButton.type = 'button';
-        backButton.className =
-            'woocommerce-Button button petshop-account-back';
-        backButton.textContent = 'Voltar para entrar';
+        backButton.className = 'petshop-account-back';
+        backButton.textContent = i18n.backToLogin || 'Voltar para entrar';
 
         loginColumn.appendChild(createButton);
         registerColumn.insertBefore(backButton, registerColumn.firstChild);

@@ -11,7 +11,7 @@
 
 Permitir que o cliente **conclua o cadastro na própria loja**, escolhendo a senha no formulário, sem ir ao e-mail para validar a conta ou receber senha temporária.
 
-User story: como visitante, quero informar e-mail, telefone, CPF ou CNPJ, endereço e a senha que eu escolhi, para entrar na conta imediatamente e seguir a compra sem abrir o e-mail.
+User story: como visitante, quero informar e-mail, nome e a senha que eu escolhi, para entrar na conta imediatamente e seguir a compra sem abrir o e-mail. Telefone, documento e endereço eu completo depois na conta.
 
 ## 2. Baseline atual
 
@@ -26,15 +26,16 @@ A opção 013 fica travada por `petshop_account_options_013_configured`. Uma nov
 
 ## 3. Escopo comprometido
 
-- Formulário de cadastro em `/minha-conta/` com campos obrigatórios: **e-mail**, **telefone**, **tipo de pessoa (PF ou PJ)**, **CPF (PF) ou CNPJ (PJ)**, **endereço brasileiro** e **senha escolhida pelo cliente** (com confirmação).
-- O cadastro **aceita pessoa física e pessoa jurídica**. PF exige CPF válido; PJ exige CNPJ válido. Os dois tipos são caminhos do mesmo formulário, não exclusões.
+- Formulário de cadastro inicial em `/minha-conta/` só com **e-mail**, **nome**, **sobrenome**, **senha escolhida pelo cliente** e **confirmação de senha**. Telefone, tipo de pessoa, CPF/CNPJ e endereço brasileiro **não** aparecem nessa tela; o cliente preenche depois em **Detalhes da conta** e **Endereços**.
+- O cadastro em desktop usa **grade de duas colunas**: senha/confirmação e nome/sobrenome na mesma linha. Em 390px os pares empilham. Um único scroll de página; sem coluna estreita nem área interna com overflow.
+- A conta **aceita pessoa física e pessoa jurídica** na edição posterior. PF exige CPF válido; PJ exige CNPJ válido. Os dois tipos são caminhos do mesmo cadastro de dados, não exclusões.
 - Ao enviar com dados válidos, a conta é criada e o cliente **já entra autenticado**. Nenhum passo no e-mail é necessário para concluir o cadastro.
 - Remover de ponta a ponta a funcionalidade de **senha temporária**: opção WooCommerce, e-mail de senha gerada, banner “temporary password”, botão Resend e qualquer copy que mande o cliente ao e-mail para definir a primeira senha.
 - `GuestAccount` (criar conta depois da compra visitante) também coleta a senha no formulário da confirmação. Não envia link de definição de senha.
 - Username continua gerado pelo WooCommerce a partir do e-mail (`woocommerce_registration_generate_username` permanece `yes`).
 - Checkout visitante do Plano 013 permanece. Quem marcar “criar conta” no checkout também escolhe a senha ali.
 - Recuperação de senha esquecida (`/minha-conta/lost-password/`) **permanece**. Isso não é senha temporária de cadastro.
-- CEP do cadastro e de **Minha conta → Endereços** consulta ViaCEP e preenche logradouro, bairro, cidade e UF (regra do projeto). Número é do cliente.
+- CEP de **Minha conta → Endereços** consulta ViaCEP e preenche logradouro, bairro, cidade e UF (regra do projeto). Número é do cliente.
 
 ### Fora de escopo
 
@@ -45,16 +46,17 @@ A opção 013 fica travada por `petshop_account_options_013_configured`. Uma nov
 - Calculadora de frete da PDP: CEP só para cotação, sem ViaCEP.
 - Alterar o personalizador (012), frete real, Mercado Pago, políticas jurídicas (017) ou o prefill do checkout (026).
 - Inventar texto jurídico; aceite de políticas no cadastro só reutiliza as páginas já atribuídas pelo 013 quando o WooCommerce as exigir.
+- Coletar telefone, tipo de pessoa, CPF/CNPJ ou endereço no cadastro inicial de `/minha-conta/`.
 
 ## 4. Decisões de produto
 
 | Tema | Decisão |
 |---|---|
-| Tipo de pessoa | Escolha obrigatória: pessoa física (CPF) ou pessoa jurídica (CNPJ). Os dois tipos são aceitos no cadastro. |
-| Documento | PF: campo CPF (11 dígitos). PJ: campo CNPJ (14 dígitos). Validar dígitos verificadores do tipo escolhido. Recusar documento do tipo errado, inválido ou já usado por outra conta. |
-| Telefone | Obrigatório. Gravar como telefone de cobrança do cliente. Recusar vazio ou formato inválido do Brasil (DDD + número). |
-| Endereço no cadastro | CEP, logradouro, número, complemento, bairro, cidade, UF, nome e sobrenome do destinatário. Complemento permanece no formulário; valor vazio é válido somente quando o endereço não tem complemento. |
-| ViaCEP | CEP com 8 dígitos no cadastro e em Minha conta → Endereços consulta ViaCEP pelo `petshop-core` e preenche logradouro, bairro, cidade e UF. Número é do cliente. CEP inválido ou API fora: aviso em pt-BR, sem inventar endereço. |
+| Tipo de pessoa | Fora do cadastro inicial. Em Detalhes da conta, PF e PJ são aceitos; se o tipo for informado, precisa ser um dos dois. |
+| Documento | Fora do cadastro inicial. Em Detalhes da conta: PF exige CPF (11 dígitos) e PJ exige CNPJ (14 dígitos). Se preenchido, validar dígitos verificadores. Recusar documento inválido, do tipo errado ou já usado por outra conta. |
+| Telefone | Fora do cadastro inicial. Em Endereços, se preenchido, recusar formato inválido do Brasil (DDD + número) e gravar como telefone de cobrança. |
+| Endereço | Fora do cadastro inicial. Em Minha conta → Endereços: CEP, logradouro, número, complemento, bairro, cidade, UF. Complemento vazio é válido quando o endereço não tem complemento. |
+| ViaCEP | CEP com 8 dígitos em Minha conta → Endereços consulta ViaCEP pelo `petshop-core` e preenche logradouro, bairro, cidade e UF. Número é do cliente. CEP inválido ou API fora: aviso em pt-BR, sem inventar endereço. |
 | Persistência | Salvar tipo de pessoa, telefone, endereço e documento (CPF ou CNPJ) como dados do cliente WooCommerce e meta própria no `petshop-core`. Sem SQL direto. |
 | E-mail transacional | Enviar aviso de “conta criada” sem senha em texto. O login não depende desse e-mail. |
 | Idioma | Rótulos, erros e avisos em pt-BR. O aviso em inglês da senha temporária não pode reaparecer. |
@@ -66,7 +68,7 @@ Exceção documentada: o formulário é superfície WooCommerce/hook global, nã
 | Item | Origem |
 |---|---|
 | Título/introdução editorial da página Minha conta | Gutenberg em **Páginas → Minha conta** |
-| Rótulos e erros do formulário (e-mail, telefone, senha, PF/PJ, CPF, CNPJ, endereço) | Tradução/`__()` do `petshop-core` — texto funcional |
+| Rótulos e erros do cadastro inicial (e-mail, nome, senha) e da edição posterior (telefone, PF/PJ, CPF, CNPJ, endereço) | Tradução/`__()` do `petshop-core` — texto funcional |
 | CTA “Cadastrar” / “Entrar” | WooCommerce + tradução própria quando o rótulo for nosso |
 | Banner de senha temporária | Removido; não substituir por outro aviso comercial hardcoded |
 | Políticas no cadastro | Links das páginas já atribuídas no 013; conteúdo jurídico continua nessas páginas Gutenberg |
@@ -102,22 +104,22 @@ Não editar WordPress Core, WooCommerce ou Blocksy. Checkout Block permanece. Da
 - [ ] Não há banner “temporary password” / “Resend” em pt-BR nem em inglês.
 - [ ] Conta nova faz login sem abrir e-mail.
 
-### Sessão 02 — Telefone, documento e endereço no cadastro
+### Sessão 02 — Cadastro inicial curto; demais dados depois
 
-- [ ] Incluir e-mail, telefone, senha, tipo PF/PJ, CPF ou CNPJ e endereço brasileiro no formulário de `/minha-conta/`.
-- [ ] CEP do cadastro e de Minha conta → Endereços consulta ViaCEP e preenche logradouro, bairro, cidade e UF.
-- [ ] Validar telefone e o documento do tipo escolhido; recusar documento duplicado ou do tipo errado.
-- [ ] Gravar tipo, telefone, endereço e documento no cliente WooCommerce.
-- [ ] Exibir os mesmos dados em **Detalhes da conta** / **Endereços** para edição posterior.
+- [x] Cadastro inicial de `/minha-conta/` só com e-mail, senha, confirmação, nome e sobrenome.
+- [ ] Telefone, tipo PF/PJ, CPF ou CNPJ e endereço brasileiro ficam em **Detalhes da conta** / **Endereços**.
+- [ ] CEP de Minha conta → Endereços consulta ViaCEP e preenche logradouro, bairro, cidade e UF.
+- [ ] Validar telefone e o documento do tipo escolhido na edição posterior; recusar documento duplicado ou do tipo errado.
+- [ ] Gravar tipo, telefone, endereço e documento no cliente WooCommerce quando o cliente os informar depois.
 
 **Gate**
 
-- [ ] Cadastro PF com CPF válido e cadastro PJ com CNPJ válido criam cliente autenticado.
-- [ ] CEP válido preenche rua, bairro, cidade e UF; número permanece com o cliente.
+- [x] Cadastro inicial com e-mail, nome, sobrenome e senha cria cliente autenticado, sem telefone, documento nem endereço na tela.
+- [ ] CEP válido em Endereços preenche rua, bairro, cidade e UF; número permanece com o cliente.
 - [ ] CEP inválido ou ViaCEP fora: aviso em pt-BR, sem inventar endereço.
-- [ ] Envio sem senha, sem telefone válido, sem tipo, sem CPF (PF), sem CNPJ (PJ) ou sem endereço obrigatório falha junto ao campo, sem criar usuário.
-- [ ] CPF no fluxo PJ e CNPJ no fluxo PF são recusados.
-- [ ] Desktop 1440 e mobile 390: formulário usável, sem overflow, foco visível.
+- [x] Envio sem senha, sem confirmação, sem nome ou sem sobrenome falha junto ao campo, sem criar usuário.
+- [ ] CPF no fluxo PJ e CNPJ no fluxo PF são recusados na edição posterior.
+- [x] Desktop 1440 e mobile 390: formulário usável, sem overflow, foco visível. Em 1440 nome/sobrenome e senha/confirmação compartilham a linha; em 390 empilham.
 
 ### Sessão 03 — Validação e handoff
 

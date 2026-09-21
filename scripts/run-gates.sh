@@ -86,6 +86,7 @@ run_eval_file test-005-session-02-persistence.php
 run_eval_file test-013-persistence.php
 run_eval_file validate-013-hpos.php
 run_eval_file validate-013-security.php
+run_eval_file validate-025-account-registration.php
 run_eval_file validate-014-identity-campaigns.php
 run_eval_file validate-015-support-section.php
 run_eval_file validate-016-product-grid.php
@@ -137,7 +138,7 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
   if [[ "$RUN_BROWSER" -eq 1 ]]; then
     echo "==> browser gates (container)"
-    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-no-theme-hero-browser.mjs; do
+    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-025-account-registration-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-no-theme-hero-browser.mjs; do
       docker compose --profile tools run --rm node node "/workspace/scripts/$script"
     done
     docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
