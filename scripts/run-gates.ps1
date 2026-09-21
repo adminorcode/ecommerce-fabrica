@@ -55,6 +55,7 @@ Invoke-EvalFile 'test-005-session-02-persistence.php'
 Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
+Invoke-EvalFile 'validate-025-account-registration.php'
 Invoke-EvalFile 'validate-014-identity-campaigns.php'
 Invoke-EvalFile 'validate-015-support-section.php'
 Invoke-EvalFile 'validate-016-product-grid.php'
@@ -102,7 +103,7 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-030-order-received-browser.mjs', 'validate-032-search-browser.mjs', 'validate-039-cart-qty-browser.mjs', 'validate-035-menu-dropdown-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-025-account-registration-browser.mjs', 'validate-030-order-received-browser.mjs', 'validate-032-search-browser.mjs', 'validate-039-cart-qty-browser.mjs', 'validate-035-menu-dropdown-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }

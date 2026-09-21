@@ -210,6 +210,19 @@ const classifySuites = (files) => {
             suites.add('checkout-013');
             browserScripts.add('validate-013-browser.mjs');
         }
+        if (
+            file.includes('025-cadastro-senha-escolhida')
+            || file.includes('AccountRegistration')
+            || file.includes('AccountPrivacy')
+            || file.includes('account-registration')
+            || file.includes('checkout-account-password-confirmation')
+            || file.includes('validate-025-account-registration')
+            || file.includes('GuestAccount.php')
+            || file.includes('AddressLookup')
+        ) {
+            suites.add('account-025');
+            browserScripts.add('validate-025-account-registration-browser.mjs');
+        }
         if (file.includes('014-identity') || file.includes('validate-014-docs-and-tokens')) {
             suites.add('identity-014');
         }
@@ -337,6 +350,9 @@ const runFocusedSuites = (suites) => {
         evalFile('validate-013-hpos.php');
         evalFile('validate-013-security.php');
         evalFile('test-013-persistence.php');
+    }
+    if (suites.has('account-025')) {
+        evalFile('validate-025-account-registration.php');
     }
     if (suites.has('identity-014')) {
         evalFile('validate-014-identity-campaigns.php');
