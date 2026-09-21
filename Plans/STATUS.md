@@ -19,7 +19,7 @@
 | [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) | Concluído | Tokens AUTellê, Nunito Sans, campanha editorial Gutenberg e rodapé no tom escuro anterior validados em PHP/browser |
 | [015-secao-atendimento-home.md](./015-secao-atendimento-home.md) | Concluido | Secao de atendimento Gutenberg na Home, schema 26, CTA WhatsApp editavel com fallback para Atendimento, imagens 1920 x 640 e 1080 x 1350, gates PHP/browser validados |
 | [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md) | Concluído | Bloco único `petshop/product-grid`, variações manual/categoria/popular/sazonal, migração schema 25 e gates PHP/browser/editor validados |
-| [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Pendente | Fecha bloqueios P0 do PDF Orcode: Mercado Pago sandbox, frete real, políticas, e-mails, SEO, CWV, backup, monitoramento e a11y manual |
+| [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) | Concluído | Fechado por aceite operacional em 2026-09-07: Mercado Pago, frete real e SMTP confirmados no ambiente alvo; demais gates P0 aceitos para publicação |
 | [018-paginas-comerciais-p1.md](./018-paginas-comerciais-p1.md) | Concluído | Animal Republik e Premium publicados como páginas Gutenberg editáveis, com placeholders de mídia substituíveis, vitrines manuais `petshop/product-grid`, navegação e gates PHP/browser validados |
 | [019-area-profissionais-laceiros.md](./019-area-profissionais-laceiros.md) | Pendente | Primeira entrega institucional para profissionais/laceiros; editor e área restrita ficam condicionados a validação comercial |
 | [020-header-checkout-sem-distracoes.md](./020-header-checkout-sem-distracoes.md) | Concluido | Header reduzido do checkout redesenhado com logo global, mensagem de seguranca administravel, atendimento global, matriz responsiva/estabilidade e gates PHP/browser validados |
@@ -27,7 +27,7 @@
 | [022-icones-vitrine-upload-livre.md](./022-icones-vitrine-upload-livre.md) | Concluído | Entrega em `master`. Ícone personalizado da vitrine por categoria via Biblioteca de mídia; galeria como fallback; docs e gates PHP/browser validados |
 | [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) | Concluído | Customizer + composição da referência (4 colunas, ícones, selos); gates PHP/browser |
 | [024-carrossel-banner-promocional.md](./024-carrossel-banner-promocional.md) | Concluído | Até 3 banners, tempo por imagem (padrão 10 s), autoplay com setas/indicadores sobrepostos; gates PHP/browser |
-| [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) | Pendente | Cadastro PF/PJ, telefone, endereço com ViaCEP e senha escolhida; remove senha temporária. Correções de review aplicadas no PR #4. ClickUp [86e2xz60k](https://app.clickup.com/t/86e2xz60k) |
+| [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) | Concluído | Cadastro inicial com e-mail, nome e senha escolhida; telefone, documento e endereço depois na conta; senha temporária removida. ClickUp [86e2xz60k](https://app.clickup.com/t/86e2xz60k) |
 | [026-checkout-dados-salvos-viacep.md](./026-checkout-dados-salvos-viacep.md) | Pendente | Checkout hidrata dados da conta e preenche endereço via ViaCEP ao informar o CEP. ClickUp [86e2xzer3](https://app.clickup.com/t/86e2xzer3) |
 | [027-calculadora-frete-hub.md](./027-calculadora-frete-hub.md) | Concluído | Hub de frete único na PDP; exibe todos os métodos WooCommerce ativos retornados, incluindo Virtuaria/Melhor Envio; CEP persiste; preço sem entidade HTML; gates PHP/browser validados. ClickUp [86e2xzf9w](https://app.clickup.com/t/86e2xzf9w) |
 | [028-recuperacao-pagamento-pendente.md](./028-recuperacao-pagamento-pendente.md) | Pendente | Um e-mail nativo de pagamento pendente no WooCommerce 11+; sem plugin de recovery. ClickUp [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) |
@@ -37,8 +37,10 @@
 | [032-busca-lupa-enter-resultados.md](./032-busca-lupa-enter-resultados.md) | Concluído | Lupa e Enter abrem resultados com `s` + `post_type=product`; canonical/filtros preservam busca; SKU exato segue PDP. Gates PHP/browser validados. ClickUp [86e2yy549](https://app.clickup.com/t/86e2yy549) |
 | [033-rodape-aproximacao-mockup.md](./033-rodape-aproximacao-mockup.md) | Pendente | Rodapé: três faixas, títulos com sublinhado, selos sem bloco teal-900. ClickUp [86e2yy6mc](https://app.clickup.com/t/86e2yy6mc) |
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
-| [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Pendente | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
+| [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Concluído | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. Gates PHP/browser validados. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
 | [036-dependencias-frete-checkout-versionadas.md](./036-dependencias-frete-checkout-versionadas.md) | Concluído | Melhor Envio 2.16.6 e Calculadora BR 4.17.1 versionados com vendor, Docker/deploy/gates reconciliados e Brazilian Market mantido fora para evitar conflito |
+| [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
+
 ## Ordem recomendada de execução
 
 ```
@@ -80,7 +82,8 @@
   ├── 033 (rodapé: aproximação visual ao mockup de três faixas)
   ├── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
   ├── 035 (dropdown de subcategorias no menu comercial do header)
-  └── 036 (dependencias de frete e checkout versionadas)
+  ├── 036 (dependencias de frete e checkout versionadas)
+  └── 039 (quantidade do carrinho após o CEP)
 ```
 
 ## Origem
@@ -123,4 +126,6 @@ Plano 035 derivado do print da Moda Bicho (2026-08-30): no menu comercial do hea
 
 Plano 036 derivado do aviso administrativo do Melhor Envio (2026-08-31): o plugin exige uma base brasileira de checkout/frete ativa e precisa deixar de depender de instalacao manual no runtime; Melhor Envio e a base escolhida passam a ser versionados sem credenciais.
 
-**Última atualização:** 2026-08-31 (Plano 036 concluído: dependencias de frete e checkout versionadas)
+Plano 039 derivado do ticket 86e31yvgj (2026-09-10): depois do CEP no carrinho a quantidade voltava a 1; o JS do plugin brasileiro reconsulta o frete e invalida o Cart Block.
+
+**Última atualização:** 2026-09-18 (Plano 035: dropdown de subcategorias no menu comercial, gates PHP/browser aprovados)

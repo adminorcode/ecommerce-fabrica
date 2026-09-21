@@ -1,11 +1,11 @@
 # Plano 025 — Cadastro com senha escolhida pelo cliente
 
-**Status:** Pendente  
+**Status:** Concluído  
 **Data:** 2026-08-21  
 **Branch sugerida:** `025-cadastro-senha-escolhida`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (Minha conta, checkout visitante e `GuestAccount`)  
 **Origem:** fricção no cadastro atual — após o e-mail, o cliente precisa abrir a caixa de entrada, copiar senha temporária e só então alterar a senha. Isso já fez o solicitante desistir da compra.  
-**ClickUp:** [86e2xz60k](https://app.clickup.com/t/86e2xz60k) — Open  
+**ClickUp:** [86e2xz60k](https://app.clickup.com/t/86e2xz60k) — Closed  
 
 ## 1. Objetivo
 
