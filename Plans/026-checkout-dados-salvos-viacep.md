@@ -1,11 +1,12 @@
 # Plano 026 — Checkout com dados salvos e ViaCEP
 
-**Status:** Validado localmente — pronto para commit/PR
+**Status:** Concluído
 **Data:** 2026-08-22  
 **Branch sugerida:** `026-checkout-dados-salvos-viacep`  
 **Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (Checkout Block, conta, endereços); [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) (cadastro inicial com e-mail, nome e senha; telefone, CPF/CNPJ e endereço depois em Minha conta; lookup ViaCEP no plugin)  
 **Origem:** no checkout, o cliente autenticado deve reencontrar os dados já cadastrados; ao informar o CEP, o endereço deve completar pela ViaCEP (regra do projeto).  
-**ClickUp:** [86e2xzer3](https://app.clickup.com/t/86e2xzer3) — Open  
+**ClickUp:** [86e2xzer3](https://app.clickup.com/t/86e2xzer3) — Closed
+**PR:** https://github.com/adminorcode/ecommerce-fabrica/pull/7  
 
 ## 1. Objetivo
 
