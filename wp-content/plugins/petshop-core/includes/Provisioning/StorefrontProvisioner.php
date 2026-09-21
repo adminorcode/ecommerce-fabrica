@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
 
 final class StorefrontProvisioner
 {
-    private const VERSION = '3.1.0';
+    private const VERSION = '3.2.1';
     private const OPTION = 'petshop_storefront_version';
     private const COMMERCIAL_MENU_OPTION = 'petshop_commercial_menu_version';
 
@@ -122,6 +122,7 @@ final class StorefrontProvisioner
             self::addPolicyToManagedFooter($policiesId);
         }
         self::ensureCommercialMenu($collectionsId, $personalizeId);
+        self::ensureP1CommercialPages();
         self::ensureHeaderDefaults();
 
         flush_rewrite_rules(false);
@@ -140,7 +141,8 @@ final class StorefrontProvisioner
         $shopUrl = (string) wc_get_page_permalink('shop');
 
         return (int) get_post_meta($homeId, '_petshop_home_schema_version', true) < HomeMigrator::currentSchema()
-            || HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+            || HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl)
+            || HomeMigrator::needsSupportSectionRepair($content);
     }
 
     public static function stampManagedHome(int $homeId, string $shopUrl, int $heroId): void

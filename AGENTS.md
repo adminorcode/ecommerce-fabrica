@@ -1,6 +1,8 @@
 # Regras do projeto
 
-Leia `.cursor/rules/project.mdc`, `.cursor/rules/gutenberg-content-editing.mdc`, `AI_BOOTSTRAP.md`, `Plans/README.md`, `Plans/STATUS.md` e o plano solicitado antes de implementar alterações.
+Leia `.cursor/rules/project.mdc`, `.cursor/rules/gutenberg-content-editing.mdc`, `.cursor/rules/tickets-plans-branches.mdc`, `AI_BOOTSTRAP.md`, `Plans/README.md`, `Plans/STATUS.md` e o plano solicitado antes de implementar alterações.
+
+Ao criar ou revisar ticket: `.cursor/CLICKUP_USAGE_RULE.md`, a skill `write-kanban-tickets` e `.cursor/rules/plans-no-optional.mdc`. Uma tarefa ClickUp por plano, enriquecida primeiro em `Plans/{numero}-{slug}.md`. Nenhum campo, critério ou parâmetro pode ficar opcional. CEP de endereço usa ViaCEP (`.cursor/rules/viacep-address.mdc`); calculadora de frete é a exceção.
 
 ## Conteúdo administrável
 

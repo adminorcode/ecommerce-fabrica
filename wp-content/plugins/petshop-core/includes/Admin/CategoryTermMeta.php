@@ -31,6 +31,12 @@ final class CategoryTermMeta
             </label>
         </div>
         <div class="form-field">
+            <label>
+                <?php esc_html_e('Ícone personalizado da vitrine', 'petshop-core'); ?>
+            </label>
+            <?php CategoryIcons::renderCustomAttachmentField(0); ?>
+        </div>
+        <div class="form-field">
             <label><?php esc_html_e('Ícone da vitrine', 'petshop-core'); ?></label>
             <?php CategoryIcons::renderPicker(''); ?>
         </div>
@@ -44,6 +50,7 @@ final class CategoryTermMeta
         $seasonal = (bool) get_term_meta($term->term_id, 'petshop_seasonal', true);
         $visible = (bool) get_term_meta($term->term_id, 'petshop_visible_in_menu', true);
         $icon = (string) get_term_meta($term->term_id, CategoryIcons::META_KEY, true);
+        $attachmentId = absint(get_term_meta($term->term_id, CategoryIcons::ATTACHMENT_META_KEY, true));
         ?>
         <tr class="form-field">
             <th scope="row"><label for="petshop_menu_order"><?php esc_html_e('Ordem comercial', 'petshop-core'); ?></label></th>
@@ -55,6 +62,12 @@ final class CategoryTermMeta
                 <label><input type="checkbox" name="petshop_seasonal" value="1" <?php checked($seasonal); ?>> <?php esc_html_e('Categoria sazonal', 'petshop-core'); ?></label><br>
                 <label><input type="checkbox" name="petshop_visible_in_menu" value="1" <?php checked($visible); ?>> <?php esc_html_e('Exibir na navegação', 'petshop-core'); ?></label>
             </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row">
+                <?php esc_html_e('Ícone personalizado da vitrine', 'petshop-core'); ?>
+            </th>
+            <td><?php CategoryIcons::renderCustomAttachmentField($attachmentId); ?></td>
         </tr>
         <tr class="form-field">
             <th scope="row"><?php esc_html_e('Ícone da vitrine', 'petshop-core'); ?></th>
@@ -80,6 +93,15 @@ final class CategoryTermMeta
         update_term_meta($termId, 'petshop_seasonal', isset($_POST['petshop_seasonal']));
         update_term_meta($termId, 'petshop_visible_in_menu', isset($_POST['petshop_visible_in_menu']));
 
+        if (array_key_exists(CategoryIcons::ATTACHMENT_META_KEY, $_POST)) {
+            $attachmentId = absint(wp_unslash($_POST[CategoryIcons::ATTACHMENT_META_KEY]));
+            if ($attachmentId <= 0 || !CategoryIcons::isUsableIconAttachment($attachmentId)) {
+                delete_term_meta($termId, CategoryIcons::ATTACHMENT_META_KEY);
+            } else {
+                update_term_meta($termId, CategoryIcons::ATTACHMENT_META_KEY, $attachmentId);
+            }
+        }
+
         if (array_key_exists(CategoryIcons::META_KEY, $_POST)) {
             $icon = sanitize_key((string) wp_unslash($_POST[CategoryIcons::META_KEY]));
             if ($icon === '' || !CategoryIcons::isValid($icon)) {
@@ -89,9 +111,4 @@ final class CategoryTermMeta
             }
         }
     }
-
-    /**
-     * @param array<int, \WP_Post> $items
-     * @return array<int, \WP_Post>
-     */
 }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Branch"
+  short_description: "Commit, push, merge e sincronização segura"
+  default_prompt: "Use $merge-branch para criar o commit das alterações, enviar a branch atual, integrá-la à branch-base do projeto e sincronizar ambas com o remoto."

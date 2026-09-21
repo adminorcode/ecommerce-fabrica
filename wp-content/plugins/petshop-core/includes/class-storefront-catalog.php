@@ -118,6 +118,16 @@ final class StorefrontCatalog
             },
             'auth_callback' => static fn (): bool => current_user_can('manage_woocommerce'),
         ]);
+        register_term_meta('product_cat', CategoryIcons::ATTACHMENT_META_KEY, [
+            'type' => 'integer',
+            'single' => true,
+            'show_in_rest' => true,
+            'sanitize_callback' => static function ($value): int {
+                $attachmentId = absint($value);
+                return CategoryIcons::isUsableIconAttachment($attachmentId) ? $attachmentId : 0;
+            },
+            'auth_callback' => static fn (): bool => current_user_can('manage_woocommerce'),
+        ]);
     }
 
     public static function ensureCategories(): void

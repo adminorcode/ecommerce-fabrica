@@ -1,0 +1,113 @@
+{
+  "source": {
+    "url": "https://www.animalrepublik.com.br/lancamentos",
+    "capturedAt": "2026-08-16",
+    "authorization": "Cliente informou autorização para cadastrar imagens e títulos na aplicação."
+  },
+  "category": {
+    "name": "Animal Republik",
+    "slug": "animal-republik"
+  },
+  "tags": [
+    { "name": "Animal Republik", "slug": "animal-republik" },
+    { "name": "Lançamentos Animal Republik", "slug": "animal-republik-lancamentos" }
+  ],
+  "products": [
+    {
+      "sourceId": "193718622",
+      "sku": "2055",
+      "name": "MASCARA ANIMAL REPUBLIK DE HIDRATAÇÃO INTENSIVA (H) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/19371862269587cc379.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/mascara-animal-republik-de-hidratacao-intensiva-h-1-l.html"
+    },
+    {
+      "sourceId": "193718600",
+      "sku": "2058",
+      "name": "Perfume Frutal Âmbar (H) ANIMAL REPUBLIK 60ML",
+      "price": "49.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/19371860063f0ae51d6.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/perfume-animal-republik-frutal-ambar-h-60ml.html"
+    },
+    {
+      "sourceId": "193718592",
+      "sku": "2050",
+      "name": "Leave-in de Tratamento Efeito Volume Máximo ANIMAL REPUBLIK (VOL) 250ML",
+      "price": "59.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/193718592d439b4a466.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/leave-in-animal-republik-trat-efeito-vol-max-vol-250ml.html"
+    },
+    {
+      "sourceId": "193718584",
+      "sku": "2060",
+      "name": "Perfume Frutal Aquosa (NR) ANIMAL REPUBLIK 60ML",
+      "price": "49.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937185846ba9c900f1.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/perfume-animal-republik-frutal-aquosa-nr-60ml.html"
+    },
+    {
+      "sourceId": "193718699",
+      "sku": "2062",
+      "name": "Shampoo de Nutrição e Reconstrução (NR) ANIMAL REPUBLIK 5 L",
+      "price": "379.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937186990cf23f16ee.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-nutricao-e-reconstrucao-nr-5-l.html"
+    },
+    {
+      "sourceId": "193718686",
+      "sku": "2061",
+      "name": "SHAMPOO ANIMAL REPUBLIK DE NUTRICAO E RECONSTRUCAO (NR) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937186867e29927390.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-nutricao-e-reconstrucao-nr-1-l.html"
+    },
+    {
+      "sourceId": "193718666",
+      "sku": "2057",
+      "name": "Shampoo de Hidratação Intensiva (H) ANIMAL REPUBLIK 5 L",
+      "price": "379.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937186668e9c92739c.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-hidratacao-intensiva-h-5-l.html"
+    },
+    {
+      "sourceId": "193718649",
+      "sku": "2056",
+      "name": "SHAMPOO ANIMAL REPUBLIK DE HIDRATAÇÃO INTENSIVA (H) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937186491767960d7d.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-hidratacao-intensiva-h-1-l.html"
+    },
+    {
+      "sourceId": "193718630",
+      "sku": "2059",
+      "name": "MASCARA ANIMAL REPUBLIK DE NUTRICAO E RECONSTRUCAO (NR) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/19371863074390c9e58.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/mascara-animal-republik-de-nutricao-e-reconstrucao-nr-1-l.html"
+    },
+    {
+      "sourceId": "193718574",
+      "sku": "2063",
+      "name": "MASCARA ANIMAL REPUBLIK DE TRAT E EFEITO VOL MAX (VOL) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/193718574bb3b5169f1.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/mascara-animal-republik-de-trat-e-efeito-vol-max-vol-1-l.html"
+    },
+    {
+      "sourceId": "193718533",
+      "sku": "2066",
+      "name": "Shampoo de Tratamento e Efeito Volume Máximo (VOL) ANIMAL REPUBLIK 5 L",
+      "price": "379.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/1937185332f44b1b62c.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-trat-e-efeito-vol-max-vol-5-l.html"
+    },
+    {
+      "sourceId": "193718489",
+      "sku": "2065",
+      "name": "SHAMPOO ANIMAL REPUBLIK DE TRAT E EFEITO VOL MAX (VOL) 1 L",
+      "price": "119.90",
+      "image": "https://cdn.awsli.com.br/300x300/2313/2313406/produto/193718489586ea1af18.jpg",
+      "sourceUrl": "https://www.animalrepublik.com.br/produto/shampoo-animal-republik-de-trat-e-efeito-vol-max-vol-1-l.html"
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 # Convenções para planos
 
+Planos numerados usam o arquivo `Plans/{numero}-{slug}.md`. Ticket ClickUp, plano e branch compartilham o mesmo identificador. A lista e as regras de criação estão em `.cursor/CLICKUP_USAGE_RULE.md`.
+
+Nada opcional: campo, critério ou parâmetro ou é obrigatório no escopo ou está fora de escopo. Sem propostas, nice to have ou itens facultativos. Ver `.cursor/rules/plans-no-optional.mdc`.
+
+CEP pedido para preencher endereço usa ViaCEP em toda a loja. A calculadora de frete é a única exceção. Ver `.cursor/rules/viacep-address.mdc`.
+
 Todo plano que criar ou alterar páginas, templates ou componentes visuais deve tratar conteúdo administrável como requisito obrigatório.
 
 ## Textos e imagens

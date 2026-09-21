@@ -88,7 +88,7 @@ try {
         && get_option('petshop_storefront_version') === $targetVersion
         && get_option('petshop_commercial_menu_version') === '1'
         && get_option('petshop_storefront_migration_error', '') === ''
-        && count((array) wp_get_nav_menu_items($menuId)) === 7;
+        && count((array) wp_get_nav_menu_items($menuId)) >= 7;
 } finally {
     if ($original['text'] === null) {
         remove_theme_mod('petshop_benefit_text');

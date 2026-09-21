@@ -1,0 +1,15 @@
+---
+description: Nenhum parâmetro, campo ou critério pode ficar opcional em ticket ou plano
+alwaysApply: true
+---
+
+# Nada opcional em tickets e planos
+
+Em ticket ClickUp e em `Plans/`, **nada** fica como parâmetro opcional. Sem `opcional`, `nice to have`, `se possível`, `proposta pendente` ou critério marcado como facultativo.
+
+- Todo campo, critério de aceite e decisão de produto ou está no **escopo** (obrigatório) ou está **fora de escopo**.
+- Item aceito pelo solicitante entra no escopo e é entregue. Não existe meio-termo.
+- Ideia que ainda não foi aceita **não entra no artefato**. Perguntar e só então gravar como escopo ou fora de escopo.
+- Fora de escopo é exclusão explícita, não uma lista de opcionais para “talvez depois”.
+- Campo de formulário exigido pelo ticket é obrigatório na validação. Campo que existe só para valor vazio válido (exemplo: complemento quando o endereço não tem) deve estar decidido no plano como regra de validação, nunca como “feature opcional”.
+- Não concluir plano ou ticket enquanto algum item do escopo estiver rotulado como opcional.

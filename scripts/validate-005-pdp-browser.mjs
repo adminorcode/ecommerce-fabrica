@@ -21,6 +21,8 @@ try {
   if (!(await addToCart.isVisible())) failures.push('CTA de compra ausente');
   if (!(await assurance.isVisible())) failures.push('aviso administrável da PDP ausente');
 
+  if (await page.locator('.hero-section:visible').count() > 0) failures.push('hero-section padrao do tema visivel na PDP');
+
   await page.screenshot({ path: `${evidenceDir}/pdp.png`, fullPage: true });
   await page.close();
 } finally {

@@ -167,7 +167,7 @@ final class StorefrontWishlist
             self::SCRIPT_HANDLE,
             plugins_url('assets/js/wishlist.js', PETSHOP_CORE_FILE),
             [],
-            (string) get_option('petshop_storefront_version', '1'),
+            (string) filemtime(plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/wishlist.js'),
             true
         );
 
@@ -180,6 +180,8 @@ final class StorefrontWishlist
             'labels' => [
                 'add' => __('Adicionar à lista de desejos', 'petshop-core'),
                 'remove' => __('Remover da lista de desejos', 'petshop-core'),
+                'saved' => __('Salvo na lista', 'petshop-core'),
+                'removed' => __('Removido da lista', 'petshop-core'),
             ],
         ]);
     }
@@ -322,12 +324,13 @@ final class StorefrontWishlist
         $active = in_array($productId, self::getStoredIds(), true);
 
         return sprintf(
-            '<button type="button" class="petshop-wishlist-toggle%s" data-product-id="%d" aria-pressed="%s" aria-label="%s">%s</button>',
+            '<button type="button" class="petshop-wishlist-toggle%s" data-product-id="%d" aria-pressed="%s" aria-label="%s">%s<span class="screen-reader-text">%s</span></button>',
             $active ? ' is-active' : '',
             $productId,
             $active ? 'true' : 'false',
             esc_attr($active ? __('Remover da lista de desejos', 'petshop-core') : __('Adicionar à lista de desejos', 'petshop-core')),
-            self::heartIconSvg()
+            self::heartIconSvg(),
+            esc_html($active ? __('Produto salvo na lista de desejos', 'petshop-core') : __('Produto fora da lista de desejos', 'petshop-core'))
         );
     }
 

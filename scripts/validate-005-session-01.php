@@ -41,8 +41,8 @@ if (trim((string) get_theme_mod('petshop_account_label', '')) === '') {
 $locations = get_theme_mod('nav_menu_locations', []);
 $menuId = (int) ($locations['petshop-primary'] ?? 0);
 $items = $menuId > 0 ? wp_get_nav_menu_items($menuId) : false;
-if (!is_array($items) || count($items) !== 7) {
-    $failures[] = 'Menu comercial deve ter exatamente sete entradas';
+if (!is_array($items) || count($items) < count($expected)) {
+    $failures[] = 'Menu comercial deve conter ao menos os sete destinos base';
     $items = [];
 }
 
@@ -83,4 +83,4 @@ if ($failures !== []) {
     WP_CLI::error('Sessao 01 invalida: ' . count($failures) . ' falha(s).');
 }
 
-WP_CLI::success('Sessao 01 valida: conteudo global editavel, logo, sete destinos cadastrados e busca por SKU registrada.');
+WP_CLI::success('Sessao 01 valida: conteudo global editavel, logo, destinos base cadastrados e busca por SKU registrada.');

@@ -14,7 +14,7 @@ x-wordpress-environment: &wordpress-environment
 
 services:
   db:
-    image: mariadb:11.4.5
+    image: mariadb:11.4.12
     environment:
       MARIADB_DATABASE: ${MYSQL_DATABASE}
       MARIADB_USER: ${MYSQL_USER}
@@ -43,11 +43,15 @@ services:
     volumes:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
+      - petshop_personalization_data:/var/petshop-personalizations
     networks: [internal]
     restart: "no"
 
   wordpress:
     image: petshop-wordpress:local
+    build:
+      context: .
+      dockerfile: docker/wordpress/Dockerfile
     depends_on:
       init:
         condition: service_completed_successfully
@@ -57,6 +61,7 @@ services:
     volumes:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
+      - petshop_personalization_data:/var/petshop-personalizations
     healthcheck:
       test: ["CMD-SHELL", "/usr/local/bin/healthcheck-wordpress"]
       interval: 5s
@@ -91,6 +96,7 @@ services:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
       - composer_cache:/tmp/composer-cache
+      - petshop_personalization_data:/var/petshop-personalizations
       - ./scripts:/var/www/html/scripts:ro
     networks: [internal]
     entrypoint: []
@@ -127,7 +133,7 @@ services:
     networks: [internal]
 
   test-db:
-    image: mariadb:11.4.5
+    image: mariadb:11.4.12
     profiles: [test]
     environment:
       MARIADB_DATABASE: ${MYSQL_TEST_DATABASE}
@@ -163,6 +169,7 @@ services:
         condition: service_healthy
     volumes:
       - test_wordpress_runtime:/var/www/html
+      - test_petshop_personalization_data:/var/petshop-personalizations
     networks: [internal]
 
   test-runner:
@@ -179,6 +186,7 @@ services:
         condition: service_completed_successfully
     volumes:
       - test_wordpress_runtime:/var/www/html
+      - test_petshop_personalization_data:/var/petshop-personalizations
       - ./wp-content/plugins/petshop-core:/var/www/html/wp-content/plugins/petshop-core:ro
       - ./wp-content/themes/petshop-theme:/var/www/html/wp-content/themes/petshop-theme:ro
       - ./scripts:/var/www/html/scripts:ro
@@ -196,6 +204,7 @@ services:
     volumes:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
+      - petshop_personalization_data:/var/petshop-personalizations
       - migration_backups:/backups
     networks: [internal]
     entrypoint: []
@@ -211,6 +220,7 @@ services:
     volumes:
       - wordpress_runtime:/var/www/html
       - wordpress_uploads:/var/www/html/wp-content/uploads
+      - petshop_personalization_data:/var/petshop-personalizations
       - migration_backups:/backups
     networks: [internal]
     entrypoint: []
@@ -228,3 +238,5 @@ volumes:
   test_wordpress_runtime:
   test_mariadb_data:
   migration_backups:
+  petshop_personalization_data:
+  test_petshop_personalization_data:

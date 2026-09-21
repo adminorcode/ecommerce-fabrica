@@ -1,6 +1,6 @@
 ---
 name: wordpress-router
-description: "Use when the user asks about WordPress codebases (plugins, themes, block themes, Gutenberg blocks, WP core checkouts) and you need to quickly classify the repo and route to the correct workflow/skill (blocks, theme.json, REST API, WP-CLI, performance, security, testing, release packaging)."
+description: "Use when the user asks about WordPress codebases (plugins, themes, block themes, Gutenberg blocks, WP core checkouts) and you need to quickly classify the repo and route to the correct workflow/skill (blocks, theme.json, REST API, WP-CLI, performance, security, testing, release packaging). HostGator/cPanel packaging of this store routes to preparar-deploy, not wp-plugin-development."
 compatibility: "Targets WordPress 7.0+ (PHP 7.4.0+). Filesystem-based agent with bash + node. Some workflows require WP-CLI."
 ---
 
@@ -29,6 +29,7 @@ Use this skill at the start of most WordPress tasks to:
    - tests present (PHPUnit, Playwright, wp-env),
    - any version hints.
 3. Route to domain workflows based on user intent + repo kind:
+   - HostGator / cPanel / `prepare:deploy` / publicar `wp-content` desta loja → `preparar-deploy` (never zip worktree `vendor/` or strip PHPUnit without `dump-autoload --no-dev`).
    - For the decision tree, read: `skills/wordpress-router/references/decision-tree.md`.
 4. Apply guardrails before making changes:
    - Confirm any version constraints if unclear.
