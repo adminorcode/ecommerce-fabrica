@@ -1,6 +1,6 @@
 # Plano 033 — Aproximação visual do rodapé ao mockup
 
-**Status:** Pendente  
+**Status:** Concluído tecnicamente; revisão humana e merge pendentes
 **Data:** 2026-08-24  
 **Branch sugerida:** `033-rodape-aproximacao-mockup`  
 **Dependências:** [023-rodape-institucional-editavel.md](./023-rodape-institucional-editavel.md) (Customizer, menus, markup); [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md) (tokens teal/Nunito)  
@@ -88,28 +88,44 @@ Não editar Core, WooCommerce ou Blocksy.
 
 ### Sessão 01 — Três faixas e títulos
 
-- [ ] Fundo carvão do mockup nas colunas.
-- [ ] Sublinhado teal em ATENDIMENTO, CATEGORIAS e INSTITUCIONAL.
-- [ ] “Siga-nos” distinto (sem o mesmo sublinhado de coluna).
+- [x] Fundo carvão do mockup nas colunas.
+- [x] Sublinhado teal em ATENDIMENTO, CATEGORIAS e INSTITUCIONAL.
+- [x] “Siga-nos” distinto (sem o mesmo sublinhado de coluna).
 
 **Gate**
 
-- [ ] Em 1440 px o rodapé tem 4 colunas e os três `h2` de coluna têm borda/sublinhado teal.
+- [x] Em 1440 px o rodapé tem 4 colunas e os três `h2` de coluna têm borda/sublinhado teal.
 
 ### Sessão 02 — Selos e legal
 
-- [ ] Remover o preenchimento `brand-teal-900` da faixa de selos.
-- [ ] Filetes teal superior/inferior e divisórias verticais no desktop.
-- [ ] Títulos dos selos brancos; ícones teal.
-- [ ] Legal em faixa própria, ícone + duas linhas.
+- [x] Remover o preenchimento `brand-teal-900` da faixa de selos.
+- [x] Filetes teal superior/inferior e divisórias verticais no desktop.
+- [x] Títulos dos selos brancos; ícones teal.
+- [x] Legal em faixa própria, ícone + duas linhas.
 
 **Gate**
 
-- [ ] Em 1440 a faixa de selos não é um bloco teal sólido; há 4 itens com separador.
-- [ ] Em 390 as faixas empilham sem overflow nem corte de texto.
-- [ ] Persistência 023: alterar um selo/CNPJ no Customizer continua refletindo no rodapé.
+- [x] Em 1440 a faixa de selos não é um bloco teal sólido; há 4 itens com separador.
+- [x] Em 390 as faixas empilham sem overflow nem corte de texto.
+- [x] Persistência 023: alterar um selo/CNPJ no Customizer continua refletindo no rodapé.
 
-## 8. Riscos
+## 8. Validação técnica
+
+Implementação commitada em `1fcfa7a` e enviada para `origin/033-rodape-aproximacao-mockup`.
+
+Validações executadas no runtime Docker:
+
+- [x] Runtime Docker saudável.
+- [x] Home HTTP 200.
+- [x] `validate-033-footer.php`: PASS.
+- [x] `validate-023-footer.php`: PASS.
+- [x] `validate-033-footer-browser.mjs`: 3/3 PASS.
+- [x] `validate-023-footer-browser.mjs`: PASS.
+- [x] `git diff --check`: PASS.
+
+Pendência de processo: revisão humana e merge para a branch de integração.
+
+## 9. Riscos
 
 | Risco | Mitigação |
 |---|---|
