@@ -339,9 +339,14 @@ function petshop_render_institutional_footer(): void
                         <p><?php echo esc_html(implode(' – ', $legalLine)); ?></p>
                     <?php endif; ?>
                     <?php if ($address !== '') : ?>
-                        <p><?php echo esc_html($address); ?></p>
-                    <?php endif; ?>
-                    <?php if ($paymentText !== '') : ?>
+                        <p>
+                            <?php echo esc_html($address); ?>
+                            <?php if ($paymentText !== '') : ?>
+                                <span class="petshop-institutional-footer__legal-separator" aria-hidden="true">•</span>
+                                <span><?php echo esc_html($paymentText); ?></span>
+                            <?php endif; ?>
+                        </p>
+                    <?php elseif ($paymentText !== '') : ?>
                         <p><?php echo esc_html($paymentText); ?></p>
                     <?php endif; ?>
                 </div>

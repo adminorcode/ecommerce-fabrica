@@ -3297,6 +3297,17 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   margin-bottom: .15rem;
 }
 
+.petshop-institutional-footer__contact h2::after,
+.petshop-institutional-footer__categories h2::after,
+.petshop-institutional-footer__policies h2::after {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 2px;
+  margin-top: .55rem;
+  background: var(--color-brand-teal);
+}
+
 .petshop-institutional-footer__contact-row {
   display: flex;
   gap: .85rem;
@@ -3305,11 +3316,11 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 
 .petshop-institutional-footer__contact-icon {
   display: inline-flex;
-  flex: 0 0 2.5rem;
+  flex: 0 0 2.75rem;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   color: var(--color-on-teal);
   background: var(--color-brand-teal);
   border-radius: 50%;
@@ -3326,13 +3337,15 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   min-width: 0;
   flex-direction: column;
   justify-content: center;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   gap: .1rem;
 }
 
 .petshop-institutional-footer__contact-copy a {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  min-height: 44px;
   gap: .1rem;
 }
 
@@ -3362,19 +3375,34 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 .petshop-institutional-footer__trust {
   margin-top: 0;
   padding: var(--space-4) 0;
-  background: var(--brand-teal-900);
+  border-block: 1px solid color-mix(in srgb, var(--color-brand-teal) 72%, transparent);
+  background: #373435; /* token-exception: footer institucional no tom aprovado no Plano 014 */
 }
 
 .petshop-institutional-footer__trust-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-4);
+  gap: 0;
 }
 
 .petshop-institutional-footer__trust-item {
   display: flex;
   gap: .85rem;
   align-items: flex-start;
+  min-width: 0;
+  padding-inline: var(--space-4);
+}
+
+.petshop-institutional-footer__trust-item:first-child {
+  padding-left: 0;
+}
+
+.petshop-institutional-footer__trust-item:last-child {
+  padding-right: 0;
+}
+
+.petshop-institutional-footer__trust-item + .petshop-institutional-footer__trust-item {
+  border-left: 1px solid color-mix(in srgb, var(--color-brand-teal) 48%, transparent);
 }
 
 .petshop-institutional-footer__trust-icon {
@@ -3391,7 +3419,7 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 
 .petshop-institutional-footer__trust-copy h3 {
   margin: 0 0 .25rem;
-  color: var(--color-brand-teal);
+  color: var(--color-on-teal);
   font-size: .78rem;
   font-weight: 800;
   letter-spacing: .04em;
@@ -3410,7 +3438,8 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   display: flex;
   gap: .85rem;
   align-items: flex-start;
-  padding-block: var(--space-3) var(--space-4);
+  padding-block: var(--space-4);
+  border-top: 1px solid rgb(255 255 255 / 12%);
   color: rgb(255 255 255 / 76%);
   font-size: .8125rem;
 }
@@ -3438,6 +3467,12 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   margin-bottom: 0;
 }
 
+.petshop-institutional-footer__legal-separator {
+  display: inline-block;
+  margin-inline: .55rem;
+  color: var(--color-brand-teal);
+}
+
 @media (max-width: 1024px) {
   .petshop-institutional-footer__grid {
     grid-template-columns: 1fr 1fr;
@@ -3445,6 +3480,21 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 
   .petshop-institutional-footer__trust-grid {
     grid-template-columns: 1fr 1fr;
+    row-gap: var(--space-4);
+  }
+
+  .petshop-institutional-footer__trust-item {
+    padding-inline: var(--space-4);
+  }
+
+  .petshop-institutional-footer__trust-item:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .petshop-institutional-footer__trust-item:nth-child(even) {
+    padding-right: 0;
+    border-left: 1px solid color-mix(in srgb, var(--color-brand-teal) 48%, transparent);
   }
 }
 
@@ -3460,6 +3510,14 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 
   .petshop-institutional-footer__trust-grid {
     grid-template-columns: 1fr;
+    row-gap: var(--space-3);
+  }
+
+  .petshop-institutional-footer__trust-item,
+  .petshop-institutional-footer__trust-item:nth-child(odd),
+  .petshop-institutional-footer__trust-item:nth-child(even) {
+    padding-inline: 0;
+    border-left: 0;
   }
 }
 

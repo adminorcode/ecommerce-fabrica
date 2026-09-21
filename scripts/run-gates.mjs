@@ -317,14 +317,18 @@ const classifySuites = (files) => {
         }
         if (
             file.includes('023-rodape')
-            ||             file.includes('validate-023-footer')
+            || file.includes('033-rodape')
+            || file.includes('validate-023-footer')
+            || file.includes('validate-033-footer')
             || file.includes('petshop_footer')
             || file.includes('institutional-footer')
             || (file.includes('DefaultSettings.php') && file.includes('petshop-core'))
             || file.includes('Admin/Customizer.php')
         ) {
             suites.add('footer-023');
+            suites.add('footer-033');
             browserScripts.add('validate-023-footer-browser.mjs');
+            browserScripts.add('validate-033-footer-browser.mjs');
         }
         if (
             file.includes('home-campaign')
@@ -379,6 +383,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('footer-023')) {
         evalFile('validate-023-footer.php');
+    }
+    if (suites.has('footer-033')) {
+        evalFile('validate-033-footer.php');
     }
     if (suites.has('campaigns-024')) {
         evalFile('validate-024-home-campaigns-carousel.php');
