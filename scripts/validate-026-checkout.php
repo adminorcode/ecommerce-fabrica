@@ -23,6 +23,7 @@ $record = static function (bool $condition, string $message) use (&$failures): v
 
 $record(has_action('template_redirect', [CheckoutCustomerData::class, 'hydrateCheckoutPage']) !== false, 'Hook frontend template_redirect nao registrado');
 $record(has_filter('rest_request_before_callbacks', [CheckoutCustomerData::class, 'hydrateStoreApiRequest']) !== false, 'Hook REST antes dos callbacks da Store API nao registrado');
+$record(has_filter('rest_request_after_callbacks', [CheckoutCustomerData::class, 'filterStoreApiCartResponse']) !== false, 'Hook REST depois dos callbacks da Store API nao registrado');
 $record(has_action('wp_logout', [CheckoutCustomerData::class, 'clearTaggedSessionData']) !== false, 'Hook de limpeza de sessao apos logout nao registrado');
 $record(has_action('woocommerce_init', [CheckoutCustomerData::class, 'registerCheckoutBlockFields']) !== false, 'Campos adicionais do Checkout Block nao registrados em woocommerce_init');
 $record(has_action('woocommerce_set_additional_field_value', [CheckoutCustomerData::class, 'syncAdditionalFieldValue']) !== false, 'Compatibilidade de salvamento dos campos adicionais nao registrada');
@@ -44,7 +45,7 @@ $cepFixture = static function ($preempt, string $cep) {
     }
 
     if ($cep === '99999999') {
-        return new WP_Error('petshop_cep_not_found', 'CEP não encontrado. Confira o número informado ou preencha o endereço manualmente.');
+        return ['erro' => true];
     }
 
     return $preempt;
@@ -110,6 +111,20 @@ $record(str_contains($assetSource, 'petshopAutoComplement'), 'JS nao diferencia 
 $record(str_contains($assetSource, 'petshop/number'), 'JS nao sincroniza numero adicional com Store API');
 $record(str_contains($assetSource, 'petshop/neighborhood'), 'JS nao sincroniza bairro adicional com Store API');
 $record(str_contains($assetSource, 'aria-live'), 'Mensagem de CEP nao anuncia resultado para leitores de tela');
+$record(str_contains($assetSource, 'window.petshopAddressLookup'), 'JS deve ler petshopAddressLookup a partir de window');
+$record(!str_contains($assetSource, 'box.style.marginTop') && !str_contains($assetSource, 'box.style.fontSize'), 'Mensagem de CEP nao deve usar estilo inline');
+
+$checkoutDataPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'includes/WooCommerce/CheckoutCustomerData.php';
+$checkoutDataSource = is_file($checkoutDataPath) ? (string) file_get_contents($checkoutDataPath) : '';
+$record(
+    str_contains($checkoutDataSource, "'id' => 'petshop/number'")
+    && str_contains($checkoutDataSource, "'autocomplete' => 'off'")
+    && !str_contains($checkoutDataSource, "'autocomplete' => 'address-line2'"),
+    'Campo numero do checkout nao deve usar autocomplete address-line2'
+);
+$record(str_contains($checkoutDataSource, 'rest_request_after_callbacks'), 'Prefill deve filtrar a resposta da Store API');
+$record(str_contains($checkoutDataSource, 'SESSION_HYDRATED_KEY'), 'Prefill deve hidratar so na primeira carga da sessao');
+$record(str_contains($addressLookupSource, 'preencha o endereço manualmente'), 'Mensagem de CEP inexistente deve orientar preenchimento manual');
 
 $makeSession = static function (): object {
     return new class {
@@ -208,6 +223,13 @@ $assertHydrated = static function (WC_Customer $customer, object $session, strin
     $record(CheckoutCustomerData::defaultDocument('', 'other', $customer) === ($isPf ? '12345678909' : '11222333000181'), $kind . ': default CPF/CNPJ nao leu petshop_document');
 };
 
+$assertShippingNotPersisted = static function (int $userId, string $kind) use ($record): void {
+    $record((string) get_user_meta($userId, 'shipping_first_name', true) === '', $kind . ': hidratacao nao deve gravar nome de shipping na conta');
+    $record((string) get_user_meta($userId, 'shipping_address_1', true) === '', $kind . ': hidratacao nao deve gravar rua de shipping na conta');
+    $record((string) get_user_meta($userId, 'shipping_postcode', true) === '', $kind . ': hidratacao nao deve gravar CEP de shipping na conta');
+    $record((string) get_user_meta($userId, 'shipping_number', true) === '', $kind . ': hidratacao nao deve gravar numero de shipping na conta');
+};
+
 $clearCustomerAddress = static function (WC_Customer $customer): void {
     foreach (['first_name', 'last_name', 'country', 'postcode', 'address_1', 'address_2', 'city', 'state', 'phone', 'email'] as $field) {
         $setter = 'set_billing_' . $field;
@@ -247,6 +269,7 @@ try {
         do_action('template_redirect');
         remove_filter('woocommerce_is_checkout', '__return_true');
         $assertHydrated($customer, $session, $kind, $email);
+        $assertShippingNotPersisted($userId, $kind);
 
         $restCustomer = new WC_Customer($userId);
         $restSession = $makeSession();
@@ -255,6 +278,7 @@ try {
         $clearCustomerAddress($restCustomer);
         apply_filters('rest_request_before_callbacks', null, [], new WP_REST_Request('GET', '/wc/store/v1/cart'));
         $assertHydrated($restCustomer, $restSession, $kind, $email);
+        $assertShippingNotPersisted($userId, $kind);
 
         $updateCustomer = new WC_Customer($userId);
         $updateSession = $makeSession();
@@ -268,6 +292,83 @@ try {
     }
 
     $pfUser = $createdUsers[0];
+    wp_set_current_user($pfUser);
+    $stableSession = $makeSession();
+    $stableCustomer = new WC_Customer($pfUser);
+    WC()->session = $stableSession;
+    WC()->customer = $stableCustomer;
+    $clearCustomerAddress($stableCustomer);
+
+    $firstCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
+        new WP_REST_Response([
+            'billing_address' => [
+                'first_name' => '',
+                'address_1' => '',
+                'postcode' => '',
+            ],
+            'shipping_address' => [],
+            'additional_fields' => [],
+        ]),
+        [],
+        new WP_REST_Request('GET', '/wc/store/v1/cart')
+    );
+    $firstCartData = $firstCartResponse instanceof WP_REST_Response ? $firstCartResponse->get_data() : [];
+    $record(($firstCartData['billing_address']['first_name'] ?? '') === 'Cliente', 'primeira resposta do cart deveria hidratar nome');
+    $record(($firstCartData['billing_address']['address_1'] ?? '') === 'Praca da Se', 'primeira resposta do cart deveria hidratar rua');
+    $record(($firstCartData['billing_address']['petshop/number'] ?? '') === '123', 'primeira resposta do cart deveria hidratar numero');
+    $record(($firstCartData['billing_address']['petshop/neighborhood'] ?? '') === 'Se', 'primeira resposta do cart deveria hidratar bairro');
+    $record(($firstCartData['additional_fields']['petshop/person-type'] ?? '') === 'PF', 'primeira resposta do cart deveria hidratar PF/PJ');
+    $record(($firstCartData['additional_fields']['petshop/document'] ?? '') === '12345678909', 'primeira resposta do cart deveria hidratar documento');
+
+    $secondCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
+        new WP_REST_Response([
+            'billing_address' => [
+                'first_name' => '',
+                'address_1' => '',
+                'postcode' => '',
+            ],
+            'shipping_address' => [],
+            'additional_fields' => [],
+        ]),
+        [],
+        new WP_REST_Request('GET', '/wc/store/v1/cart')
+    );
+    $secondCartData = $secondCartResponse instanceof WP_REST_Response ? $secondCartResponse->get_data() : [];
+    $record(($secondCartData['billing_address']['first_name'] ?? '') === '', 'segunda resposta do cart nao deve repor nome da conta');
+    $record(($secondCartData['billing_address']['address_1'] ?? '') === '', 'segunda resposta do cart nao deve repor rua da conta');
+    $record(($secondCartData['billing_address']['petshop/number'] ?? '') === '', 'segunda resposta do cart nao deve repor numero da conta');
+    $record(($secondCartData['billing_address']['petshop/neighborhood'] ?? '') === '', 'segunda resposta do cart nao deve repor bairro da conta');
+    $record(($secondCartData['additional_fields']['petshop/person-type'] ?? '') === '', 'segunda resposta do cart nao deve repor PF/PJ da conta');
+    $record(($secondCartData['additional_fields']['petshop/document'] ?? '') === '', 'segunda resposta do cart nao deve repor documento da conta');
+
+    $inheritAfterHydration = CheckoutCustomerData::filterStoreApiCartResponse(
+        new WP_REST_Response([
+            'billing_address' => [
+                'first_name' => 'Outro',
+                'address_1' => 'Rua Nova',
+                'postcode' => '01310930',
+            ],
+            'shipping_address' => [
+                'first_name' => '',
+                'address_1' => '',
+                'postcode' => '',
+            ],
+            'additional_fields' => [],
+        ]),
+        [],
+        new WP_REST_Request('GET', '/wc/store/v1/cart')
+    );
+    $inheritData = $inheritAfterHydration instanceof WP_REST_Response ? $inheritAfterHydration->get_data() : [];
+    $record(($inheritData['billing_address']['first_name'] ?? '') === 'Outro', 'depois da hidratacao, billing da resposta nao deve voltar ao nome da conta');
+    $record(($inheritData['shipping_address']['first_name'] ?? '') === 'Outro', 'depois da hidratacao, shipping vazio deve herdar o billing da mesma resposta');
+    $record(($inheritData['shipping_address']['address_1'] ?? '') === 'Rua Nova', 'depois da hidratacao, shipping vazio deve herdar a rua do billing da resposta');
+
+    $clearedAfterHydration = new WC_Customer($pfUser);
+    $clearCustomerAddress($clearedAfterHydration);
+    WC()->customer = $clearedAfterHydration;
+    apply_filters('rest_request_before_callbacks', null, [], new WP_REST_Request('GET', '/wc/store/v1/cart'));
+    $record($clearedAfterHydration->get_billing_first_name() === '', 'GET cart posterior nao deve repor nome no WC_Customer');
+
     $contaminatedSession = $makeSession();
     $contaminatedSession->set('petshop_checkout_customer_data_user_id', (string) $pfUser);
     $contaminatedSession->set('billing_document', '12345678909');

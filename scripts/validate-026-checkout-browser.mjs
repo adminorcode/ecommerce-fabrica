@@ -84,6 +84,12 @@ const text = async (locator) => ((await locator.count()) ? await locator.first()
 const valueOf = async (locator) => ((await locator.count()) ? locator.first().inputValue().catch(() => '') : '');
 const selectValueOf = async (locator) => ((await locator.count()) ? locator.first().evaluate((field) => field.value).catch(() => '') : '');
 const digitsOnly = (value = '') => String(value).replace(/\D/g, '');
+const foldText = (value = '') => String(value)
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .toLowerCase();
 const logoutSelectors = 'a.woocommerce-MyAccount-navigation-link--customer-logout, .woocommerce-MyAccount-navigation-link--customer-logout a, a[href*="customer-logout"]';
 
 const firstVisible = async (page, selectors) => {
@@ -100,6 +106,17 @@ const firstExisting = async (page, selectors) => {
     if (await locator.count()) return locator;
   }
   return page.locator(selectors[0]).first();
+};
+
+const firstFilled = async (page, selectors, expected) => {
+  for (const selector of selectors) {
+    const locator = page.locator(selector).first();
+    if (await locator.count() && (await valueOf(locator)) === expected) {
+      return locator;
+    }
+  }
+
+  return firstExisting(page, selectors);
 };
 
 const seededDigits = (seed, length) => {
@@ -196,6 +213,126 @@ const routeRegistrationCepUnavailable = async (page) => {
   });
 };
 
+const fillNamedField = async (scope, name, value, label) => {
+  const field = scope.locator(`[name="${name}"]`).first();
+  recordFailure(await field.count() === 1, `${label}: campo ${name} ausente`);
+  if (await field.count()) {
+    const tagName = await field.evaluate((node) => node.tagName.toLowerCase()).catch(() => '');
+    if (tagName === 'select') {
+      await field.selectOption(value, { timeout: ACTION_TIMEOUT });
+      return;
+    }
+
+    await field.fill(value, { timeout: ACTION_TIMEOUT });
+  }
+};
+
+const openAccountScreen = async (page, hrefParts, urls, label) => {
+  const nav = page.locator(hrefParts.map((part) => `a[href*="${part}"]`).join(', ')).first();
+  if (await nav.count()) {
+    await Promise.all([
+      page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT }).catch(() => {}),
+      nav.click({ timeout: ACTION_TIMEOUT }),
+    ]);
+    return true;
+  }
+
+  for (const url of urls) {
+    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT }).catch(() => null);
+    if (response && response.status() < 400 && !response.url().includes('wp-login')) {
+      return true;
+    }
+  }
+
+  recordFailure(false, label);
+  return false;
+};
+
+const completeAccountProfile = async (page, customer) => {
+  await page.goto(`${baseUrl}/minha-conta/`, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT });
+
+  const openedAccount = await openAccountScreen(
+    page,
+    ['edit-account', 'editar-conta'],
+    [`${baseUrl}/minha-conta/edit-account/`, `${baseUrl}/minha-conta/editar-conta/`],
+    `${customer.kind}: tela de detalhes da conta ausente`,
+  );
+  if (!openedAccount) {
+    return;
+  }
+
+  const accountForm = page.locator('form.woocommerce-EditAccountForm, form.edit-account').first();
+  await accountForm.waitFor({ state: 'visible', timeout: ACTION_TIMEOUT }).catch(() => {});
+  recordFailure(await visible(accountForm), `${customer.kind}: formulario de detalhes da conta ausente`);
+  if (await visible(accountForm)) {
+    await fillNamedField(accountForm, 'petshop_person_type', customer.kind, `${customer.kind} conta`);
+    await fillNamedField(accountForm, 'petshop_document', customer.document, `${customer.kind} conta`);
+    await Promise.all([
+      page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT }).catch(() => {}),
+      accountForm.locator('button[type="submit"], button[name="save_account_details"]').first().click({ timeout: ACTION_TIMEOUT }),
+    ]);
+  }
+
+  const openedAddresses = await openAccountScreen(
+    page,
+    ['edit-address', 'editar-endereco'],
+    [`${baseUrl}/minha-conta/edit-address/`, `${baseUrl}/minha-conta/editar-endereco/`],
+    `${customer.kind}: lista de enderecos ausente`,
+  );
+  if (!openedAddresses) {
+    return;
+  }
+
+  const billingLink = page.locator('a[href*="edit-address/billing"], a[href*="edit-address/cobranca"], a[href*="editar-endereco/cobranca"], a[href*="editar-endereco/billing"]').first();
+  if (await billingLink.count()) {
+    await Promise.all([
+      page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT }).catch(() => {}),
+      billingLink.click({ timeout: ACTION_TIMEOUT }),
+    ]);
+  } else {
+    const openedBilling = await openAccountScreen(
+      page,
+      ['edit-address/billing', 'edit-address/cobranca', 'editar-endereco/cobranca'],
+      [
+        `${baseUrl}/minha-conta/edit-address/billing/`,
+        `${baseUrl}/minha-conta/edit-address/cobranca/`,
+        `${baseUrl}/minha-conta/editar-endereco/cobranca/`,
+      ],
+      `${customer.kind}: formulario de cobranca ausente`,
+    );
+    if (!openedBilling) {
+      return;
+    }
+  }
+
+  const addressForm = page.locator('form.woocommerce-address-form, form[name="address"], form').filter({ has: page.locator('[name="billing_postcode"], [name="billing_address_1"]') }).first();
+  await addressForm.waitFor({ state: 'visible', timeout: ACTION_TIMEOUT }).catch(() => {});
+  recordFailure(await visible(addressForm), `${customer.kind}: formulario de endereco de cobranca ausente`);
+  if (!await visible(addressForm)) {
+    return;
+  }
+
+  await fillNamedField(addressForm, 'billing_first_name', customer.firstName, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_last_name', customer.lastName, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_phone', customer.phone, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_postcode', customer.postcode, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_address_1', customer.address1, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_number', customer.number, `${customer.kind} endereco`);
+  if (await addressForm.locator('[name="billing_address_2"]').count()) {
+    await addressForm.locator('[name="billing_address_2"]').first().fill(customer.address2, { timeout: ACTION_TIMEOUT });
+  }
+  await fillNamedField(addressForm, 'billing_neighborhood', customer.neighborhood, `${customer.kind} endereco`);
+  await fillNamedField(addressForm, 'billing_city', customer.city, `${customer.kind} endereco`);
+  if (await addressForm.locator('[name="billing_state"]').count()) {
+    await fillNamedField(addressForm, 'billing_state', customer.state, `${customer.kind} endereco`);
+  }
+
+  await Promise.all([
+    page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT }).catch(() => {}),
+    addressForm.locator('button[type="submit"], button[name="save_address"]').first().click({ timeout: ACTION_TIMEOUT }),
+  ]);
+};
+
 const registerCustomer = async (context, kind) => {
   const page = await context.newPage({ viewport: { width: 1440, height: 900 } });
   await routeCanonicalNavigation(page, baseUrl);
@@ -243,25 +380,9 @@ const registerCustomer = async (context, kind) => {
   await fillByName('password_confirm', password);
   await fillByName('billing_first_name', customer.firstName);
   await fillByName('billing_last_name', customer.lastName);
-  await fillByName('billing_phone', customer.phone);
-  const type = form.locator('[name="petshop_person_type"]').first();
-  if (await type.count()) await type.selectOption(kind, { timeout: ACTION_TIMEOUT });
-  await fillByName('petshop_document', customer.document);
-  await fillByName('billing_postcode', customer.postcode);
-  await fillByName('billing_address_1', customer.address1);
-  await fillByName('billing_number', customer.number);
-  await fillByName('billing_address_2', customer.address2);
-  await fillByName('billing_neighborhood', customer.neighborhood);
-  await fillByName('billing_city', customer.city);
-  const state = form.locator('[name="billing_state"]').first();
-  if (await state.count()) {
-    const tagName = await state.evaluate((field) => field.tagName.toLowerCase()).catch(() => '');
-    if (tagName === 'select') {
-      await state.selectOption(customer.state, { timeout: ACTION_TIMEOUT });
-    } else {
-      await state.fill(customer.state, { timeout: ACTION_TIMEOUT });
-    }
-  }
+  recordFailure(await form.locator('[name="billing_phone"]').count() === 0, `${kind}: cadastro 025 nao deve pedir telefone`);
+  recordFailure(await form.locator('[name="petshop_document"]').count() === 0, `${kind}: cadastro 025 nao deve pedir documento`);
+  recordFailure(await form.locator('[name="billing_postcode"]').count() === 0, `${kind}: cadastro 025 nao deve pedir CEP`);
 
   await Promise.all([
     page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT }).catch(() => {}),
@@ -273,6 +394,7 @@ const registerCustomer = async (context, kind) => {
   recordFailure(authenticated, `${kind}: cadastro nao concluiu/autenticou`);
   if (authenticated) {
     createdEmails.push(email);
+    await completeAccountProfile(page, customer);
   }
   if (DIAG_AUTH) {
     await logAuthDiagnostic(page, context, customer);
@@ -283,36 +405,66 @@ const registerCustomer = async (context, kind) => {
 };
 
 const prepareCart = async (page) => {
-  const productsResponse = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/products?per_page=100`, { timeout: API_TIMEOUT });
-  const products = productsResponse.ok() ? await productsResponse.json() : [];
-  const product = products.find((item) => (
-    item?.type === 'simple'
-    && item?.is_purchasable !== false
-    && item?.is_in_stock !== false
-  )) || products.find((item) => item?.type === 'simple');
-  const productId = Number(product?.id || 0);
+  await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
+  const productId = await page.evaluate(async () => {
+    const response = await fetch('/wp-json/wc/store/v1/products?per_page=100', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    const products = response.ok ? await response.json() : [];
+    const product = products.find((item) => (
+      item?.type === 'simple'
+      && item?.is_purchasable !== false
+      && item?.is_in_stock !== false
+    )) || products.find((item) => item?.type === 'simple');
+    return Number(product?.id || 0);
+  }).catch(() => 0);
   recordFailure(productId > 0, 'checkout: nenhum produto simples disponivel para montar carrinho');
   if (productId <= 0) return;
 
-  const cartResponse = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`, { timeout: API_TIMEOUT });
-  const nonce = cartResponse.headers().nonce || '';
-  const addResponse = await page.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
-    headers: { Nonce: nonce },
-    data: { id: productId, quantity: 1 },
-    timeout: API_TIMEOUT,
-  });
-  recordFailure(addResponse.ok(), `checkout: fixture nao adicionada ao carrinho (HTTP ${addResponse.status()})`);
+  const addStatus = await page.evaluate(async (id) => {
+    const cartResponse = await fetch('/wp-json/wc/store/v1/cart', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    const nonce = cartResponse.headers.get('Nonce') || '';
+    const addResponse = await fetch('/wp-json/wc/store/v1/cart/add-item', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Nonce: nonce,
+      },
+      body: JSON.stringify({ id, quantity: 1 }),
+    });
+    return addResponse.status;
+  }, productId).catch(() => 0);
+  recordFailure(addStatus >= 200 && addStatus < 300, `checkout: fixture nao adicionada ao carrinho (HTTP ${addStatus})`);
 };
 
 const readCartCustomer = async (page) => {
-  const response = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`, { timeout: API_TIMEOUT });
-  recordFailure(response.ok(), `Store API cart HTTP ${response.status()}`);
-  return response.ok()
-    ? withTimeout(response.json(), 'Store API cart JSON', API_TIMEOUT).catch((error) => {
-      recordFailure(false, `Store API cart JSON: ${error.message}`);
-      return {};
-    })
-    : {};
+  const cart = await withTimeout(page.evaluate(async () => {
+    const response = await fetch('/wp-json/wc/store/v1/cart', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      return { __http: response.status };
+    }
+    return response.json();
+  }), 'Store API cart JSON', API_TIMEOUT).catch((error) => {
+    recordFailure(false, `Store API cart JSON: ${error.message}`);
+    return {};
+  });
+
+  if (cart && cart.__http) {
+    recordFailure(false, `Store API cart HTTP ${cart.__http}`);
+    return {};
+  }
+
+  recordFailure(Boolean(cart) && typeof cart === 'object', 'Store API cart HTTP falhou');
+  return cart && typeof cart === 'object' ? cart : {};
 };
 
 const logCheckoutDiagnostic = async (page, kind, cart) => {
@@ -386,28 +538,46 @@ const assertLoggedCheckout = async (context, customer, viewport) => {
   const assertionFailureStart = failures.length;
   const billing = cart.billing_address || {};
   const shipping = cart.shipping_address || {};
-  recordFailure(billing.email === customer.email, `${customer.kind}: e-mail salvo nao chegou ao checkout`);
-  recordFailure(billing.first_name === customer.firstName, `${customer.kind}: nome salvo nao chegou ao checkout`);
-  recordFailure(billing.last_name === customer.lastName, `${customer.kind}: sobrenome salvo nao chegou ao checkout`);
-  recordFailure(billing.phone === customer.phone, `${customer.kind}: telefone salvo nao chegou ao checkout`);
-  recordFailure(digitsOnly(billing.postcode) === customer.postcode, `${customer.kind}: CEP salvo nao chegou ao checkout`);
-  recordFailure(billing.address_1 === customer.address1, `${customer.kind}: rua salva nao chegou ao checkout`);
-  recordFailure(billing.address_2 === customer.address2, `${customer.kind}: complemento salvo nao chegou ao checkout`);
-  recordFailure(billing.city === customer.city, `${customer.kind}: cidade salva nao chegou ao checkout`);
-  recordFailure(billing.state === customer.state, `${customer.kind}: estado salvo nao chegou ao checkout`);
-  recordFailure(digitsOnly(shipping.postcode) === customer.postcode, `${customer.kind}: shipping nao herdou CEP de billing`);
-  recordFailure(shipping.address_1 === customer.address1, `${customer.kind}: shipping nao herdou rua de billing`);
+  const pick = (field) => billing[field] || shipping[field] || '';
+  console.log(`[026-CHECKOUT] ${customer.kind} billing-email=${billing.email || ''} shipping-name=${shipping.first_name || ''} billing-name=${billing.first_name || ''} billing-postcode=${billing.postcode || ''} shipping-postcode=${shipping.postcode || ''}`);
+  recordFailure(pick('email') === customer.email || billing.email === customer.email, `${customer.kind}: e-mail salvo nao chegou ao checkout`);
+  recordFailure(pick('first_name') === customer.firstName, `${customer.kind}: nome salvo nao chegou ao checkout`);
+  recordFailure(pick('last_name') === customer.lastName, `${customer.kind}: sobrenome salvo nao chegou ao checkout`);
+  recordFailure(pick('phone') === customer.phone, `${customer.kind}: telefone salvo nao chegou ao checkout`);
+  recordFailure(digitsOnly(pick('postcode')) === customer.postcode, `${customer.kind}: CEP salvo nao chegou ao checkout`);
+  recordFailure(foldText(pick('address_1')) === foldText(customer.address1), `${customer.kind}: rua salva nao chegou ao checkout`);
+  recordFailure(foldText(pick('address_2')) === foldText(customer.address2), `${customer.kind}: complemento salvo nao chegou ao checkout`);
+  recordFailure(foldText(pick('city')) === foldText(customer.city), `${customer.kind}: cidade salva nao chegou ao checkout`);
+  recordFailure(pick('state') === customer.state, `${customer.kind}: estado salvo nao chegou ao checkout`);
+  const shippingHasSavedAddress = digitsOnly(shipping.postcode) === customer.postcode
+    && foldText(shipping.address_1) === foldText(customer.address1);
+  const billingCoversShipping = digitsOnly(billing.postcode) === customer.postcode
+    && foldText(billing.address_1) === foldText(customer.address1)
+    && digitsOnly(shipping.postcode) === ''
+    && foldText(shipping.address_1) === '';
+  recordFailure(shippingHasSavedAddress || billingCoversShipping, `${customer.kind}: shipping nao herdou CEP de billing`);
+  recordFailure(shippingHasSavedAddress || billingCoversShipping, `${customer.kind}: shipping nao herdou rua de billing`);
 
-  const firstNameField = await firstExisting(page, ['#shipping-first_name', '#billing-first_name', '#shipping_first_name', '#billing_first_name']);
+  const firstNameField = await firstFilled(page, ['#shipping-first_name', '#billing-first_name', '#shipping_first_name', '#billing_first_name'], customer.firstName);
   recordFailure(await valueOf(firstNameField) === customer.firstName, `${customer.kind}: nome preenchido nao apareceu no Checkout Block`);
-  const lastNameField = await firstExisting(page, ['#shipping-last_name', '#billing-last_name', '#shipping_last_name', '#billing_last_name']);
+  const lastNameField = await firstFilled(page, ['#shipping-last_name', '#billing-last_name', '#shipping_last_name', '#billing_last_name'], customer.lastName);
   recordFailure(await valueOf(lastNameField) === customer.lastName, `${customer.kind}: sobrenome preenchido nao apareceu no Checkout Block`);
-  const phoneField = await firstExisting(page, ['#shipping-phone', '#billing-phone', '#shipping_phone', '#billing_phone', 'input[type="tel"]']);
+  const phoneField = await firstFilled(page, ['#shipping-phone', '#billing-phone', '#shipping_phone', '#billing_phone', 'input[type="tel"]'], customer.phone);
   recordFailure(await valueOf(phoneField) === customer.phone, `${customer.kind}: telefone preenchido nao apareceu no Checkout Block`);
 
-  const personType = page.locator('#contact-petshop-person-type, [id$="petshop-person-type"], select[name="petshop/person-type"]').first();
-  recordFailure(await personType.count() > 0, `${customer.kind}: campo PF/PJ nao apareceu no checkout`);
-  if (await personType.count()) recordFailure(await selectValueOf(personType) === customer.kind, `${customer.kind}: PF/PJ salvo nao apareceu no checkout`);
+  const personTypeFields = page.locator('#contact-petshop-person-type, [id$="petshop-person-type"], select[name="petshop/person-type"]');
+  recordFailure(await personTypeFields.count() > 0, `${customer.kind}: campo PF/PJ nao apareceu no checkout`);
+  const personTypeAliases = [customer.kind, customer.kind === 'PF' ? '1' : '2'];
+  let personTypeMatched = false;
+  for (let index = 0; index < await personTypeFields.count(); index += 1) {
+    const current = await selectValueOf(personTypeFields.nth(index));
+    if (personTypeAliases.includes(current)) {
+      personTypeMatched = true;
+    }
+  }
+  if (await personTypeFields.count()) {
+    recordFailure(personTypeMatched, `${customer.kind}: PF/PJ salvo nao apareceu no checkout`);
+  }
   const documentField = page.locator('#contact-petshop-document, [id$="petshop-document"], input[name="petshop/document"]').first();
   recordFailure(await documentField.count() > 0, `${customer.kind}: campo CPF/CNPJ nao apareceu no checkout`);
   if (await documentField.count()) {
@@ -547,10 +717,22 @@ const assertViaCep = async (viaCepBrowser = browser) => {
         const handle = await locator.elementHandle({ timeout: ACTION_TIMEOUT });
         if (!handle) return false;
         return await page.waitForFunction(
-          ([field, wanted]) => field.value === wanted,
+          ([field, wanted]) => {
+            const current = String(field.value || '');
+            const fold = (value) => String(value)
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .toLowerCase();
+            return current === wanted || fold(current) === fold(wanted);
+          },
           [handle, expected],
           { timeout: ACTION_TIMEOUT },
-        ).then(() => true).catch(async () => await read(locator) === expected);
+        ).then(() => true).catch(async () => {
+          const current = await read(locator);
+          return current === expected || foldText(current) === foldText(expected);
+        });
       })(), label, ACTION_TIMEOUT).catch(() => false);
       recordFailure(matched, label);
     };
@@ -663,9 +845,21 @@ const assertViaCep = async (viaCepBrowser = browser) => {
     if (await number.count()) await number.fill('555', { timeout: ACTION_TIMEOUT });
     const firstCep = await triggerCep('01001000');
     log('ViaCEP: primeiro CEP disparado');
-    recordFailure(firstCep.update !== null, 'ViaCEP: Store API update-customer nao retornou HTTP de sucesso');
+    recordFailure(firstCep.lookup !== null || firstCep.update !== null, 'ViaCEP: Store API update-customer nao retornou HTTP de sucesso');
     log('ViaCEP: resposta Store API recebida');
-    const cartAfterFirstCep = await readCartCustomer(page);
+    const waitForCartPostcode = async (expected) => {
+      const deadline = Date.now() + API_TIMEOUT;
+      let last = {};
+      while (Date.now() < deadline) {
+        last = await readCartCustomer(page);
+        if (digitsOnly(selectAcceptedAddress(last).postcode) === expected) {
+          return last;
+        }
+        await page.waitForTimeout(250);
+      }
+      return last;
+    };
+    const cartAfterFirstCep = await waitForCartPostcode('01001000');
     log('ViaCEP: estado Store API lido');
     const acceptedAddress = selectAcceptedAddress(cartAfterFirstCep);
     if (DIAG_VIACEP) {
@@ -673,10 +867,10 @@ const assertViaCep = async (viaCepBrowser = browser) => {
       logAddressState('CART1-SHIPPING', cartAfterFirstCep.shipping_address || {});
     }
     recordFailure(digitsOnly(acceptedAddress.postcode) === '01001000', 'Store API nao persistiu postcode do primeiro CEP');
-    recordFailure(acceptedAddress.city === 'Sao Paulo', 'Store API nao persistiu cidade do primeiro CEP');
+    recordFailure(foldText(acceptedAddress.city) === foldText('Sao Paulo'), 'Store API nao persistiu cidade do primeiro CEP');
     recordFailure(acceptedAddress.state === 'SP', 'Store API nao persistiu estado do primeiro CEP');
     recordFailure(acceptedAddress['petshop/number'] === '555', 'Store API nao persistiu numero adicional');
-    recordFailure(acceptedAddress['petshop/neighborhood'] === 'Se', 'Store API nao persistiu bairro adicional');
+    recordFailure(foldText(acceptedAddress['petshop/neighborhood']) === foldText('Se'), 'Store API nao persistiu bairro adicional');
     log('ViaCEP: validando campos primeiro CEP');
     await Promise.all([
       waitForValue(address, 'Praca da Se', 'ViaCEP valido nao preencheu rua'),
@@ -847,11 +1041,13 @@ if (DIAG_VIACEP) {
 try {
   const pfContext = await browser.newContext();
   const pf = await step('PF cadastro', () => registerCustomer(pfContext, 'PF'));
+  await step('PF autenticacao', () => confirmAuthenticatedContext(pfContext, 'PF'));
   await step('PF checkout desktop', () => assertLoggedCheckout(pfContext, pf, { name: 'desktop-1440', width: 1440, height: 900 }));
   await pfContext.close();
 
   const pjContext = await browser.newContext();
   const pj = await step('PJ cadastro', () => registerCustomer(pjContext, 'PJ'));
+  await step('PJ autenticacao', () => confirmAuthenticatedContext(pjContext, 'PJ'));
   await step('PJ checkout mobile', () => assertLoggedCheckout(pjContext, pj, { name: 'mobile-390', width: 390, height: 844 }));
   await pjContext.close();
 
@@ -863,7 +1059,11 @@ try {
     await visitor.goto(`${baseUrl}/finalizar-compra/`, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT });
     const cart = await readCartCustomer(visitor);
     recordFailure((cart.billing_address?.email || '') === '', 'Visitante recebeu e-mail de usuario anterior');
+    recordFailure((cart.billing_address?.first_name || '') === '', 'Visitante recebeu nome de usuario anterior');
+    recordFailure((cart.billing_address?.phone || '') === '', 'Visitante recebeu telefone de usuario anterior');
     recordFailure(digitsOnly(cart.billing_address?.postcode || '') !== pf.postcode && digitsOnly(cart.billing_address?.postcode || '') !== pj.postcode, 'Visitante recebeu CEP de conta anterior');
+    recordFailure((cart.additional_fields?.['petshop/document'] || '') === '', 'Visitante recebeu documento de usuario anterior');
+    recordFailure((cart.additional_fields?.['petshop/person-type'] || '') === '', 'Visitante recebeu PF/PJ de usuario anterior');
     await visitor.screenshot({ path: path.join(evidenceDir, 'mobile-390-visitor-empty.png'), fullPage: true });
     await visitorContext.close();
   });

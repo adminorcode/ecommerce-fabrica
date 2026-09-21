@@ -168,12 +168,18 @@
     };
 
     const getStoreNonce = async () => {
+        const config = window.petshopAddressLookup || {};
+
+        if (!config.storeApiCartUrl) {
+            return '';
+        }
+
         if (checkoutStore.nonce) {
             return checkoutStore.nonce;
         }
 
         if (!checkoutStore.noncePromise) {
-            checkoutStore.noncePromise = fetch(petshopAddressLookup.storeApiCartUrl, {
+            checkoutStore.noncePromise = fetch(config.storeApiCartUrl, {
                 credentials: 'same-origin',
                 headers: {
                     Accept: 'application/json'
@@ -202,7 +208,7 @@
         return id.includes('shipping') || name.includes('shipping') ? 'shipping' : 'billing';
     };
 
-    const collectAddress = (postcode, fields) => {
+    const collectAddress = (postcode, fields, lookup = {}) => {
         const scope = getScope(postcode);
         const type = getAddressType(postcode);
         const number = getFieldValue(scope, [
@@ -212,7 +218,7 @@
             `input[name="${type}_number"]`,
             'input[name="petshop/number"]'
         ]);
-        const neighborhood = fields.neighborhood?.value || '';
+        const neighborhood = fields.neighborhood?.value || lookup.bairro || '';
 
         return {
             first_name: getFieldValue(scope, [
@@ -241,12 +247,14 @@
                 'select[autocomplete="country"]',
                 'input[autocomplete="country"]'
             ]) || 'BR',
-            address_1: fields.address?.value || '',
-            address_2: fields.complement?.value || '',
-            city: fields.city?.value || '',
-            state: fields.state?.value || '',
-            postcode: postcode.value || '',
-            'petshop/number': number,
+            address_1: fields.address?.value || lookup.logradouro || '',
+            address_2: fields.complement?.value || lookup.complemento || '',
+            city: fields.city?.value || lookup.localidade || '',
+            state: fields.state?.value || lookup.uf || '',
+            postcode: lookup.cep
+                ? `${String(lookup.cep).slice(0, 5)}-${String(lookup.cep).slice(5)}`
+                : (postcode.value || ''),
+            'petshop/number': number || lookup.number || '',
             'petshop/neighborhood': neighborhood,
             phone: getFieldValue(scope, [
                 `#${type}-phone`,
@@ -265,8 +273,22 @@
         };
     };
 
-    const syncStoreApiAddress = async (postcode, fields) => {
+    const applyLookupFields = (fields, data) => {
+        setNativeValue(fields.address, data.logradouro);
+        applyComplement(fields.complement, data.complemento || '');
+        setNativeValue(fields.neighborhood, data.bairro);
+        setNativeValue(fields.city, data.localidade);
+        setNativeValue(fields.state, data.uf);
+    };
+
+    const syncStoreApiAddress = async (postcode, fields, lookup = {}) => {
         if (!document.body.classList.contains('woocommerce-checkout')) {
+            return;
+        }
+
+        const config = window.petshopAddressLookup || {};
+
+        if (!config.storeApiUpdateCustomerUrl) {
             return;
         }
 
@@ -277,13 +299,13 @@
         }
 
         const type = getAddressType(postcode);
-        const address = collectAddress(postcode, fields);
+        const address = collectAddress(postcode, fields, lookup);
         const payload = type === 'shipping'
             ? { shipping_address: address }
             : { billing_address: address };
 
         try {
-            const response = await fetch(petshopAddressLookup.storeApiUpdateCustomerUrl, {
+            const response = await fetch(config.storeApiUpdateCustomerUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
@@ -357,8 +379,6 @@
 
         box.className = 'petshop-cep-message';
         box.setAttribute('aria-live', 'polite');
-        box.style.marginTop = '6px';
-        box.style.fontSize = '14px';
 
         postcode.insertAdjacentElement('afterend', box);
 
@@ -369,7 +389,7 @@
         const box = getMessageBox(postcode);
 
         box.textContent = message;
-        box.style.color = error ? '#b42318' : '';
+        box.classList.toggle('is-error', error);
     };
 
     const lookup = async (postcode) => {
@@ -439,12 +459,27 @@
             const data = result.data;
             const fields = getAddressFields(postcode);
 
-            setNativeValue(fields.address, data.logradouro);
-            applyComplement(fields.complement, data.complemento || '');
-            setNativeValue(fields.neighborhood, data.bairro);
-            setNativeValue(fields.city, data.localidade);
-            setNativeValue(fields.state, data.uf);
-            await syncStoreApiAddress(postcode, fields);
+            const numberBeforeLookup = getFieldValue(getScope(postcode), [
+                '#billing-petshop-number',
+                '#shipping-petshop-number',
+                '#billing-number',
+                '#shipping-number',
+                'input[name="petshop/number"]'
+            ]);
+            applyLookupFields(fields, data);
+            await syncStoreApiAddress(postcode, fields, { ...data, cep, number: numberBeforeLookup });
+            const refreshed = getAddressFields(postcode);
+            applyLookupFields(refreshed, data);
+            if (numberBeforeLookup) {
+                const numberField = findField(getScope(postcode), [
+                    '#billing-petshop-number',
+                    '#shipping-petshop-number',
+                    '#billing-number',
+                    '#shipping-number',
+                    'input[name="petshop/number"]'
+                ]);
+                setNativeValue(numberField, numberBeforeLookup);
+            }
 
             showMessage(
                 postcode,
@@ -611,9 +646,12 @@
 
     initialize();
 
-    const observer = new MutationObserver(debounce(initialize, 80));
+    const observer = new MutationObserver(debounce(initialize, 300));
+    const observerRoot = document.querySelector(
+        '.wc-block-checkout, .woocommerce-checkout, .woocommerce-account, form.woocommerce-address-form'
+    ) || document.body;
 
-    observer.observe(document.body, {
+    observer.observe(observerRoot, {
         childList: true,
         subtree: true
     });

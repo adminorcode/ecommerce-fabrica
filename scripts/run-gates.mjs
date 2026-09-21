@@ -405,7 +405,6 @@ const runFocusedSuites = (suites) => {
         evalFile('validate-035-menu-dropdown.php');
     }
     if (suites.has('checkout-026')) {
-        evalFile('validate-025-account-registration.php');
         evalFile('validate-026-checkout.php');
     }
     if (suites.has('product-grid')) {

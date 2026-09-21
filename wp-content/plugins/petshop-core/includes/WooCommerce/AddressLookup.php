@@ -112,6 +112,10 @@ final class AddressLookup
         }
 
         if (is_array($preempt)) {
+            if (!empty($preempt['erro'])) {
+                return self::cepNotFoundError();
+            }
+
             return self::sanitizeLookupResult($preempt);
         }
 
@@ -168,10 +172,7 @@ final class AddressLookup
         }
 
         if (!empty($data['erro'])) {
-            return new \WP_Error(
-                'petshop_cep_not_found',
-                __('CEP não encontrado. Confira o número informado.', 'petshop-core')
-            );
+            return self::cepNotFoundError();
         }
 
         $result = self::sanitizeLookupResult($data);
@@ -179,6 +180,17 @@ final class AddressLookup
         set_transient($cacheKey, $result, 12 * HOUR_IN_SECONDS);
 
         return $result;
+    }
+
+    private static function cepNotFoundError(): \WP_Error
+    {
+        return new \WP_Error(
+            'petshop_cep_not_found',
+            __(
+                'CEP não encontrado. Confira o número informado ou preencha o endereço manualmente.',
+                'petshop-core'
+            )
+        );
     }
 
     /**

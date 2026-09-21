@@ -9,6 +9,7 @@ defined('ABSPATH') || exit;
 final class CheckoutCustomerData
 {
     private const SESSION_USER_KEY = 'petshop_checkout_customer_data_user_id';
+    private const SESSION_HYDRATED_KEY = 'petshop_checkout_customer_data_hydrated';
 
     public static function bootstrap(): void
     {
@@ -37,7 +38,7 @@ final class CheckoutCustomerData
             'type' => 'text',
             'required' => true,
             'attributes' => [
-                'autocomplete' => 'address-line2',
+                'autocomplete' => 'off',
                 'maxLength' => 20,
             ],
             'sanitize_callback' => [self::class, 'sanitizeShortText'],
@@ -95,7 +96,14 @@ final class CheckoutCustomerData
             !function_exists('is_checkout')
             || !is_checkout()
             || (function_exists('is_order_received_page') && is_order_received_page())
+            || (function_exists('is_checkout_pay_page') && is_checkout_pay_page())
         ) {
+            return;
+        }
+
+        $userId = (int) get_current_user_id();
+
+        if (self::sessionAlreadyHydrated($userId)) {
             return;
         }
 
@@ -120,6 +128,11 @@ final class CheckoutCustomerData
         }
 
         if (!is_user_logged_in()) {
+            self::clearTaggedSessionData();
+            return $response;
+        }
+
+        if (self::sessionAlreadyHydrated((int) get_current_user_id())) {
             return $response;
         }
 
@@ -146,6 +159,24 @@ final class CheckoutCustomerData
         }
 
         if (!is_user_logged_in()) {
+            self::clearTaggedSessionData();
+            return $response;
+        }
+
+        $userId = (int) get_current_user_id();
+
+        if (self::sessionAlreadyHydrated($userId)) {
+            if (!$response instanceof \WP_REST_Response) {
+                return $response;
+            }
+
+            $data = $response->get_data();
+
+            if (is_array($data)) {
+                self::hydrateCartResponseData($data, false);
+                $response->set_data($data);
+            }
+
             return $response;
         }
 
@@ -159,8 +190,9 @@ final class CheckoutCustomerData
             return $response;
         }
 
-        self::hydrateCartResponseData($data);
+        self::hydrateCartResponseData($data, true);
         $response->set_data($data);
+        self::markSessionHydrated($userId);
 
         return $response;
     }
@@ -184,14 +216,8 @@ final class CheckoutCustomerData
 
         $userId = (int) get_current_user_id();
 
-        $changed = false;
-        $changed = self::hydrateBillingAddress($customer, $userId) || $changed;
-        $changed = self::hydrateShippingAddress($customer, $userId) || $changed;
-
-        if ($changed) {
-            $customer->save();
-        }
-
+        self::hydrateBillingAddress($customer, $userId);
+        self::hydrateShippingAddress($customer, $userId);
         self::hydrateBrazilianCheckoutSession($userId);
     }
 
@@ -287,7 +313,7 @@ final class CheckoutCustomerData
     /**
      * @param array<string, mixed> $data
      */
-    private static function hydrateCartResponseData(array &$data): void
+    private static function hydrateCartResponseData(array &$data, bool $fromAccount): void
     {
         $session = function_exists('WC') ? (WC()->session ?? null) : null;
         $userId = is_user_logged_in() ? (int) get_current_user_id() : 0;
@@ -295,12 +321,17 @@ final class CheckoutCustomerData
         foreach (['billing', 'shipping'] as $group) {
             $addressKey = $group . '_address';
             $data[$addressKey] = is_array($data[$addressKey] ?? null) ? $data[$addressKey] : [];
-            self::mergeNativeAddressIntoResponse($data[$addressKey], $group, $userId);
-            self::mergeAdditionalAddressIntoResponse($data[$addressKey], $group, $userId, $session);
+            if ($fromAccount) {
+                self::mergeNativeAddressIntoResponse($data[$addressKey], $group, $userId);
+                self::mergeAdditionalAddressIntoResponse($data[$addressKey], $group, $userId, $session);
+            }
         }
 
         self::inheritBillingResponseWhenShippingEmpty($data);
-        self::mergeContactAdditionalFieldsIntoResponse($data, $userId, $session);
+
+        if ($fromAccount) {
+            self::mergeContactAdditionalFieldsIntoResponse($data, $userId, $session);
+        }
     }
 
     /**
@@ -394,21 +425,13 @@ final class CheckoutCustomerData
     {
         $data['additional_fields'] = is_array($data['additional_fields'] ?? null) ? $data['additional_fields'] : [];
 
-        $personType = self::sanitizePersonType(self::sessionValue($session, 'petshop_person_type'));
-
-        if ($personType === '') {
-            $personType = self::sanitizePersonType(self::sessionValue($session, 'billing_persontype'));
-        }
+        $personType = self::sanitizePersonType(self::sessionValue($session, 'billing_persontype'));
 
         if ($personType === '' && $userId > 0) {
             $personType = self::sanitizePersonType((string) get_user_meta($userId, 'petshop_person_type', true));
         }
 
-        $document = self::sessionValue($session, 'petshop_document');
-
-        if ($document === '') {
-            $document = self::sessionValue($session, 'billing_document');
-        }
+        $document = self::sessionValue($session, 'billing_document');
 
         if ($document === '' && $userId > 0) {
             $document = (string) get_user_meta($userId, 'petshop_document', true);
@@ -774,6 +797,38 @@ final class CheckoutCustomerData
         return $wcObject instanceof \WC_Order ? '_' . $key : $key;
     }
 
+    private static function sessionAlreadyHydrated(int $userId): bool
+    {
+        if ($userId <= 0 || !function_exists('WC')) {
+            return false;
+        }
+
+        $session = WC()->session ?? null;
+
+        if (!is_object($session) || !method_exists($session, 'get')) {
+            return false;
+        }
+
+        return (int) $session->get(self::SESSION_USER_KEY, 0) === $userId
+            && (string) $session->get(self::SESSION_HYDRATED_KEY, '') === '1';
+    }
+
+    private static function markSessionHydrated(int $userId): void
+    {
+        if ($userId <= 0 || !function_exists('WC')) {
+            return;
+        }
+
+        $session = WC()->session ?? null;
+
+        if (!is_object($session) || !method_exists($session, 'set')) {
+            return;
+        }
+
+        $session->set(self::SESSION_USER_KEY, (string) $userId);
+        $session->set(self::SESSION_HYDRATED_KEY, '1');
+    }
+
     private static function setSessionValueIfEmpty(object $session, string $key, string $value): void
     {
         if ($value === '' || (string) $session->get($key, '') !== '') {
@@ -799,6 +854,7 @@ final class CheckoutCustomerData
             'billing_cpf',
             'billing_cnpj',
             self::SESSION_USER_KEY,
+            self::SESSION_HYDRATED_KEY,
         ] as $key) {
             $session->set($key, '');
         }
