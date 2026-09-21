@@ -73,6 +73,8 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin
 | `validate-009-cart-checkout-browser.mjs` | 009 | Browser: cart/checkout tokens e a11y |
 | `validate-023-footer.php` | 023 | Rodapé: settings Customizer e render preenchido/vazio |
 | `validate-023-footer-browser.mjs` | 023 | Browser: composição do rodapé (4 colunas, redes na marca, ícones, 1440/390) |
+| `validate-033-footer.php` | 033 | Rodapé: composição legal em duas linhas com pagamento herdado do 023 |
+| `validate-033-footer-browser.mjs` | 033 | Browser: três faixas do rodapé, selos com filetes/divisórias e matriz 1440/1024/390 |
 | `validate-024-home-campaigns-carousel.php` | 024 | Carrossel promocional: limite 3, duração por imagem, persistência |
 | `validate-024-home-campaigns-carousel-browser.mjs` | 024 | Browser: overlay de setas/indicadores, 44px, 1440/1024/768/390 |
 | `validate-026-checkout.php` | 026 | Checkout: dados salvos da conta, ponte para campos BR, ViaCEP unico e PDP sem ViaCEP |
