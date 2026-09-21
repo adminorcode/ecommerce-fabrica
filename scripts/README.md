@@ -82,6 +82,7 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin
 | `validate-039-cart-qty-browser.mjs` | 039 | Browser: quantidade persiste depois do CEP no carrinho |
 | `validate-035-menu-dropdown.php` | 035 | Menu comercial: markup de dropdown, dois pais com filhos, persistência e rodapé depth 1 |
 | `validate-035-menu-dropdown-browser.mjs` | 035 | Browser: hover 1440, accordion 390, segundo pai e item sem filhos |
+| `validate-037-cart-auto-update-browser.mjs` | 037 | Browser: `/carrinho` e mini-cart atualizam quantidade e valores finais sem refresh, com Store API como fonte oficial |
 | `validate-030.php` | 030 | Frase da confirmação: setting, filtros WC/bloco, persistência e HTML do pedido recebido |
 | `validate-030-order-received-browser.mjs` | 030 | Browser: Checkout Block + página de pedido recebido com a frase do Personalizar |
 | `test-004b-persistence.php` | 004b | Persistência editorial |

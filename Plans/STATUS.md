@@ -39,6 +39,7 @@
 | [034-layout-emails-compra.md](./034-layout-emails-compra.md) | Concluído | Casco global aplicado aos e-mails HTML WooCommerce; composição de compra nos avisos de cliente; tokens 014, CTAs, rastreio, plain text preservado e persistência validados. ClickUp [86e2yypv9](https://app.clickup.com/t/86e2yypv9) |
 | [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Concluído | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. Gates PHP/browser validados. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
 | [036-dependencias-frete-checkout-versionadas.md](./036-dependencias-frete-checkout-versionadas.md) | Concluído | Melhor Envio 2.16.6 e Calculadora BR 4.17.1 versionados com vendor, Docker/deploy/gates reconciliados e Brazilian Market mantido fora para evitar conflito |
+| [037-atualizacao-automatica-valores-carrinho.md](./037-atualizacao-automatica-valores-carrinho.md) | Concluído | Atualização automática comprovada sem refresh no Cart Block `/carrinho` e mini-cart; WooCommerce Store API permanece fonte de verdade; gate browser 037 criado, regressão 039 preservada e nenhuma correção funcional de produção foi necessária |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 
 ## Ordem recomendada de execução

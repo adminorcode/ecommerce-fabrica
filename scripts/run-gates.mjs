@@ -268,6 +268,15 @@ const classifySuites = (files) => {
             browserScripts.add('validate-039-cart-qty-browser.mjs');
         }
         if (
+            file.includes('037-atualizacao-automatica-valores-carrinho')
+            || file.includes('validate-037-cart-auto-update')
+        ) {
+            suites.add('cart-auto-update-037');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+            suites.add('cart-qty-039');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
+        }
+        if (
             file.includes('035-dropdown-subcategorias-menu-comercial')
             || file.includes('commercial-menu')
             || file.includes('validate-035-menu-dropdown')
