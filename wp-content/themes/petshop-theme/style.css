@@ -4632,3 +4632,117 @@ footer.ct-footer .ct-footer-copyright {
     transition-duration: .01ms;
   }
 }
+
+/* Ticket 031 - Card de produto variável */
+
+.petshop-product-card__variations {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.petshop-product-card__attribute {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.petshop-product-card__attribute-label {
+  margin: 0 0 0.35rem;
+  padding: 0;
+  color: var(--color-muted, #5e5d61);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.petshop-product-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.petshop-product-card__chip {
+  min-width: 2.15rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-border, #d8d9db);
+  border-radius: 999px;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-ink, #252426);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.petshop-product-card__chip:hover {
+  border-color: var(--color-brand-teal-dark, #126e70);
+}
+
+.petshop-product-card__chip.is-selected,
+.petshop-product-card__chip[aria-pressed="true"] {
+  border-color: var(--color-brand-teal-dark, #126e70);
+  background: var(--color-brand-teal-dark, #126e70);
+  color: var(--color-surface, #ffffff);
+}
+
+.petshop-product-card__chip:focus-visible,
+.petshop-product-card__buy-now:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-focus, #005fcc) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.petshop-product-card__selected-price {
+  display: inline-block;
+}
+
+.petshop-product-card__status {
+  min-height: 1.1em;
+  margin: 0;
+  color: var(--color-muted, #5e5d61);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.petshop-product-card__buy-now {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.petshop-product-card__buy-now[disabled],
+.petshop-product-card__buy-now[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.petshop-product-card__buy-now.is-loading {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.petshop-product-card__buy-now.is-added {
+  border-color: var(--color-brand-teal-dark, #126e70);
+  background: var(--color-brand-teal-dark, #126e70);
+  color: var(--color-surface, #ffffff);
+}
+
+@media (max-width: 689px) {
+  .petshop-product-card__variations {
+    gap: 0.55rem;
+  }
+
+  .petshop-product-card__chip {
+    min-height: 2.15rem;
+    padding-inline: 0.7rem;
+  }
+}
