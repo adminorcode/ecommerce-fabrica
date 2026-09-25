@@ -105,6 +105,47 @@ Quando um gate fora do escopo falhar:
 - Não corrigir sem autorização.
 - Não atribuir automaticamente a falha ao ticket atual.
 
+### Falhas de CI/GitHub Actions
+
+Gate local aprovado não equivale automaticamente a CI aprovado. Toda falha de
+GitHub Actions deve ser classificada antes de qualquer correção:
+
+- bootstrap/runner/infra;
+- instalação/dependências;
+- build;
+- gate/teste relacionado ao ticket;
+- regressão funcional.
+
+Registrar o ponto exato da falha e a evidência/log relevante. Se a falha ocorrer
+antes de o gate do ticket ser executado, não atribuir automaticamente a falha ao
+código do ticket. Sempre que possível, reproduzir localmente o mesmo
+bootstrap/comando executado pelo CI antes de concluir a causa.
+
+Quando existir script/comando local equivalente ao GitHub Actions, executá-lo
+antes do PR ou handoff.
+
+Se for problema de infraestrutura recorrente:
+
+- não corrigir dentro de ticket funcional sem autorização;
+- registrar como débito técnico;
+- abrir ticket/plan separado de CI/infra;
+- manter referência ao PR/ticket onde foi detectado.
+
+Nunca declarar "todos os checks passaram" ou "CI aprovado" quando algum check do
+GitHub estiver falhando.
+
+No handoff/PR, registrar separadamente:
+
+- gates locais;
+- checks do GitHub;
+- checks aprovados;
+- checks falhos;
+- estágio da falha;
+- classificação ticket vs infraestrutura;
+- bloqueio ou não bloqueio.
+
+Finding de CI não autoriza automaticamente alterar código funcional.
+
 ## 7. Regra obrigatória para tarefas de UI
 
 Toda tarefa que altera interface deve ter revisão visual real.
