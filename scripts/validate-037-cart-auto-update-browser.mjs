@@ -113,7 +113,10 @@ const cartDomState = async (page) => page.evaluate(() => {
 
 const miniDomState = async (page) => page.evaluate(() => {
   const drawer = document.querySelector('.wc-block-components-drawer__screen-overlay, .wc-block-mini-cart__drawer, .wc-block-components-drawer');
-  const input = drawer?.querySelector('.wc-block-components-quantity-selector__input');
+  const row = drawer?.querySelector('.wc-block-cart-item, .wc-block-cart-items__row');
+  const input = row?.querySelector('.wc-block-components-quantity-selector__input');
+  const unitPrice = row?.querySelector('td.wc-block-cart-item__product [data-wp-text="state.itemPrice"]:not(ins)');
+  const lineTotal = row?.querySelector('td.wc-block-cart-item__total [data-wp-text="state.lineItemTotal"]');
   const totalRows = [...(drawer?.querySelectorAll('.wc-block-components-totals-item, .wc-block-mini-cart__footer-subtotal') || [])];
   const subtotalRow = totalRows.find((row) => {
     const label = row.querySelector('.wc-block-components-totals-item__label, .wc-block-mini-cart__footer-subtotal-label');
@@ -123,13 +126,16 @@ const miniDomState = async (page) => page.evaluate(() => {
 
   return {
     quantity: Number(input?.value || 0),
+    unitPriceText: unitPrice?.textContent || '',
+    lineTotalText: lineTotal?.textContent || '',
+    lineTotalFound: Boolean(lineTotal),
     subtotalText: subtotal?.textContent || '',
     subtotalFound: Boolean(subtotalRow && subtotal),
     subtotalCandidates: totalRows.map((row) => row.textContent?.trim() || '').filter(Boolean),
     marker: window.__petshop037MiniNoReload || null,
     hasDrawer: Boolean(drawer),
-    plusDisabled: Boolean(drawer?.querySelector('.wc-block-components-quantity-selector__button--plus')?.disabled),
-    minusDisabled: Boolean(drawer?.querySelector('.wc-block-components-quantity-selector__button--minus')?.disabled),
+    plusDisabled: Boolean(row?.querySelector('.wc-block-components-quantity-selector__button--plus')?.disabled),
+    minusDisabled: Boolean(row?.querySelector('.wc-block-components-quantity-selector__button--minus')?.disabled),
   };
 });
 
@@ -402,7 +408,9 @@ const miniUpdateFromBatchResponse = async (response, item, expectedQuantity, dir
       name: apiItem.name || item.name || null,
     },
     quantity: apiQuantity,
-    itemLineTotal: Number(apiItem.totals?.line_total),
+    itemLineTotal: itemLineTotal(apiItem, taxDisplay),
+    itemLineTotalRaw: Number(apiItem.totals?.line_total),
+    itemLineTotalTax: Number(apiItem.totals?.line_total_tax),
     subtotal: expectedSubtotal,
     status: update.status,
   };
@@ -430,6 +438,7 @@ const assertMiniMatchesOfficial = async (page, item, direction, official, label)
   const started = Date.now();
   while (Date.now() - started < 12000) {
     const dom = await miniDomState(page);
+    const domLineTotal = moneyToMinor(dom.lineTotalText);
     const domSubtotal = moneyToMinor(dom.subtotalText);
     last = {
       item: {
@@ -440,6 +449,11 @@ const assertMiniMatchesOfficial = async (page, item, direction, official, label)
       responseStatus: official.status,
       responseQuantity: official.quantity,
       domQuantity: dom.quantity,
+      responseLineTotal: official.itemLineTotal,
+      domLineTotal,
+      domLineTotalText: dom.lineTotalText,
+      lineTotalFound: dom.lineTotalFound,
+      unitPriceText: dom.unitPriceText,
       responseSubtotal: official.subtotal,
       domSubtotal,
       domSubtotalText: dom.subtotalText,
@@ -449,6 +463,8 @@ const assertMiniMatchesOfficial = async (page, item, direction, official, label)
     };
 
     const matches = dom.quantity === official.quantity
+      && dom.lineTotalFound
+      && domLineTotal === official.itemLineTotal
       && dom.subtotalFound
       && domSubtotal === official.subtotal
       && dom.marker === 'mini-marker';
@@ -474,9 +490,12 @@ const assertMiniPersistsAfterReopen = async (page, item, direction, official) =>
   await page.locator('.wc-block-components-drawer__screen-overlay .wc-block-components-quantity-selector__input').first().waitFor({ timeout: 15000 });
 
   const dom = await miniDomState(page);
+  const domLineTotal = moneyToMinor(dom.lineTotalText);
   const domSubtotal = moneyToMinor(dom.subtotalText);
   if (
     dom.quantity !== official.quantity
+    || !dom.lineTotalFound
+    || domLineTotal !== official.itemLineTotal
     || !dom.subtotalFound
     || domSubtotal !== official.subtotal
     || dom.marker !== 'mini-marker'
@@ -489,6 +508,11 @@ const assertMiniPersistsAfterReopen = async (page, item, direction, official) =>
       responseStatus: official.status,
       responseQuantity: official.quantity,
       domQuantity: dom.quantity,
+      responseLineTotal: official.itemLineTotal,
+      domLineTotal,
+      domLineTotalText: dom.lineTotalText,
+      lineTotalFound: dom.lineTotalFound,
+      unitPriceText: dom.unitPriceText,
       responseSubtotal: official.subtotal,
       domSubtotal,
       domSubtotalText: dom.subtotalText,
@@ -659,6 +683,6 @@ if (failures.length) {
 console.log(JSON.stringify({
   ok: true,
   cart: 'quantidade, line total e cart total convergiram sem refresh',
-  miniCart: 'quantidade e subtotal convergiram sem refresh',
+  miniCart: 'quantidade, line total e subtotal convergiram sem refresh',
   sourceOfTruth: 'WooCommerce Store API',
 }, null, 2));
