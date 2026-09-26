@@ -1,5 +1,4 @@
 import path from 'node:path';
-import fs from 'node:fs';
 import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
@@ -9,44 +8,10 @@ const postcode = '01001-000';
 const failures = [];
 const fixtureNotes = [];
 let selectedProducts = [];
-const envFile = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') : '';
-const fileEnv = Object.fromEntries(envFile
-  .split(/\r?\n/)
-  .filter((line) => line && !line.trim().startsWith('#') && line.includes('='))
-  .map((line) => {
-    const index = line.indexOf('=');
-    return [
-      line.slice(0, index).trim(),
-      line.slice(index + 1).trim().replace(/^['"]|['"]$/g, ''),
-    ];
-  }));
-const adminUser = process.env.PETSHOP_ADMIN_USER
-  || process.env.WORDPRESS_ADMIN_USER
-  || fileEnv.WORDPRESS_ADMIN_USER
-  || 'admin';
-const adminPassword = process.env.PETSHOP_ADMIN_PASSWORD
-  || process.env.WORDPRESS_ADMIN_PASSWORD
-  || fileEnv.WORDPRESS_ADMIN_PASSWORD
-  || 'password';
 
 const qtyInput = (page) => page.locator('.wc-block-components-quantity-selector__input').first();
 const qtyPlus = (page) => page.locator('.wc-block-components-quantity-selector__button--plus').first();
 const readQty = async (page) => Number(await qtyInput(page).inputValue());
-
-const login = async (page) => {
-  await page.goto(`${baseUrl}/wp-login.php`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.fill('#user_login', adminUser);
-  await page.fill('#user_pass', adminPassword);
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null),
-    page.click('#wp-submit'),
-  ]);
-
-  const loggedIn = await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin');
-  if (!loggedIn) {
-    throw new Error('Login administrativo local nao foi confirmado.');
-  }
-};
 
 const clearCart = async (page) => {
   const cartProbe = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
@@ -207,12 +172,37 @@ const assertQtyHolds = async (page, expected, label) => {
 };
 
 const browser = await launchBrowser();
+let context;
+let page;
+
+const closeSafely = async (label, close) => {
+  let timer;
+  try {
+    await Promise.race([
+      close(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('timeout ao fechar recurso')), 5000);
+      }),
+    ]);
+  } catch (error) {
+    failures.push(`${label}: ${error.message || error}`);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const isNavigationFailure = (error) => (
+  /page\.goto|net::|chrome-error/i.test(error?.message || String(error))
+);
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  page = await context.newPage();
   await routeCanonicalNavigation(page, baseUrl);
-  await login(page);
   await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin')) {
+    throw new Error('Fluxo 039 deve rodar como visitante, mas uma sessao admin foi detectada.');
+  }
   selectedProducts = await discoverProducts(page);
 
   for (const product of selectedProducts) {
@@ -225,7 +215,10 @@ try {
       continue;
     }
 
-    await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const cartResponse = await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    if (page.url().startsWith('chrome-error://') || !cartResponse?.ok()) {
+      throw new Error(`falha ao abrir carrinho: status=${cartResponse?.status() ?? 'sem resposta'} url=${page.url()}`);
+    }
     await qtyInput(page).waitFor({ timeout: 15000 });
     await page.locator('[data-petshop-cart-shipping-form]').waitFor({ timeout: 15000 });
 
@@ -331,13 +324,23 @@ try {
 
     await page.screenshot({ path: path.join(evidenceDir, `${product.label}-after-cep.png`), fullPage: true });
     } catch (error) {
-      failures.push(`${product.label}: ${error.message || error}`);
+      const message = error.message || String(error);
+      failures.push(`${product.label}: ${message}`);
+      if (isNavigationFailure(error) || page.url().startsWith('chrome-error://')) {
+        break;
+      }
     }
   }
-
-  await page.close();
+} catch (error) {
+  failures.push(error.message || String(error));
 } finally {
-  await browser.close();
+  if (page && !page.isClosed()) {
+    await closeSafely('page.close', () => page.close());
+  }
+  if (context) {
+    await closeSafely('context.close', () => context.close());
+  }
+  await closeSafely('browser.close', () => browser.close());
 }
 
 if (failures.length) {

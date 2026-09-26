@@ -102,21 +102,21 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-030-order-received-browser.mjs', 'validate-032-search-browser.mjs', 'validate-039-cart-qty-browser.mjs', 'validate-035-menu-dropdown-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
-                docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-030-order-received-browser.mjs', 'validate-032-search-browser.mjs', 'validate-037-cart-auto-update-browser.mjs', 'validate-039-cart-qty-browser.mjs', 'validate-035-menu-dropdown-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
+                docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-016-product-grid-editor.mjs
             if ($LASTEXITCODE -ne 0) { throw 'editor gate Plano 016 falhou' }
         }
 
         if ($Pdp -or $Browser) {
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-pdp-browser.mjs
             if ($LASTEXITCODE -ne 0) { throw 'browser gate PDP falhou' }
         }
 
         if ($Cart -or $Browser) {
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-cart-browser.mjs
             if ($LASTEXITCODE -ne 0) { throw 'browser gate carrinho falhou' }
         }
     } finally {

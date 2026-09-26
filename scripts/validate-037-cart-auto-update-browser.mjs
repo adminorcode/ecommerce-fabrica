@@ -1,29 +1,7 @@
-import fs from 'node:fs';
 import { launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const failures = [];
-
-const envFile = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') : '';
-const fileEnv = Object.fromEntries(envFile
-  .split(/\r?\n/)
-  .filter((line) => line && !line.trim().startsWith('#') && line.includes('='))
-  .map((line) => {
-    const index = line.indexOf('=');
-    return [
-      line.slice(0, index).trim(),
-      line.slice(index + 1).trim().replace(/^['"]|['"]$/g, ''),
-    ];
-  }));
-
-const adminUser = process.env.PETSHOP_ADMIN_USER
-  || process.env.WORDPRESS_ADMIN_USER
-  || fileEnv.WORDPRESS_ADMIN_USER
-  || 'admin';
-const adminPassword = process.env.PETSHOP_ADMIN_PASSWORD
-  || process.env.WORDPRESS_ADMIN_PASSWORD
-  || fileEnv.WORDPRESS_ADMIN_PASSWORD
-  || 'password';
 
 const moneyToMinor = (value) => {
   const normalized = String(value || '')
@@ -49,61 +27,39 @@ const waitUntil = async (predicate, { timeout = 10000, interval = 100, label = '
   throw new Error(`${label} nao atendida em ${timeout} ms. Ultimo valor: ${JSON.stringify(last)}`);
 };
 
-const login = async (page) => {
-  await page.goto(`${baseUrl}/wp-login.php`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.fill('#user_login', adminUser);
-  await page.fill('#user_pass', adminPassword);
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null),
-    page.click('#wp-submit'),
-  ]);
+const readOfficialCart = async (page) => {
+  const response = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
+  return {
+    status: response.status(),
+    nonce: response.headers()['nonce'] || '',
+    body: await response.json(),
+  };
+};
 
-  const loggedIn = await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin');
-  if (!loggedIn) {
-    throw new Error('Login administrativo local nao foi confirmado.');
+const clearCart = async (page) => {
+  const probe = await readOfficialCart(page);
+  const response = await page.request.delete(`${baseUrl}/wp-json/wc/store/v1/cart/items`, {
+    headers: { Nonce: probe.nonce },
+  });
+
+  if (!response.ok()) {
+    throw new Error(`clear cart HTTP ${response.status()}`);
   }
 };
 
-const fetchCart = async (page) => page.evaluate(async () => {
-  const response = await fetch('/wp-json/wc/store/v1/cart');
-  return {
-    status: response.status,
-    nonce: response.headers.get('Nonce') || '',
-    body: await response.json(),
-  };
-});
-
-const clearCart = async (page) => page.evaluate(async () => {
-  const probe = await fetch('/wp-json/wc/store/v1/cart');
-  const nonce = probe.headers.get('Nonce') || '';
-  const response = await fetch('/wp-json/wc/store/v1/cart/items', {
-    method: 'DELETE',
-    headers: { Nonce: nonce },
-  });
-
-  if (!response.ok) {
-    throw new Error(`clear cart HTTP ${response.status}`);
-  }
-});
-
-const addItem = async (page, productId) => page.evaluate(async (id) => {
-  const probe = await fetch('/wp-json/wc/store/v1/cart');
-  const nonce = probe.headers.get('Nonce') || '';
-  const response = await fetch('/wp-json/wc/store/v1/cart/add-item', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Nonce: nonce,
-    },
-    body: JSON.stringify({ id, quantity: 1 }),
+const addItem = async (page, productId) => {
+  const probe = await readOfficialCart(page);
+  const response = await page.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
+    headers: { Nonce: probe.nonce },
+    data: { id: productId, quantity: 1 },
   });
 
   return {
-    ok: response.ok,
-    status: response.status,
+    ok: response.ok(),
+    status: response.status(),
     body: await response.json().catch(() => null),
   };
-}, productId);
+};
 
 const productCandidates = async (page) => {
   const response = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/products?per_page=30&orderby=date&order=desc`);
@@ -124,7 +80,7 @@ const prepareCart = async (page) => {
     const added = await addItem(page, product.id);
     if (!added.ok) continue;
 
-    const cart = await fetchCart(page);
+    const cart = await readOfficialCart(page);
     const item = cart.body.items?.[0];
     if (item && Number(item.quantity_limits?.maximum || 1) >= 2) {
       return {
@@ -158,14 +114,18 @@ const cartDomState = async (page) => page.evaluate(() => {
 const miniDomState = async (page) => page.evaluate(() => {
   const drawer = document.querySelector('.wc-block-components-drawer__screen-overlay, .wc-block-mini-cart__drawer, .wc-block-components-drawer');
   const input = drawer?.querySelector('.wc-block-components-quantity-selector__input');
-  const footer = drawer?.querySelector('.wc-block-mini-cart__footer');
-  const footerValues = [...(footer?.querySelectorAll('.wc-block-formatted-money-amount, .woocommerce-Price-amount') || [])]
-    .map((element) => element.textContent || '')
-    .filter(Boolean);
+  const totalRows = [...(drawer?.querySelectorAll('.wc-block-components-totals-item, .wc-block-mini-cart__footer-subtotal') || [])];
+  const subtotalRow = totalRows.find((row) => {
+    const label = row.querySelector('.wc-block-components-totals-item__label, .wc-block-mini-cart__footer-subtotal-label');
+    return /subtotal/i.test(label?.textContent || '');
+  }) || null;
+  const subtotal = subtotalRow?.querySelector('.wc-block-components-totals-item__value, .wc-block-formatted-money-amount, .woocommerce-Price-amount');
 
   return {
     quantity: Number(input?.value || 0),
-    subtotalText: footerValues[0] || '',
+    subtotalText: subtotal?.textContent || '',
+    subtotalFound: Boolean(subtotalRow && subtotal),
+    subtotalCandidates: totalRows.map((row) => row.textContent?.trim() || '').filter(Boolean),
     marker: window.__petshop037MiniNoReload || null,
     hasDrawer: Boolean(drawer),
     plusDisabled: Boolean(drawer?.querySelector('.wc-block-components-quantity-selector__button--plus')?.disabled),
@@ -177,22 +137,236 @@ const officialCartItem = (cartBody, itemId) => (
   (cartBody.items || []).find((entry) => Number(entry.id) === Number(itemId)) || cartBody.items?.[0]
 );
 
-const assertCartMatchesOfficial = async (page, item, expectedQuantity, label) => {
-  await waitUntil(async () => {
-    const cart = await fetchCart(page);
-    const apiItem = officialCartItem(cart.body, item.id);
-    const dom = await cartDomState(page);
+const moneyField = (value) => Number(value || 0);
 
-    return apiItem
-      && Number(apiItem.quantity) === expectedQuantity
-      && dom.quantity === expectedQuantity
-      && moneyToMinor(dom.lineText) === Number(apiItem.totals?.line_total)
-      && moneyToMinor(dom.totalText) === Number(cart.body.totals?.total_price)
-      && dom.marker === 'cart-marker';
-  }, { timeout: 12000, label });
+const itemLineTotal = (item, taxDisplay) => {
+  const total = moneyField(item?.totals?.line_total);
+  const tax = moneyField(item?.totals?.line_total_tax);
+  return taxDisplay === 'incl' ? total + tax : total;
 };
 
-const miniUpdateFromBatchResponse = async (response, item, expectedQuantity, direction) => {
+const cartItemsTotal = (cart, taxDisplay) => {
+  const total = moneyField(cart?.totals?.total_items);
+  const tax = moneyField(cart?.totals?.total_items_tax);
+  return taxDisplay === 'incl' ? total + tax : total;
+};
+
+const resolveTaxDisplay = async (page) => {
+  const started = Date.now();
+  let last = null;
+
+  while (Date.now() - started < 5000) {
+    last = await page.evaluate(() => {
+      const sources = [];
+
+      if (window.wc?.wcSettings?.getSetting) {
+        const sentinel = { missing: true };
+        const value = window.wc.wcSettings.getSetting('displayCartPricesIncludingTax', sentinel);
+        sources.push({
+          name: 'window.wc.wcSettings.getSetting',
+          type: value === sentinel ? 'missing' : typeof value,
+        });
+        if (typeof value === 'boolean') {
+          return {
+            source: 'window.wc.wcSettings.getSetting',
+            displayIncludingTax: value,
+            sources,
+          };
+        }
+      } else {
+        sources.push({
+          name: 'window.wc.wcSettings.getSetting',
+          type: typeof window.wc?.wcSettings?.getSetting,
+        });
+      }
+
+      const allSettingsValue = window.wc?.wcSettings?.allSettings?.displayCartPricesIncludingTax;
+      sources.push({
+        name: 'window.wc.wcSettings.allSettings.displayCartPricesIncludingTax',
+        type: typeof allSettingsValue,
+      });
+      if (typeof allSettingsValue === 'boolean') {
+        return {
+          source: 'window.wc.wcSettings.allSettings.displayCartPricesIncludingTax',
+          displayIncludingTax: allSettingsValue,
+          sources,
+        };
+      }
+
+      const globalValue = window.wcSettings?.displayCartPricesIncludingTax;
+      sources.push({
+        name: 'window.wcSettings.displayCartPricesIncludingTax',
+        type: typeof globalValue,
+      });
+      if (typeof globalValue === 'boolean') {
+        return {
+          source: 'window.wcSettings.displayCartPricesIncludingTax',
+          displayIncludingTax: globalValue,
+          sources,
+        };
+      }
+
+      return {
+        pending: true,
+        sources,
+        publicKeys: {
+          wc: window.wc && typeof window.wc === 'object' ? Object.keys(window.wc).sort() : [],
+          wcSettings: window.wcSettings && typeof window.wcSettings === 'object' ? Object.keys(window.wcSettings).sort() : [],
+          wcSettingsObject: window.wc?.wcSettings && typeof window.wc.wcSettings === 'object' ? Object.keys(window.wc.wcSettings).sort() : [],
+        },
+      };
+    });
+
+    if (typeof last?.displayIncludingTax === 'boolean') {
+      return {
+        taxDisplay: last.displayIncludingTax ? 'incl' : 'excl',
+        source: last.source,
+      };
+    }
+
+    await page.waitForTimeout(100);
+  }
+
+  throw new Error(`Nao foi possivel determinar displayCartPricesIncludingTax publico do Woo Blocks: ${JSON.stringify(last)}`);
+};
+
+const officialCartState = (cartBody, item, taxDisplay, status = null) => {
+  const apiItem = officialCartItem(cartBody, item.id);
+
+  return {
+    status,
+    item: apiItem ? {
+      id: Number(apiItem.id),
+      quantity: Number(apiItem.quantity),
+      lineTotal: itemLineTotal(apiItem, taxDisplay),
+      lineTotalRaw: moneyField(apiItem.totals?.line_total),
+      lineTotalTax: moneyField(apiItem.totals?.line_total_tax),
+    } : null,
+    total: moneyField(cartBody?.totals?.total_price),
+    itemsTotal: cartItemsTotal(cartBody, taxDisplay),
+    totalTax: moneyField(cartBody?.totals?.total_tax),
+    itemsCount: Array.isArray(cartBody?.items) ? cartBody.items.length : null,
+  };
+};
+
+const domCartStateForReport = (dom) => ({
+  quantity: dom.quantity,
+  lineText: dom.lineText,
+  lineTotal: moneyToMinor(dom.lineText),
+  subtotalText: dom.totalText,
+  subtotal: moneyToMinor(dom.totalText),
+  subtotalHasMoney: moneyToMinor(dom.totalText) !== null,
+  marker: dom.marker,
+  plusDisabled: dom.plusDisabled,
+  minusDisabled: dom.minusDisabled,
+});
+
+const cartStateMatches = (dom, official, expectedQuantity) => (
+  official.item
+    && official.item.quantity === expectedQuantity
+    && dom.quantity === expectedQuantity
+    && moneyToMinor(dom.lineText) === official.item.lineTotal
+    && moneyToMinor(dom.totalText) === official.total
+    && dom.marker === 'cart-marker'
+);
+
+const assertCartMatchesOfficial = async (page, item, expectedQuantity, direction, officialFromResponse, taxDisplay, label) => {
+  let last = null;
+  const started = Date.now();
+
+  while (Date.now() - started < 12000) {
+    const dom = await cartDomState(page);
+    const officialProbe = await readOfficialCart(page);
+    const official = officialCartState(officialProbe.body, item, taxDisplay, officialProbe.status);
+    last = {
+      direction,
+      expectedQuantity,
+      url: page.url(),
+      responseOfficial: officialFromResponse,
+      official,
+      dom: domCartStateForReport(dom),
+      conditions: {
+        responseQuantity: officialFromResponse.item?.quantity === expectedQuantity,
+        officialQuantity: official.item?.quantity === expectedQuantity,
+        domQuantity: dom.quantity === expectedQuantity,
+        domLineTotal: moneyToMinor(dom.lineText) === officialFromResponse.item?.lineTotal,
+        domSubtotalPresent: moneyToMinor(dom.totalText) !== null,
+        domSubtotal: moneyToMinor(dom.totalText) === officialFromResponse.total,
+        marker: dom.marker === 'cart-marker',
+      },
+    };
+
+    if (
+      officialFromResponse.item?.quantity === expectedQuantity
+      && official.item?.quantity === expectedQuantity
+      && cartStateMatches(dom, officialFromResponse, expectedQuantity)
+      && cartStateMatches(dom, official, expectedQuantity)
+    ) {
+      return last;
+    }
+
+    await page.waitForTimeout(100);
+  }
+
+  throw new Error(`${label} nao atendida em 12000 ms. Ultimo estado: ${JSON.stringify(last)}`);
+};
+
+const cartUpdateFromResponse = async (response, item, expectedQuantity, direction, taxDisplay) => {
+  const status = response.status();
+  const body = await response.json().catch(() => null);
+  const official = officialCartState(body || {}, item, taxDisplay, status);
+
+  if (status < 200 || status >= 300) {
+    throw new Error(`${direction}: update-item falhou: ${JSON.stringify({
+      status,
+      body: {
+        itemsCount: Array.isArray(body?.items) ? body.items.length : null,
+        totals: body?.totals ? {
+          total_items: body.totals.total_items,
+          total_items_tax: body.totals.total_items_tax,
+          total_price: body.totals.total_price,
+          total_tax: body.totals.total_tax,
+        } : null,
+      },
+    })}`);
+  }
+  if (!official.item) {
+    throw new Error(`${direction}: update-item sem item ${item.id}: ${JSON.stringify({
+      status,
+      itemsCount: official.itemsCount,
+    })}`);
+  }
+  if (official.item.quantity !== expectedQuantity) {
+    throw new Error(`${direction}: update-item retornou quantidade ${official.item.quantity}; esperado ${expectedQuantity}.`);
+  }
+
+  return official;
+};
+
+const waitForCartUpdateResponse = async (page, item, expectedQuantity, direction, taxDisplay) => {
+  const response = await page.waitForResponse((candidate) => {
+    if (
+      candidate.request().method() !== 'POST'
+      || !candidate.url().includes('/wp-json/wc/store/v1/cart/update-item')
+    ) {
+      return false;
+    }
+
+    let requestBody = {};
+    try {
+      requestBody = JSON.parse(candidate.request().postData() || '{}');
+    } catch {
+      return false;
+    }
+
+    return Number(requestBody.quantity) === expectedQuantity
+      && (!item.key || requestBody.key === item.key);
+  }, { timeout: 5000 });
+
+  return cartUpdateFromResponse(response, item, expectedQuantity, direction, taxDisplay);
+};
+
+const miniUpdateFromBatchResponse = async (response, item, expectedQuantity, direction, taxDisplay) => {
   const request = response.request();
   const requestBody = JSON.parse(request.postData() || '{}');
   const updateIndex = (requestBody.requests || [])
@@ -207,7 +381,7 @@ const miniUpdateFromBatchResponse = async (response, item, expectedQuantity, dir
   const cartBody = update?.body || {};
   const apiItem = officialCartItem(cartBody, item.id);
   const apiQuantity = Number(apiItem?.quantity);
-  const expectedSubtotal = Number(cartBody.totals?.total_items);
+  const expectedSubtotal = cartItemsTotal(cartBody, taxDisplay);
 
   if (Number(update?.status) < 200 || Number(update?.status) >= 300) {
     throw new Error(`${direction}: sub-response update-item falhou: ${JSON.stringify({
@@ -234,7 +408,7 @@ const miniUpdateFromBatchResponse = async (response, item, expectedQuantity, dir
   };
 };
 
-const waitForMiniUpdateResponse = async (page, item, expectedQuantity, direction) => {
+const waitForMiniUpdateResponse = async (page, item, expectedQuantity, direction, taxDisplay) => {
   const response = await page.waitForResponse(async (candidate) => {
     if (
       candidate.request().method() !== 'POST'
@@ -248,7 +422,7 @@ const waitForMiniUpdateResponse = async (page, item, expectedQuantity, direction
       .some((entry) => entry?.path === '/wc/store/v1/cart/update-item');
   }, { timeout: 5000 });
 
-  return miniUpdateFromBatchResponse(response, item, expectedQuantity, direction);
+  return miniUpdateFromBatchResponse(response, item, expectedQuantity, direction, taxDisplay);
 };
 
 const assertMiniMatchesOfficial = async (page, item, direction, official, label) => {
@@ -269,10 +443,13 @@ const assertMiniMatchesOfficial = async (page, item, direction, official, label)
       responseSubtotal: official.subtotal,
       domSubtotal,
       domSubtotalText: dom.subtotalText,
+      subtotalFound: dom.subtotalFound,
+      subtotalCandidates: dom.subtotalCandidates,
       marker: dom.marker,
     };
 
     const matches = dom.quantity === official.quantity
+      && dom.subtotalFound
       && domSubtotal === official.subtotal
       && dom.marker === 'mini-marker';
     if (matches) return last;
@@ -300,6 +477,7 @@ const assertMiniPersistsAfterReopen = async (page, item, direction, official) =>
   const domSubtotal = moneyToMinor(dom.subtotalText);
   if (
     dom.quantity !== official.quantity
+    || !dom.subtotalFound
     || domSubtotal !== official.subtotal
     || dom.marker !== 'mini-marker'
   ) {
@@ -314,6 +492,8 @@ const assertMiniPersistsAfterReopen = async (page, item, direction, official) =>
       responseSubtotal: official.subtotal,
       domSubtotal,
       domSubtotalText: dom.subtotalText,
+      subtotalFound: dom.subtotalFound,
+      subtotalCandidates: dom.subtotalCandidates,
       marker: dom.marker,
     })}`);
   }
@@ -362,7 +542,7 @@ const clickMiniQuantity = async (page, direction) => {
   }
 };
 
-const validateCartChange = async (page, item, direction, expectedQuantity) => {
+const validateCartChange = async (page, item, direction, expectedQuantity, taxDisplay) => {
   const posts = [];
   const started = Date.now();
   const onRequest = (request) => {
@@ -376,6 +556,8 @@ const validateCartChange = async (page, item, direction, expectedQuantity) => {
 
   page.on('request', onRequest);
   try {
+    const updateResponse = waitForCartUpdateResponse(page, item, expectedQuantity, direction, taxDisplay);
+    updateResponse.catch(() => null);
     await clickCartQuantity(page, direction);
     await page.waitForFunction((quantity) => (
       Number(document.querySelector('.wc-block-cart-items__row .wc-block-components-quantity-selector__input')?.value || 0) === quantity
@@ -395,7 +577,8 @@ const validateCartChange = async (page, item, direction, expectedQuantity) => {
       throw new Error(`${direction}: update-item sem header X-Petshop-Qty-Flush: 1.`);
     }
 
-    await assertCartMatchesOfficial(page, item, expectedQuantity, `${direction}: DOM e Store API`);
+    const official = await updateResponse;
+    await assertCartMatchesOfficial(page, item, expectedQuantity, direction, official, taxDisplay, `${direction}: DOM e Store API`);
     await sampleQuantityStability(page, expectedQuantity, cartDomState, `${direction}: estabilidade /carrinho`);
     if (posts.length !== 1) {
       throw new Error(`${direction}: esperava exatamente 1 update-item; recebeu ${posts.length}.`);
@@ -405,8 +588,8 @@ const validateCartChange = async (page, item, direction, expectedQuantity) => {
   }
 };
 
-const validateMiniChange = async (page, item, direction, expectedQuantity) => {
-  const updateResponse = waitForMiniUpdateResponse(page, item, expectedQuantity, direction);
+const validateMiniChange = async (page, item, direction, expectedQuantity, taxDisplay) => {
+  const updateResponse = waitForMiniUpdateResponse(page, item, expectedQuantity, direction, taxDisplay);
   await clickMiniQuantity(page, direction);
   await page.waitForFunction((quantity) => {
     const drawer = document.querySelector('.wc-block-components-drawer__screen-overlay, .wc-block-mini-cart__drawer, .wc-block-components-drawer');
@@ -421,19 +604,24 @@ const validateMiniChange = async (page, item, direction, expectedQuantity) => {
 const browser = await launchBrowser();
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
   await routeCanonicalNavigation(page, baseUrl);
-  await login(page);
+  await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin')) {
+    throw new Error('Fluxo 037 deve rodar como visitante, mas uma sessao admin foi detectada.');
+  }
 
   const cartItem = await prepareCart(page);
   await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.locator('.wc-block-cart-items__row .wc-block-components-quantity-selector__input').first().waitFor({ timeout: 15000 });
+  const taxDisplay = await resolveTaxDisplay(page);
   await page.evaluate(() => {
     window.__petshop037NoReload = 'cart-marker';
   });
 
-  await validateCartChange(page, cartItem, 'plus', 2);
-  await validateCartChange(page, cartItem, 'minus', 1);
+  await validateCartChange(page, cartItem, 'plus', 2, taxDisplay.taxDisplay);
+  await validateCartChange(page, cartItem, 'minus', 1, taxDisplay.taxDisplay);
 
   const miniItem = await prepareCart(page);
   await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -452,10 +640,11 @@ try {
     window.__petshop037MiniNoReload = 'mini-marker';
   });
 
-  await validateMiniChange(page, miniItem, 'plus', 2);
-  await validateMiniChange(page, miniItem, 'minus', 1);
+  await validateMiniChange(page, miniItem, 'plus', 2, taxDisplay.taxDisplay);
+  await validateMiniChange(page, miniItem, 'minus', 1, taxDisplay.taxDisplay);
 
   await page.close();
+  await context.close();
 } catch (error) {
   failures.push(error.message || String(error));
 } finally {
