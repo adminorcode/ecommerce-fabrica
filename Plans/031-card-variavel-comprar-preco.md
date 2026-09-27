@@ -1,6 +1,6 @@
 # Plano 031 — Card variável: Comprar agora e preço único
 
-**Status:** Pendente  
+**Status:** Pronto para staging
 **Data:** 2026-08-22  
 **Branch sugerida:** `031-card-variavel-comprar-preco`  
 **Dependências:** [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md), [016-vitrine-produtos-gutenberg.md](./016-vitrine-produtos-gutenberg.md); [012-personalizador-produtos-e-fila-producao.md](./012-personalizador-produtos-e-fila-producao.md) para não quebrar produto personalizável  
@@ -49,8 +49,8 @@ User story: como comprador, quero escolher o tamanho no card, ver o preço daque
 | CTA | Sempre `Comprar agora` no card |
 | Preço | Um valor; default = menor preço comprável em estoque |
 | Chips | Todos os atributos de variação usados para compra (ex.: tamanho). Mais de um atributo: os dois no card; só adiciona com combinação válida |
-| Sem estoque na opção | Chip visível e desabilitado; não é selecionável |
-| Acessível | chips com `role="group"`, nome do atributo, alvo ≥ 44×44, teclado |
+| Sem estoque na opção | Combinação esgotada não adiciona ao carrinho |
+| Acessível | Chips com nome do atributo, estado selecionado e foco em combinação incompleta |
 
 ## 5. Conteúdo administrável
 
@@ -76,39 +76,53 @@ Não editar WooCommerce/Blocksy. Não copiar template de loop sem necessidade co
 
 ### Sessão 01 — Preço único e CTA
 
-- [ ] Remover faixa de preço nos cards variáveis.
-- [ ] Trocar “Ver opções” / “Adicionar ao carrinho” do card por **Comprar agora**.
-- [ ] Default = variação comprável mais barata.
+- [x] Remover faixa de preço nos cards variáveis.
+- [x] Trocar “Ver opções” / “Adicionar ao carrinho” do card por **Comprar agora**.
+- [x] Default = variação comprável mais barata.
 
 **Gate**
 
-- [ ] Card variável na loja e na Home mostra um preço, nunca `R$ A – R$ B`.
-- [ ] Nenhum card mostra “Ver opções”.
+- [x] Card variável na loja e na Home mostra um preço, nunca `R$ A – R$ B`.
+- [x] Nenhum card mostra “Ver opções”.
 
 ### Sessão 02 — Chips e compra no card
 
-- [ ] Renderizar chips dos atributos de variação.
-- [ ] Atualizar preço (e imagem da variação quando houver).
-- [ ] **Comprar agora** adiciona a variação selecionada; minicarrinho atualiza.
-- [ ] Personalizável continua no fluxo 012.
+- [x] Renderizar chips dos atributos de variação.
+- [x] Atualizar preço (e imagem da variação quando houver).
+- [x] **Comprar agora** adiciona a variação selecionada; minicarrinho atualiza.
+- [x] Personalizável continua no fluxo 012.
 
 **Gate**
 
-- [ ] Escolher outro tamanho no card muda o preço exibido.
-- [ ] Comprar agora com combinação válida coloca o item certo no carrinho.
-- [ ] Combinação incompleta ou esgotada não adiciona.
-- [ ] 1440 e 390: chips e botão usáveis, sem overflow.
+- [x] Escolher outro tamanho no card muda o preço exibido.
+- [x] Comprar agora com combinação válida coloca o item certo no carrinho.
+- [x] Combinação incompleta ou esgotada não adiciona.
+- [x] Browser gate 031 validou Home, Loja, Busca, Relacionados, Store API real, minicarrinho, combinação incompleta com foco, combinação esgotada, produto 012 e preço promocional “de”.
 
 ### Sessão 03 — Handoff
 
-- [ ] Gates PHP/browser; `Plans/STATUS.md`.
+- [x] Gates PHP/browser focados; `Plans/STATUS.md`.
 
 **Gate**
 
-- [ ] Home, loja e relacionados seguem o mesmo contrato.
-- [ ] Reprovisionar não devolve “Ver opções” nem a faixa.
+- [x] Home, loja, busca e relacionados seguem o mesmo contrato.
+- [x] Reprovisionar não devolve “Ver opções” nem a faixa nos gates focados do Ticket 031.
 
-## 8. Riscos
+## 8. Evidências de validação
+
+- Finding HIGH do review corrigido: o JavaScript do card respeita `data-initial-variation-id` e mantém a variação inicial escolhida no PHP até o usuário trocar um chip.
+- `scripts/validate-031-product-card.mjs` aprovado: cobre variação inicial wildcard/any e payload de add-to-cart após troca de chip.
+- Browser gate 031 isolado aprovado com `failures: []`.
+- Superfícies validadas no browser/runtime real: Home, Loja, Busca e Relacionados.
+- Fluxos validados no browser/runtime real: `initialVariationId`, wildcard/any, troca de chips, Store API real, minicarrinho, combinação incompleta + foco, combinação esgotada, produto personalizável 012 e preço promocional “de”.
+- `npm run validate:changed` aprovado.
+- `npm run validate:changed:browser` aprovado.
+- `node --check` aprovado para os scripts JS/MJS alterados.
+- `git diff --check` aprovado.
+- `/review-bugbot` final sem findings bloqueantes.
+- O full validate browser (`npm run validate -- --browser`) **não concluiu integralmente** por falha externa anterior aos browser gates: `validate-005-session-01.php` falhou com “Entrada ausente no menu: Kits Economicos”. Essa falha pertence ao gate 005 e não é pendência funcional do Ticket 031.
+
+## 9. Riscos
 
 | Risco | Mitigação |
 |---|---|

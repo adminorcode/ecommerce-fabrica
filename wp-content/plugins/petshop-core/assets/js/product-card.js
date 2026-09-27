@@ -3,6 +3,7 @@
 
   const config = window.petshopProductCardConfig || {};
   const i18n = config.i18n || {};
+  const resolvedVariableCards = new WeakMap();
 
   const parseVariations = (root) => {
     try {
@@ -64,6 +65,43 @@
     }, null);
   };
 
+  const findInitialVariation = (root, variations, selections) => {
+    const initialVariationId = Number(root.dataset.initialVariationId || 0);
+    if (!initialVariationId || root.dataset.petshopSelectionChanged === '1') {
+      return null;
+    }
+
+    const variation = variations.find((candidate) => Number(candidate.id) === initialVariationId);
+    return variation && variationMatches(variation, selections) ? variation : null;
+  };
+
+  const resolveVariation = (root, variations, selections) => {
+    return findInitialVariation(root, variations, selections) || findVariation(variations, selections);
+  };
+
+  const variationPayload = (selections) => {
+    return Object.entries(selections)
+      .filter(([, value]) => Boolean(value))
+      .map(([attribute, value]) => ({ attribute, value }));
+  };
+
+  const rememberResolvedVariation = (root, variation, selections) => {
+    if (!variation) {
+      resolvedVariableCards.delete(root);
+      return null;
+    }
+
+    const resolved = {
+      variation,
+      cartItem: {
+        id: Number(variation.id),
+        variation: variationPayload(selections),
+      },
+    };
+    resolvedVariableCards.set(root, resolved);
+
+    return resolved;
+  };
 
   const setStatus = (root, message) => {
     const status = root.querySelector('[data-petshop-card-status]');
@@ -166,17 +204,19 @@
     if (!isComplete(root, selections)) {
       setBuyButtonState(card, false);
       setStatus(root, i18n.selectOption || 'Selecione uma opção disponível.');
+      resolvedVariableCards.delete(root);
       if (shouldFocus) {
         focusPendingAttribute(root, selections);
       }
       return null;
     }
 
-    const variation = findVariation(variations, selections);
+    const variation = resolveVariation(root, variations, selections);
 
     if (!variation) {
       setBuyButtonState(card, false);
       setStatus(root, i18n.unavailable || 'Esta combinação está indisponível.');
+      resolvedVariableCards.delete(root);
       if (shouldFocus) {
         focusPendingAttribute(root, selections);
       }
@@ -194,7 +234,7 @@
       focusPendingAttribute(root, selections);
     }
 
-    return available ? variation : null;
+    return available ? rememberResolvedVariation(root, variation, selections) : null;
   };
 
   const initializeVariableCard = (root) => {
@@ -202,14 +242,6 @@
     const image = getImage(card);
     rememberOriginalImage(image);
     syncVariableCard(root);
-  };
-
-  const variationPayload = (root) => {
-    const selections = getSelections(root);
-
-    return Object.entries(selections)
-      .filter(([, value]) => Boolean(value))
-      .map(([attribute, value]) => ({ attribute, value }));
   };
 
   const refreshCartUis = (cart) => {
@@ -226,7 +258,7 @@
     }
   };
 
-  const addToCart = async (button, productId, variation = []) => {
+  const addToCart = async (button, cartItem) => {
     if (!config.endpoint) {
       throw new Error('Store API endpoint unavailable.');
     }
@@ -246,9 +278,9 @@
           'Nonce': config.nonce || '',
         },
         body: JSON.stringify({
-          id: Number(productId),
+          id: Number(cartItem.id),
           quantity: 1,
-          variation,
+          ...(cartItem.variation ? { variation: cartItem.variation } : {}),
         }),
       });
 
@@ -289,6 +321,10 @@
         return;
       }
 
+      if (chip.getAttribute('aria-pressed') !== 'true') {
+        root.dataset.petshopSelectionChanged = '1';
+      }
+
       group.querySelectorAll('[data-petshop-attribute]').forEach((candidate) => {
         const selected = candidate === chip;
         candidate.classList.toggle('is-selected', selected);
@@ -325,16 +361,16 @@
           return;
         }
 
-        const variation = syncVariableCard(root, true);
-        if (!variation) {
+        const resolved = syncVariableCard(root, true);
+        if (!resolved) {
           return;
         }
 
-        await addToCart(button, productId, variationPayload(root));
+        await addToCart(button, resolvedVariableCards.get(root)?.cartItem || resolved.cartItem);
         return;
       }
 
-      await addToCart(button, productId);
+      await addToCart(button, { id: productId });
     } catch (error) {
       const root = card.querySelector('[data-petshop-variable-card]');
       if (root) {

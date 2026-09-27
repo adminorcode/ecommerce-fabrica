@@ -104,6 +104,19 @@ if ($Browser -or $Pdp -or $Cart) {
                 docker compose --profile tools run --rm node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }
+
+            $plan031FixtureReady = $false
+            try {
+                Invoke-EvalFile 'setup-031-product-card-fixture.php'
+                $plan031FixtureReady = $true
+                docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=localhost:8888 node node /workspace/scripts/validate-031-product-card-browser.mjs
+                if ($LASTEXITCODE -ne 0) { throw 'browser gate Plano 031 falhou' }
+            } finally {
+                if ($plan031FixtureReady) {
+                    Invoke-EvalFile 'cleanup-031-product-card-fixture.php'
+                }
+            }
+
             docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
             if ($LASTEXITCODE -ne 0) { throw 'editor gate Plano 016 falhou' }
         }
