@@ -1,9 +1,9 @@
 # Plano 028 — Recuperação de pagamento pendente
 
-**Status:** Pendente  
+**Status:** Concluído
 **Data:** 2026-08-22  
 **Branch sugerida:** `028-recuperacao-pagamento-pendente`  
-**Dependências:** [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para remetente/domínio/entregabilidade dos e-mails; WooCommerce **11.0 ou superior** (hoje o runtime está em **10.9.4**)  
+**Dependências:** [017-fechamento-publicacao-p0.md](./017-fechamento-publicacao-p0.md) para remetente/domínio/entregabilidade dos e-mails; WooCommerce **11.1.2** validado no runtime isolado `petshop028`
 **Origem:** pedido de recuperar pedidos em **Pagamento pendente** com um aviso controlado e botão para concluir o pagamento, sem instalar plugin de marketing nem criar e-mail extra no `petshop-core`.  
 **ClickUp:** [86e2xzfdy](https://app.clickup.com/t/86e2xzfdy) — Open  
 
@@ -89,38 +89,60 @@ Compatibilidade HPOS e Checkout Block permanecem. Não editar o core do WooComme
 
 ### Sessão 01 — WooCommerce 11+
 
-- [ ] Subir WooCommerce para 11.0 ou 11.x estável validada.
-- [ ] Rodar storefront, HPOS, Checkout Block e personalização 012 sem regressão bloqueante.
+- [x] Subir WooCommerce para 11.0 ou 11.x estável validada.
+- [x] Rodar storefront, HPOS, Checkout Block e personalização 012 sem regressão bloqueante.
 
 **Gate**
 
-- [ ] `wp plugin get woocommerce --field=version` ≥ 11.0 no runtime.
-- [ ] Recurso Abandoned cart recovery aparece em Avançado → Recursos.
+- [x] `wp plugin get woocommerce --field=version` ≥ 11.0 no runtime.
+- [x] Recurso Abandoned cart recovery aparece em Avançado → Recursos.
 
 ### Sessão 02 — Ligar e configurar o e-mail nativo
 
-- [ ] Ativar o recurso e o e-mail; ligar envio automático.
-- [ ] Gravar assunto/cabeçalho/conteúdo em pt-BR nas settings oficiais, sem sobrescrever se o cliente já editou.
-- [ ] Documentar operação e descadastro.
+- [x] Ativar o recurso e o e-mail; ligar envio automático.
+- [x] Gravar assunto/cabeçalho/conteúdo em pt-BR nas settings oficiais, sem sobrescrever se o cliente já editou.
+- [x] Documentar operação e descadastro.
 
 **Gate**
 
-- [ ] Pedido de teste que permanece pendente por 2 h (ou o delay do core) gera **um** e-mail com link de pagamento.
-- [ ] Pedido que paga antes do delay **não** recebe o e-mail.
-- [ ] Reenvio manual no pedido funciona uma vez e não duplica o automático.
-- [ ] Preview/teste do e-mail em pt-BR mostra o sentido da copy acordada.
+- [x] Pedido de teste que permanece pendente por 2 h (ou o delay do core) gera **um** e-mail com link de pagamento.
+- [x] Pedido que paga antes do delay **não** recebe o e-mail.
+- [x] Reenvio manual no pedido funciona uma vez e não duplica o automático.
+- [x] Preview/teste do e-mail em pt-BR mostra o sentido da copy acordada.
 
 ### Sessão 03 — Handoff
 
-- [ ] Atualizar `Plans/STATUS.md` e o guia de e-mails.
-- [ ] Registrar que 017 continua sendo o gate de SMTP.
+- [x] Atualizar `Plans/STATUS.md` e o guia de e-mails.
+- [x] Registrar que 017 continua sendo o gate de SMTP.
 
 **Gate**
 
-- [ ] Sem plugin novo de recovery no `plugin list`.
-- [ ] Sem template/classe de e-mail nova no `petshop-core`.
+- [x] Sem plugin novo de recovery no `plugin list`.
+- [x] Sem template/classe de e-mail nova no `petshop-core`.
 
-## 8. Riscos
+## 9. Evidências de validação
+
+Validação executada no worktree isolado `C:\Users\josue\source\ecommerce-fabrica-ticket-028`, Compose project `petshop028`, banco `petshop028_mariadb_data`, URL local `http://localhost:8889`.
+
+- WooCommerce runtime validado: `11.1.2`.
+- Feature flag oficial: `woocommerce_feature_abandoned_cart_recovery_enabled=yes`.
+- E-mail nativo: `customer_abandoned_cart_recovery`, classe `WC_Email_Customer_Abandoned_Cart_Recovery`.
+- Settings oficiais: `enabled=yes`, `automated=yes`, `email_type=html`, assunto/cabeçalho/conteúdo adicional editáveis em WooCommerce → Configurações → E-mails.
+- Delay final nativo: `WC_Email_Customer_Abandoned_Cart_Recovery::AUTO_SEND_DELAY_SECONDS = 7200` segundos.
+- Copy inicial em pt-BR gravada no bootstrap local apenas na primeira configuração, preservando edições futuras por marcador `petshop_abandoned_cart_recovery_028_configured`.
+- Link de recuperação validado pelo método nativo `WC_Order::get_checkout_payment_url()`; URL de pedido de teste respondeu `200` e continha `order-pay/{id}` e a chave do mesmo pedido.
+- Cenário A: pedido `pending` agendou 1 ação e o hook nativo acelerado enviou 1 recovery; segunda execução do hook permaneceu em 1 envio.
+- Cenário B: pedido movido para `processing` antes do disparo removeu agendamento e não enviou recovery.
+- Cenário C: envio manual nativo antes do automático enviou 1 recovery e o automático posterior não duplicou.
+- E-mail renderizado preservou assunto, heading, conteúdo adicional e link de descadastro (`wc-email-unsubscribe`).
+- HPOS permaneceu no estado anterior (`woocommerce_custom_orders_table_enabled=no`).
+- Cart Block e Checkout Block presentes; Store API `/wp-json/wc/store/v1/cart` respondeu `200`.
+- `wp plugin list` não contém AutomateWoo, MailPoet nem plugin externo de recovery.
+- Logs de `wordpress`, `init` e `db` sem fatal error evidente.
+
+Observação: SMTP/domínio continuam dependentes do Plano 017; este plano validou geração, configuração, agendamento e deduplicação no runtime local isolado, sem envio externo real.
+
+## 10. Riscos
 
 | Risco | Mitigação |
 |---|---|
