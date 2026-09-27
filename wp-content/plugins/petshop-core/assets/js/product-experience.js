@@ -7,7 +7,63 @@
   const defaultLead = lead?.textContent || '';
   const shippingForm = document.querySelector('[data-petshop-shipping-form]');
   const result = document.querySelector('[data-petshop-shipping-result]');
+  const quantityTotal = document.querySelector('[data-petshop-quantity-total]');
+  const quantityTotalValue = document.querySelector('[data-petshop-quantity-total-value]');
+  const cartForm = document.querySelector('form.cart');
   const formatPostcode = (postcode) => postcode.replace(/^(\d{5})(\d{3})$/, '$1-$2');
+  const numberFormat = (config.priceFormat && typeof config.priceFormat === 'object') ? config.priceFormat : {};
+  let currentUnitPrice = Number.parseFloat(quantityTotal?.dataset.unitPrice || '');
+
+  const decimalSeparator = numberFormat.decimalSeparator || '.';
+  const thousandSeparator = numberFormat.thousandSeparator || ',';
+  const decimals = Number.isInteger(numberFormat.decimals) ? numberFormat.decimals : 2;
+  const priceFormat = numberFormat.priceFormat || '%1$s%2$s';
+  const currencySymbol = numberFormat.currencySymbol || '';
+
+  const formatAmount = (value) => {
+    const fixed = value.toFixed(Math.max(0, decimals));
+    const [integer, decimal = ''] = fixed.split('.');
+    const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator);
+    const amount = decimals > 0 ? `${grouped}${decimalSeparator}${decimal}` : grouped;
+    return priceFormat.replace('%1$s', currencySymbol).replace('%2$s', amount);
+  };
+
+  const quantityInput = () => cartForm?.querySelector('input.qty');
+
+  const currentQuantity = () => {
+    const input = quantityInput();
+    if (!input) return 1;
+    const value = Number.parseFloat(input.value || '');
+    const min = Number.parseFloat(input.min || '');
+    const max = Number.parseFloat(input.max || '');
+    if (!Number.isFinite(value) || value <= 0) return Number.isFinite(min) && min > 0 ? min : 1;
+    if (Number.isFinite(max) && max > 0 && value > max) return max;
+    if (Number.isFinite(min) && min > 0 && value < min) return min;
+    return value;
+  };
+
+  const updateQuantityTotal = () => {
+    if (!quantityTotal || !quantityTotalValue) return;
+    if (!Number.isFinite(currentUnitPrice) || currentUnitPrice < 0) {
+      quantityTotal.hidden = true;
+      quantityTotalValue.textContent = '';
+      return;
+    }
+    quantityTotal.hidden = false;
+    quantityTotalValue.textContent = formatAmount(currentUnitPrice * currentQuantity());
+  };
+
+  cartForm?.addEventListener('input', (event) => {
+    if (event.target instanceof HTMLInputElement && event.target.matches('input.qty')) {
+      updateQuantityTotal();
+    }
+  });
+
+  cartForm?.addEventListener('change', (event) => {
+    if (event.target instanceof HTMLInputElement && event.target.matches('input.qty')) {
+      updateQuantityTotal();
+    }
+  });
 
   if (form && window.jQuery) {
     const colorSelect = form.querySelector('select[name="attribute_pa_color"]');
@@ -45,12 +101,16 @@
       if (leadRow) leadRow.hidden = !lead?.textContent.trim();
       const variationInput = shippingForm?.querySelector('[name="variation_id"]');
       if (variationInput) variationInput.value = variation.variation_id || '';
+      currentUnitPrice = Number.parseFloat(variation.display_price);
+      updateQuantityTotal();
     });
     window.jQuery(form).on('reset_data', () => {
       if (lead) lead.textContent = defaultLead;
       if (leadRow) leadRow.hidden = !defaultLead.trim();
       const variationInput = shippingForm?.querySelector('[name="variation_id"]');
       if (variationInput) variationInput.value = '';
+      currentUnitPrice = Number.parseFloat(quantityTotal?.dataset.unitPrice || '');
+      updateQuantityTotal();
     });
     form.addEventListener('submit', (event) => {
       if (!form.checkValidity() || !form.querySelector('[name="variation_id"]')?.value) {
@@ -64,6 +124,8 @@
       }
     });
   }
+
+  updateQuantityTotal();
 
   shippingForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
