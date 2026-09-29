@@ -73,12 +73,15 @@ A revisão posterior do Ticket 037 identificou cobertura/regressão compartilhad
 
 | Tema | Decisão |
 |---|---|
-| Fonte da verdade | Store API oficial do WooCommerce |
-| Valores esperados | Comparar DOM final contra `items[].totals.line_total`, `totals.total_items` e `totals.total_price` |
+| Fonte da verdade | Store API oficial do WooCommerce, lida por `page.request` |
+| Valores esperados | Comparar DOM final contra `items[].totals.line_total`, `totals.total_items` e `totals.total_price`, com imposto conforme `displayCartPricesIncludingTax` |
+| Leitura monetária | Um único valor distinto no elemento; dois valores distintos invalidam a leitura |
+| Estabilidade | Nos 1600 ms após a convergência, quantidade, line total e totais oficiais permanecem |
 | Ausência de refresh | Marcador em `window` antes da operação deve persistir após a convergência |
 | Produto de teste | Selecionar dinamicamente um produto adicionável que permita quantidade maior que 1 |
 | Mini-cart | Validar comportamento nativo; não exigir estado visual de loading |
 | `/carrinho` | Validar aceite do 037 e preservar invariantes do 039 |
+| Regressão 039 | Sessão anônima; amostras obrigatórias `259` e `1563`. `PETSHOP_REPRO_PRODUCT_ID` substitui a `259` e falha o gate se não servir |
 
 ## 6. Gates
 
@@ -115,3 +118,8 @@ Validações registradas:
 - [x] `Plans/STATUS.md` atualizado sem alterar o status do 039
 
 Observação: `npm run validate -- --browser` não foi marcado como aprovado. A execução global parou em falha fora do escopo do Ticket 037 no gate 005 (`validate-005-session-01.php`: "Entrada ausente no menu: Kits Economicos").
+
+Correção posterior da revisão, em sessão anônima contra `http://localhost:8888`:
+
+- [x] `node scripts/validate-037-cart-auto-update-browser.mjs` — totais visíveis permanecem 1600 ms e dois preços distintos não são aceitos
+- [x] `scripts/validate-039-cart-qty-browser.mjs` — amostras obrigatórias 259 e 1563

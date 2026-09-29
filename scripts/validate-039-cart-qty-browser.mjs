@@ -3,10 +3,9 @@ import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('039-cart-qty');
-const overrideProductId = Number(process.env.PETSHOP_REPRO_PRODUCT_ID || 0);
+const primaryProductId = Number(process.env.PETSHOP_REPRO_PRODUCT_ID || 259);
 const postcode = '01001-000';
 const failures = [];
-const fixtureNotes = [];
 let selectedProducts = [];
 
 const qtyInput = (page) => page.locator('.wc-block-components-quantity-selector__input').first();
@@ -68,68 +67,36 @@ const validateCandidate = async (page, candidate) => {
   };
 };
 
-const discoverProducts = async (page) => {
+const requiredProducts = () => {
+  if (!Number.isFinite(primaryProductId) || primaryProductId <= 0) {
+    throw new Error(`PETSHOP_REPRO_PRODUCT_ID invalido: ${process.env.PETSHOP_REPRO_PRODUCT_ID}`);
+  }
+
+  const primary = {
+    id: primaryProductId,
+    label: primaryProductId === 259 ? 'bandana-neon' : `product-${primaryProductId}`,
+    source: primaryProductId === 259 ? 'fixture-259' : 'PETSHOP_REPRO_PRODUCT_ID',
+  };
+  const second = {
+    id: 1563,
+    label: 'perfume-amostra',
+    source: 'fixture-1563',
+  };
+  if (primary.id === second.id) {
+    throw new Error('O gate 039 exige duas amostras distintas: a primaria e o produto 1563.');
+  }
+
+  return [primary, second];
+};
+
+const requireProducts = async (page) => {
   const selected = [];
-  const rejected = [];
-  const seen = new Set();
-  const candidates = [];
-
-  if (Number.isFinite(overrideProductId) && overrideProductId > 0) {
-    candidates.push({
-      id: overrideProductId,
-      label: `override-${overrideProductId}`,
-      source: 'PETSHOP_REPRO_PRODUCT_ID',
-    });
-  }
-
-  const productsResponse = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/products?per_page=100&orderby=date&order=desc`);
-  if (!productsResponse.ok()) {
-    throw new Error(`Nao foi possivel listar produtos pela Store API (HTTP ${productsResponse.status()}).`);
-  }
-  const products = await productsResponse.json();
-  for (const product of products) {
-    const maximum = Number(product?.add_to_cart?.maximum || 1);
-    if (
-      product?.type !== 'simple'
-      || product?.is_purchasable !== true
-      || product?.is_in_stock !== true
-      || maximum < 2
-    ) {
-      continue;
-    }
-
-    candidates.push({
-      id: Number(product.id),
-      label: `product-${product.id}`,
-      name: product.name || `#${product.id}`,
-      source: 'Store API discovery',
-    });
-  }
-
-  for (const candidate of candidates) {
-    if (!candidate.id || seen.has(candidate.id)) {
-      continue;
-    }
-    seen.add(candidate.id);
-
+  for (const candidate of requiredProducts()) {
     const result = await validateCandidate(page, candidate);
     if (!result.ok) {
-      rejected.push({ id: candidate.id, label: candidate.label, source: candidate.source, reason: result.reason });
-      continue;
+      throw new Error(`${candidate.label} (${candidate.id}, ${candidate.source}) e amostra obrigatoria do 039 e nao entrou no carrinho anonimo: ${result.reason}`);
     }
-
     selected.push(result.product);
-    if (selected.length >= 2) break;
-  }
-
-  if (overrideProductId > 0 && !selected.some((product) => product.id === overrideProductId)) {
-    fixtureNotes.push(`PETSHOP_REPRO_PRODUCT_ID=${overrideProductId} ignorado; fallback dinamico usado.`);
-  }
-  if (selected.length === 1) {
-    fixtureNotes.push('Apenas um produto elegivel encontrado; gate 039 executou uma amostra real.');
-  }
-  if (selected.length === 0) {
-    throw new Error(`Nenhum produto simples em estoque e adicionavel com quantidade > 1 foi encontrado. Rejeitados: ${JSON.stringify(rejected)}`);
   }
 
   return selected;
@@ -203,7 +170,7 @@ try {
   if (await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin')) {
     throw new Error('Fluxo 039 deve rodar como visitante, mas uma sessao admin foi detectada.');
   }
-  selectedProducts = await discoverProducts(page);
+  selectedProducts = await requireProducts(page);
 
   for (const product of selectedProducts) {
     try {
@@ -344,8 +311,8 @@ try {
 }
 
 if (failures.length) {
-  console.error(JSON.stringify({ failures, fixtureNotes, evidenceDir }, null, 2));
+  console.error(JSON.stringify({ failures, products: selectedProducts, evidenceDir }, null, 2));
   process.exit(1);
 }
 
-console.log(JSON.stringify({ ok: true, products: selectedProducts, fixtureNotes, evidenceDir }, null, 2));
+console.log(JSON.stringify({ ok: true, session: 'anonymous', products: selectedProducts, evidenceDir }, null, 2));

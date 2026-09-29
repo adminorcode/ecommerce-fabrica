@@ -3,13 +3,20 @@ import { launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.m
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const failures = [];
 
+const uniqueMinorAmounts = (value) => {
+  const text = String(value || '').replace(/\u00a0/g, ' ');
+  const amounts = [];
+  const pattern = /(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}/g;
+  for (const match of text.matchAll(pattern)) {
+    const amount = Number.parseFloat(match[0].replace(/\./g, '').replace(',', '.'));
+    if (Number.isFinite(amount)) amounts.push(Math.round(amount * 100));
+  }
+  return [...new Set(amounts)];
+};
+
 const moneyToMinor = (value) => {
-  const normalized = String(value || '')
-    .replace(/[^\d,.-]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-  const amount = Number.parseFloat(normalized);
-  return Number.isFinite(amount) ? Math.round(amount * 100) : null;
+  const amounts = uniqueMinorAmounts(value);
+  return amounts.length === 1 ? amounts[0] : null;
 };
 
 const waitUntil = async (predicate, { timeout = 10000, interval = 100, label = 'condicao' } = {}) => {
@@ -96,15 +103,23 @@ const prepareCart = async (page) => {
 };
 
 const cartDomState = async (page) => page.evaluate(() => {
+  const visibleMoneyText = (root) => [...(root?.querySelectorAll('.wc-block-formatted-money-amount, .woocommerce-Price-amount') || [])]
+    .filter((element) => {
+      const style = window.getComputedStyle(element);
+      return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+    })
+    .map((element) => element.textContent || '')
+    .filter(Boolean)
+    .join(' ');
   const row = document.querySelector('.wc-block-cart-items__row');
   const input = row?.querySelector('.wc-block-components-quantity-selector__input');
-  const line = row?.querySelector('.wc-block-cart-item__total .wc-block-formatted-money-amount, .wc-block-cart-item__total .woocommerce-Price-amount');
-  const total = document.querySelector('.wc-block-components-totals-footer-item .wc-block-formatted-money-amount, .wc-block-components-totals-footer-item .woocommerce-Price-amount');
+  const lineText = visibleMoneyText(row?.querySelector('.wc-block-cart-item__total'));
+  const totalText = visibleMoneyText(document.querySelector('.wc-block-components-totals-footer-item'));
 
   return {
     quantity: Number(input?.value || 0),
-    lineText: line?.textContent || '',
-    totalText: total?.textContent || '',
+    lineText,
+    totalText,
     marker: window.__petshop037NoReload || null,
     plusDisabled: Boolean(row?.querySelector('.wc-block-components-quantity-selector__button--plus')?.disabled),
     minusDisabled: Boolean(row?.querySelector('.wc-block-components-quantity-selector__button--minus')?.disabled),
@@ -116,21 +131,37 @@ const miniDomState = async (page) => page.evaluate(() => {
   const row = drawer?.querySelector('.wc-block-cart-item, .wc-block-cart-items__row');
   const input = row?.querySelector('.wc-block-components-quantity-selector__input');
   const unitPrice = row?.querySelector('td.wc-block-cart-item__product [data-wp-text="state.itemPrice"]:not(ins)');
-  const lineTotal = row?.querySelector('td.wc-block-cart-item__total [data-wp-text="state.lineItemTotal"]');
+  const lineCell = row?.querySelector('td.wc-block-cart-item__total');
+  const lineTotal = lineCell?.querySelector('[data-wp-text="state.lineItemTotal"]');
+  const lineTotalText = [...(lineCell?.querySelectorAll('.wc-block-formatted-money-amount, .woocommerce-Price-amount') || [])]
+    .filter((element) => {
+      const style = window.getComputedStyle(element);
+      return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+    })
+    .map((element) => element.textContent || '')
+    .filter(Boolean)
+    .join(' ');
   const totalRows = [...(drawer?.querySelectorAll('.wc-block-components-totals-item, .wc-block-mini-cart__footer-subtotal') || [])];
   const subtotalRow = totalRows.find((row) => {
     const label = row.querySelector('.wc-block-components-totals-item__label, .wc-block-mini-cart__footer-subtotal-label');
     return /subtotal/i.test(label?.textContent || '');
   }) || null;
-  const subtotal = subtotalRow?.querySelector('.wc-block-components-totals-item__value, .wc-block-formatted-money-amount, .woocommerce-Price-amount');
+  const subtotalText = [...(subtotalRow?.querySelectorAll('.wc-block-formatted-money-amount, .woocommerce-Price-amount') || [])]
+    .filter((element) => {
+      const style = window.getComputedStyle(element);
+      return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+    })
+    .map((element) => element.textContent || '')
+    .filter(Boolean)
+    .join(' ');
 
   return {
     quantity: Number(input?.value || 0),
     unitPriceText: unitPrice?.textContent || '',
-    lineTotalText: lineTotal?.textContent || '',
+    lineTotalText,
     lineTotalFound: Boolean(lineTotal),
-    subtotalText: subtotal?.textContent || '',
-    subtotalFound: Boolean(subtotalRow && subtotal),
+    subtotalText,
+    subtotalFound: Boolean(subtotalRow && subtotalText),
     subtotalCandidates: totalRows.map((row) => row.textContent?.trim() || '').filter(Boolean),
     marker: window.__petshop037MiniNoReload || null,
     hasDrawer: Boolean(drawer),
@@ -255,18 +286,6 @@ const officialCartState = (cartBody, item, taxDisplay, status = null) => {
   };
 };
 
-const domCartStateForReport = (dom) => ({
-  quantity: dom.quantity,
-  lineText: dom.lineText,
-  lineTotal: moneyToMinor(dom.lineText),
-  subtotalText: dom.totalText,
-  subtotal: moneyToMinor(dom.totalText),
-  subtotalHasMoney: moneyToMinor(dom.totalText) !== null,
-  marker: dom.marker,
-  plusDisabled: dom.plusDisabled,
-  minusDisabled: dom.minusDisabled,
-});
-
 const cartStateMatches = (dom, official, expectedQuantity) => (
   official.item
     && official.item.quantity === expectedQuantity
@@ -276,45 +295,48 @@ const cartStateMatches = (dom, official, expectedQuantity) => (
     && dom.marker === 'cart-marker'
 );
 
-const assertCartMatchesOfficial = async (page, item, expectedQuantity, direction, officialFromResponse, taxDisplay, label) => {
+const holdCartTotals = async (page, item, expectedQuantity, direction, officialFromResponse, taxDisplay, label) => {
+  let heldSince = 0;
+  let sawOfficial = false;
   let last = null;
   const started = Date.now();
 
   while (Date.now() - started < 12000) {
     const dom = await cartDomState(page);
-    const officialProbe = await readOfficialCart(page);
-    const official = officialCartState(officialProbe.body, item, taxDisplay, officialProbe.status);
-    last = {
-      direction,
-      expectedQuantity,
-      url: page.url(),
-      responseOfficial: officialFromResponse,
-      official,
-      dom: domCartStateForReport(dom),
-      conditions: {
-        responseQuantity: officialFromResponse.item?.quantity === expectedQuantity,
-        officialQuantity: official.item?.quantity === expectedQuantity,
-        domQuantity: dom.quantity === expectedQuantity,
-        domLineTotal: moneyToMinor(dom.lineText) === officialFromResponse.item?.lineTotal,
-        domSubtotalPresent: moneyToMinor(dom.totalText) !== null,
-        domSubtotal: moneyToMinor(dom.totalText) === officialFromResponse.total,
-        marker: dom.marker === 'cart-marker',
-      },
+    const liveCart = await readOfficialCart(page);
+    const live = officialCartState(liveCart.body, item, taxDisplay, liveCart.status);
+    const shown = {
+      quantity: dom.quantity,
+      line: moneyToMinor(dom.lineText),
+      total: moneyToMinor(dom.totalText),
+      marker: dom.marker,
     };
+    last = { shown, responseTotal: officialFromResponse.total, liveTotal: live.total };
 
-    if (
-      officialFromResponse.item?.quantity === expectedQuantity
-      && official.item?.quantity === expectedQuantity
-      && cartStateMatches(dom, officialFromResponse, expectedQuantity)
-      && cartStateMatches(dom, official, expectedQuantity)
-    ) {
-      return last;
+    if (shown.quantity !== expectedQuantity || shown.marker !== 'cart-marker') {
+      throw new Error(`${label}: quantidade ou marcador divergiu. ${JSON.stringify(shown)}`);
     }
 
-    await page.waitForTimeout(100);
+    const matches = cartStateMatches(dom, officialFromResponse, expectedQuantity)
+      && cartStateMatches(dom, live, expectedQuantity);
+    if (matches) {
+      sawOfficial = true;
+      heldSince = heldSince || Date.now();
+      if (Date.now() - heldSince >= 1600) return;
+    } else {
+      heldSince = 0;
+      if (sawOfficial && shown.line !== null && shown.line !== officialFromResponse.item?.lineTotal) {
+        throw new Error(`${label}: line total voltou para ${shown.line} depois da convergencia.`);
+      }
+      if (sawOfficial && shown.total !== null && shown.total !== officialFromResponse.total) {
+        throw new Error(`${label}: total voltou para ${shown.total} depois da convergencia.`);
+      }
+    }
+
+    await page.waitForTimeout(150);
   }
 
-  throw new Error(`${label} nao atendida em 12000 ms. Ultimo estado: ${JSON.stringify(last)}`);
+  throw new Error(`${label}: totais oficiais nao permaneceram 1600 ms. Ultimo estado: ${JSON.stringify(last)}.`);
 };
 
 const cartUpdateFromResponse = async (response, item, expectedQuantity, direction, taxDisplay) => {
@@ -523,14 +545,15 @@ const assertMiniPersistsAfterReopen = async (page, item, direction, official) =>
   }
 };
 
-const sampleQuantityStability = async (page, expectedQuantity, reader, label) => {
+const sampleSettledState = async (page, expected, reader, project, label) => {
   const samples = [];
   const started = Date.now();
   while (Date.now() - started < 1600) {
-    const state = await reader(page);
-    samples.push({ t: Date.now() - started, quantity: state.quantity });
-    if (state.quantity !== expectedQuantity) {
-      throw new Error(`${label}: quantidade mudou para ${state.quantity}; amostras ${JSON.stringify(samples)}.`);
+    const actual = project(await reader(page));
+    samples.push({ t: Date.now() - started, ...actual });
+    const drifted = Object.keys(expected).filter((key) => actual[key] !== expected[key]);
+    if (drifted.length) {
+      throw new Error(`${label}: ${drifted.join(', ')} mudou depois da convergencia. Amostras ${JSON.stringify(samples)}.`);
     }
     await page.waitForTimeout(150);
   }
@@ -602,8 +625,7 @@ const validateCartChange = async (page, item, direction, expectedQuantity, taxDi
     }
 
     const official = await updateResponse;
-    await assertCartMatchesOfficial(page, item, expectedQuantity, direction, official, taxDisplay, `${direction}: DOM e Store API`);
-    await sampleQuantityStability(page, expectedQuantity, cartDomState, `${direction}: estabilidade /carrinho`);
+    await holdCartTotals(page, item, expectedQuantity, direction, official, taxDisplay, `${direction}: DOM e Store API`);
     if (posts.length !== 1) {
       throw new Error(`${direction}: esperava exatamente 1 update-item; recebeu ${posts.length}.`);
     }
@@ -622,7 +644,17 @@ const validateMiniChange = async (page, item, direction, expectedQuantity, taxDi
   const official = await updateResponse;
   await assertMiniMatchesOfficial(page, item, direction, official, `${direction}: mini-cart DOM e Store API`);
   await assertMiniPersistsAfterReopen(page, item, direction, official);
-  await sampleQuantityStability(page, expectedQuantity, miniDomState, `${direction}: estabilidade mini-cart`);
+  await sampleSettledState(page, {
+    quantity: expectedQuantity,
+    line: official.itemLineTotal,
+    subtotal: official.subtotal,
+    marker: 'mini-marker',
+  }, miniDomState, (state) => ({
+    quantity: state.quantity,
+    line: state.lineTotalFound ? moneyToMinor(state.lineTotalText) : null,
+    subtotal: state.subtotalFound ? moneyToMinor(state.subtotalText) : null,
+    marker: state.marker,
+  }), `${direction}: estabilidade mini-cart`);
 };
 
 const browser = await launchBrowser();
