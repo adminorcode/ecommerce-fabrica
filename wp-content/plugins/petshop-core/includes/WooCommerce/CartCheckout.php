@@ -22,6 +22,7 @@ final class CartCheckout
     {
         self::migrateBlockPages();
         self::configureAccountOptions();
+        self::configureAccountOptions025();
         self::ensurePolicyPages();
         self::ensureLocalShippingMethod();
     }
@@ -57,6 +58,26 @@ final class CartCheckout
         wp_add_inline_script('petshop-checkout-translations', 'window.petshopCheckoutTranslations=' . wp_json_encode([
             'I would like to receive exclusive emails with discounts and product information' => __('Quero receber e-mails exclusivos com descontos e informações sobre produtos.', 'petshop-core'),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
+
+        $passwordConfirmationPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/checkout-account-password-confirmation.js';
+
+        wp_enqueue_script(
+            'petshop-checkout-account-password-confirmation',
+            plugins_url('assets/js/checkout-account-password-confirmation.js', PETSHOP_CORE_FILE),
+            ['wp-data', 'wc-blocks-data-store'],
+            is_file($passwordConfirmationPath) ? (string) filemtime($passwordConfirmationPath) : '1.0.0',
+            true
+        );
+        wp_localize_script(
+            'petshop-checkout-account-password-confirmation',
+            'petshopCheckoutAccountPassword',
+            [
+                'namespace' => AccountRegistration::CHECKOUT_EXTENSION_NAMESPACE,
+                'required' => __('Confirme sua senha.', 'petshop-core'),
+                'mismatch' => __('As senhas não coincidem.', 'petshop-core'),
+                'label' => __('Confirmar senha', 'petshop-core'),
+            ]
+        );
     }
 
     /**
@@ -130,6 +151,14 @@ final class CartCheckout
         update_option('petshop_account_options_013_configured', '1', false);
     }
 
+    private static function configureAccountOptions025(): void
+    {
+        if (get_option('petshop_account_options_025_configured', false) !== false) return;
+
+        update_option('woocommerce_registration_generate_password', 'no');
+
+        update_option('petshop_account_options_025_configured', '1', false);
+    }
     private static function ensurePolicyPages(): void
     {
         $privacyId = self::ensureAssignedPolicyPage('wp_page_for_privacy_policy', 'politica-de-privacidade', 'Política de privacidade', 'privacy-policy');

@@ -212,6 +212,19 @@ const classifySuites = (files) => {
             suites.add('checkout-013');
             browserScripts.add('validate-013-browser.mjs');
         }
+        if (
+            file.includes('025-cadastro-senha-escolhida')
+            || file.includes('AccountRegistration')
+            || file.includes('AccountPrivacy')
+            || file.includes('account-registration')
+            || file.includes('checkout-account-password-confirmation')
+            || file.includes('validate-025-account-registration')
+            || file.includes('GuestAccount.php')
+            || file.includes('AddressLookup')
+        ) {
+            suites.add('account-025');
+            browserScripts.add('validate-025-account-registration-browser.mjs');
+        }
         if (file.includes('014-identity') || file.includes('validate-014-docs-and-tokens')) {
             suites.add('identity-014');
         }
@@ -292,6 +305,16 @@ const classifySuites = (files) => {
             browserScripts.add('validate-035-menu-dropdown-browser.mjs');
         }
         if (
+            file.includes('026-checkout-dados-salvos-viacep')
+            || file.includes('CheckoutCustomerData')
+            || file.includes('AddressLookup')
+            || file.includes('address-lookup')
+            || file.includes('validate-026-checkout')
+        ) {
+            suites.add('checkout-026');
+            browserScripts.add('validate-026-checkout-browser.mjs');
+        }
+        if (
             file.includes('027-calculadora-frete-hub')
             || file.includes('036-dependencias-frete-checkout-versionadas')
             || file.includes('ShippingQuotes')
@@ -352,6 +375,9 @@ const runFocusedSuites = (suites) => {
         evalFile('validate-013-security.php');
         evalFile('test-013-persistence.php');
     }
+    if (suites.has('account-025')) {
+        evalFile('validate-025-account-registration.php');
+    }
     if (suites.has('identity-014')) {
         evalFile('validate-014-identity-campaigns.php');
     }
@@ -394,6 +420,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('menu-035')) {
         evalFile('validate-035-menu-dropdown.php');
+    }
+    if (suites.has('checkout-026')) {
+        evalFile('validate-026-checkout.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');

@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.18
+Version: 0.6.19
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -3083,6 +3083,15 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
 .woocommerce-checkout #melhor-envio-shortcode,
 .woocommerce-checkout .containerCalculator {
   display: none !important;
+}
+
+.petshop-cep-message {
+  margin-top: var(--space-1);
+  font-size: 0.875rem;
+}
+
+.petshop-cep-message.is-error {
+  color: var(--color-error);
 }
 
 .petshop-product-details {
