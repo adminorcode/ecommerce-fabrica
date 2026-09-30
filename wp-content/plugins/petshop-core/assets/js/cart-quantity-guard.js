@@ -29,6 +29,28 @@
     intendedAt.set(String(key), Date.now());
   };
 
+  const lineTotalKeys = ['line_subtotal', 'line_subtotal_tax', 'line_total', 'line_total_tax'];
+
+  const scaleMinor = (value, fromQty, toQty) => {
+    const amount = Number.parseInt(String(value), 10);
+    if (!Number.isFinite(amount) || fromQty <= 0) return value;
+    return String(Math.round((amount / fromQty) * toQty));
+  };
+
+  const withIntendedQuantity = (item, wanted) => {
+    const fromQty = Number(item.quantity);
+    if (!Number.isFinite(fromQty) || fromQty <= 0 || fromQty === wanted) return item;
+    const totals = item.totals ? { ...item.totals } : null;
+    if (totals) {
+      lineTotalKeys.forEach((key) => {
+        if (totals[key] != null && totals[key] !== '') {
+          totals[key] = scaleMinor(totals[key], fromQty, wanted);
+        }
+      });
+    }
+    return totals ? { ...item, quantity: wanted, totals } : { ...item, quantity: wanted };
+  };
+
   const merge = (cart) => {
     if (!cart || !Array.isArray(cart.items) || intendedQty.size === 0) return cart;
     let changed = false;
@@ -36,7 +58,7 @@
       const wanted = live(item.key);
       if (!wanted || Number(item.quantity) === wanted) return item;
       changed = true;
-      return { ...item, quantity: wanted };
+      return withIntendedQuantity(item, wanted);
     });
     return changed ? { ...cart, items } : cart;
   };
@@ -119,22 +141,28 @@
     quietUntil = Date.now() + 15000;
   };
 
-  const resolveHeld = (response) => {
+  const unreadCopy = (response) => {
     try {
-      lastFlushResponse = response.clone();
+      return response.clone();
     } catch (_error) {
-      lastFlushResponse = response;
+      return null;
     }
+  };
+
+  const resolveHeld = (response) => {
+    const stored = unreadCopy(response);
+    lastFlushResponse = stored || response;
     quietUntil = Date.now() + 8000;
     const jobs = heldMutations;
     heldMutations = [];
     jobs.forEach((job) => {
       window.clearTimeout(job.timer);
-      try {
-        job.resolve(response.clone());
-      } catch (_error) {
-        job.resolve(response);
+      const copy = unreadCopy(response) || unreadCopy(lastFlushResponse);
+      if (copy) {
+        job.resolve(copy);
+        return;
       }
+      job.reject(new Error('Petshop cart quantity response was already read.'));
     });
   };
 

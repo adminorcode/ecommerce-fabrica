@@ -40,6 +40,7 @@
 | [035-dropdown-subcategorias-menu-comercial.md](./035-dropdown-subcategorias-menu-comercial.md) | Concluído | Menu comercial: subcategorias em dropdown vertical (padrão Moda Bicho), não soltas na faixa. Gates PHP/browser validados. ClickUp [86e31cb6z](https://app.clickup.com/t/86e31cb6z) |
 | [036-dependencias-frete-checkout-versionadas.md](./036-dependencias-frete-checkout-versionadas.md) | Concluído | Melhor Envio 2.16.6 e Calculadora BR 4.17.1 versionados com vendor, Docker/deploy/gates reconciliados e Brazilian Market mantido fora para evitar conflito |
 | [037-atualizacao-automatica-valores-carrinho.md](./037-atualizacao-automatica-valores-carrinho.md) | Concluído | Browser 037 aprovado isolado e com tax `excl`/`incl`; `validate:changed:browser` aprovado; regressão 039 aprovada como visitante; sem alteração funcional de produção. Full validate global bloqueado por gate 005 fora do escopo (`Kits Economicos`) |
+| [038-total-quantidade-pagina-produto.md](./038-total-quantidade-pagina-produto.md) | Concluído | PDP: total reativo por quantidade validado para simples, promocional e variável, sem refresh e com formatação WooCommerce. Regressão leve do carrinho via Store API/Cart Block validada; 037 segue responsável por atualização do carrinho e 039 por estabilidade quantidade/CEP |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 
 ## Ordem recomendada de execução
