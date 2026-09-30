@@ -610,6 +610,7 @@ a:hover { color: var(--color-brand-orange-dark); }
   line-height: 1.35rem;
   text-align: left;
   font-weight: 600;
+  color: #5c5c5c;
 }
 
 .woocommerce ul.products li.product .price .petshop-product-card__selected-price,
@@ -4727,11 +4728,12 @@ footer.ct-footer .ct-footer-copyright {
   order: 4;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: .25rem;
   width: 100%;
   margin: .3rem 0 0;
   padding: 0 var(--space-2);
+  text-align: center;
 }
 
 .petshop-product-card__attribute {
