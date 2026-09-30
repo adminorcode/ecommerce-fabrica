@@ -8,6 +8,7 @@
   const shippingForm = document.querySelector('[data-petshop-shipping-form]');
   const result = document.querySelector('[data-petshop-shipping-result]');
   const quantityTotal = document.querySelector('[data-petshop-quantity-total]');
+  const quantityTotalLabel = document.querySelector('[data-petshop-quantity-total-label]');
   const quantityTotalValue = document.querySelector('[data-petshop-quantity-total-value]');
   const cartForm = document.querySelector('form.cart');
   const formatPostcode = (postcode) => postcode.replace(/^(\d{5})(\d{3})$/, '$1-$2');
@@ -42,15 +43,27 @@
     return value;
   };
 
+  const placeQuantityTotal = () => {
+    const price = document.querySelector('.entry-summary > .price, .summary > .price');
+    if (!price || !quantityTotal || quantityTotal.parentElement?.classList.contains('petshop-product-price-row')) return;
+    const row = document.createElement('div');
+    row.className = 'petshop-product-price-row';
+    price.insertAdjacentElement('beforebegin', row);
+    row.append(price, quantityTotal);
+  };
+
   const updateQuantityTotal = () => {
     if (!quantityTotal || !quantityTotalValue) return;
-    if (!Number.isFinite(currentUnitPrice) || currentUnitPrice < 0) {
+    const quantity = currentQuantity();
+    if (!Number.isFinite(currentUnitPrice) || currentUnitPrice < 0 || quantity <= 1) {
       quantityTotal.hidden = true;
+      if (quantityTotalLabel) quantityTotalLabel.textContent = '';
       quantityTotalValue.textContent = '';
       return;
     }
     quantityTotal.hidden = false;
-    quantityTotalValue.textContent = formatAmount(currentUnitPrice * currentQuantity());
+    if (quantityTotalLabel) quantityTotalLabel.textContent = `x${Number.isInteger(quantity) ? quantity : quantity}`;
+    quantityTotalValue.textContent = formatAmount(currentUnitPrice * quantity);
   };
 
   cartForm?.addEventListener('input', (event) => {
@@ -125,6 +138,7 @@
     });
   }
 
+  placeQuantityTotal();
   updateQuantityTotal();
 
   shippingForm?.addEventListener('submit', async (event) => {

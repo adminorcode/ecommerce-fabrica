@@ -31,7 +31,7 @@ final class ProductDetails
         add_action('created_pa_color', [self::class, 'saveColorField']);
         add_action('edited_pa_color', [self::class, 'saveColorField']);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductionAndSizeGuide'], 24);
-        add_action('woocommerce_after_add_to_cart_quantity', [self::class, 'renderQuantityTotal']);
+        add_action('woocommerce_single_product_summary', [self::class, 'renderQuantityTotal'], 11);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderShippingCalculator'], 8);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderPersonalizationSlot'], 20);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAssets']);
@@ -194,12 +194,10 @@ final class ProductDetails
         if (!$product instanceof \WC_Product || !$product->is_purchasable()) return;
 
         $price = $product->is_type('variable') ? null : (float) wc_get_price_to_display($product);
-        $hidden = $price === null || $price < 0;
 
-        echo '<p class="petshop-product-quantity-total" data-petshop-quantity-total'
-            . ($hidden ? ' hidden' : '')
+        echo '<p class="petshop-product-quantity-total" data-petshop-quantity-total hidden'
             . ' data-unit-price="' . esc_attr($price === null ? '' : wc_format_decimal($price, wc_get_price_decimals())) . '">'
-            . '<span class="petshop-product-quantity-total__label">' . esc_html__('Total deste item', 'petshop-core') . '</span>'
+            . '<span class="petshop-product-quantity-total__label" data-petshop-quantity-total-label></span>'
             . '<strong class="petshop-product-quantity-total__value" data-petshop-quantity-total-value aria-live="polite"></strong>'
             . '</p>';
     }

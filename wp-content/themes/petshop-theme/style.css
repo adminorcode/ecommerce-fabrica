@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.19
+Version: 0.6.21
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -3068,33 +3068,39 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   font-size: .94rem;
 }
 
-.petshop-product-quantity-total {
+.single-product .petshop-product-price-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-  width: 100%;
-  margin: var(--space-2) 0 0;
-  padding: .75rem .9rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand-orange) 35%, var(--color-border));
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-brand-orange) 8%, var(--color-surface));
+  column-gap: .2em;
+  row-gap: .2em;
+}
+
+.single-product .petshop-product-price-row > .price {
+  width: auto;
+  margin: 0;
+}
+
+.petshop-product-quantity-total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .2em;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: .6em;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: .01em;
+  line-height: 1.2;
 }
 
 .petshop-product-quantity-total[hidden] {
   display: none;
 }
 
-.petshop-product-quantity-total__label {
-  color: var(--color-muted);
-  font-size: .94rem;
-  font-weight: 700;
-}
-
+.petshop-product-quantity-total__label,
 .petshop-product-quantity-total__value {
-  color: var(--color-brand-orange-dark);
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .single-product #shipping-calc,

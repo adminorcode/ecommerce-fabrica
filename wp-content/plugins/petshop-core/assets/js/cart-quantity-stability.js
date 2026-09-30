@@ -50,7 +50,8 @@
         body: JSON.stringify({ key, quantity: qtyState.live(key) || quantity }),
       });
       rememberNonce(response);
-      return { response, body: await response.json() };
+      const unread = response.clone();
+      return { response: unread, body: await response.json() };
     },
   };
 
@@ -97,6 +98,15 @@
 
   const applyOptimistic = () => {
     paintQuantity();
+    try {
+      const cart = window.wp?.data?.select('wc/store/cart')?.getCartData?.();
+      if (!cart?.items || !window.wp?.data?.dispatch) return;
+      const next = mergeIntended(cart);
+      if (next === cart) return;
+      window.wp.data.dispatch('wc/store/cart').receiveCart(next);
+    } catch (_error) {
+      // The quantity field is already updated. The line total catches up on the flush.
+    }
   };
 
   const shippingSummaryTargets = () => {

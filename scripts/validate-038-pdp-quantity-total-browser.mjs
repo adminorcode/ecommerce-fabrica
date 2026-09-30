@@ -57,6 +57,13 @@ const setQuantity = async (page, quantity) => {
   await input.dispatchEvent('change');
 };
 
+const assertHiddenTotal = async (page, label) => {
+  const state = await readTotal(page);
+  if (!state.hidden || state.text !== '') {
+    failures.push(`${label}: total deveria estar oculto, veio ${JSON.stringify(state)}.`);
+  }
+};
+
 const assertTotal = async (page, expected, label) => {
   await page.waitForFunction((amount) => {
     const text = document.querySelector('[data-petshop-quantity-total-value]')?.textContent || '';
@@ -103,7 +110,18 @@ const validateSimpleProduct = async (page) => {
     window.__petshop038NoRefresh = 'pdp-marker';
   });
 
-  await assertTotal(page, 19.90, 'produto simples qty 1');
+  await assertHiddenTotal(page, 'produto simples qty 1');
+  const placement = await page.evaluate(() => {
+    const total = document.querySelector('[data-petshop-quantity-total]');
+    const price = document.querySelector('.entry-summary > .petshop-product-price-row > .price, .summary > .petshop-product-price-row > .price');
+    return {
+      besidePrice: Boolean(price && total && price.parentElement === total.parentElement),
+      outsideCart: !total?.closest('form.cart'),
+    };
+  });
+  if (!placement.besidePrice || !placement.outsideCart) {
+    failures.push(`produto simples: total deveria ficar ao lado do preco, veio ${JSON.stringify(placement)}.`);
+  }
   await setQuantity(page, 3);
   await assertTotal(page, 59.70, 'produto simples qty 3');
   await setQuantity(page, 2);
@@ -122,7 +140,7 @@ const validateSaleProduct = async (page) => {
     window.__petshop038NoRefresh = 'pdp-marker';
   });
 
-  await assertTotal(page, 21.50, 'produto promocional qty 1');
+  await assertHiddenTotal(page, 'produto promocional qty 1');
   await setQuantity(page, 2);
   await assertTotal(page, 43.00, 'produto promocional qty 2');
 };
@@ -149,7 +167,7 @@ const validateVariableProduct = async (page) => {
   }
 
   await chooseVariation(page, 'p');
-  await assertTotal(page, 24.00, 'produto variavel P qty 1');
+  await assertHiddenTotal(page, 'produto variavel P qty 1');
   await setQuantity(page, 2);
   await assertTotal(page, 48.00, 'produto variavel P qty 2');
 
