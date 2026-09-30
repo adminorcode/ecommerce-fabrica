@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 final class MercadoPagoReturnTest extends TestCase
 {
+    private const TOKEN = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     protected function setUp(): void
     {
         $GLOBALS['petshop_test_filters'] = [];
@@ -38,8 +39,14 @@ final class MercadoPagoReturnTest extends TestCase
             $GLOBALS['petshop_test_filters']['woocommerce_store_api_checkout_order_processed'][0]['callback']
         );
         self::assertSame(
-            [MercadoPagoReturn::class, 'filterAvailablePaymentGateways'],
-            $GLOBALS['petshop_test_filters']['woocommerce_available_payment_gateways'][0]['callback']
+            [MercadoPagoReturn::class, 'handleClassicCheckoutOrderProcessed'],
+            $GLOBALS['petshop_test_filters']['woocommerce_checkout_order_processed'][0]['callback']
+        );
+        self::assertSame(3, $GLOBALS['petshop_test_filters']['woocommerce_checkout_order_processed'][0]['accepted_args']);
+        self::assertArrayNotHasKey('woocommerce_available_payment_gateways', $GLOBALS['petshop_test_filters']);
+        self::assertSame(
+            [MercadoPagoReturn::class, 'markUncacheableReturnRequest'],
+            $GLOBALS['petshop_test_filters']['wp'][0]['callback']
         );
         self::assertSame(
             [MercadoPagoReturn::class, 'handleReturnRequest'],
@@ -83,6 +90,7 @@ final class MercadoPagoReturnTest extends TestCase
         MercadoPagoReturn::handlePaymentSuccessfulResult(['result' => 'success'], 10);
         self::assertSame(10, MercadoPagoReturn::sessionState()['order_id']);
         self::assertFalse(MercadoPagoReturn::sessionState()['ambiguous']);
+        self::assertSame($first['token'], MercadoPagoReturn::sessionState()['token']);
         self::assertGreaterThanOrEqual($first['created_at'], MercadoPagoReturn::sessionState()['created_at']);
 
         WC()->session->set(MercadoPagoReturn::SESSION_KEY, [
@@ -90,6 +98,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time() - 8000,
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => false,
+            'token' => self::TOKEN,
         ]);
         MercadoPagoReturn::handlePaymentSuccessfulResult(['result' => 'success'], 11);
         self::assertSame(11, MercadoPagoReturn::sessionState()['order_id']);
@@ -119,6 +128,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time() - 8000,
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => true,
+            'token' => self::TOKEN,
         ]);
         MercadoPagoReturn::handlePaymentSuccessfulResult(['result' => 'success'], 11);
         self::assertSame(11, MercadoPagoReturn::sessionState()['order_id']);
@@ -138,13 +148,13 @@ final class MercadoPagoReturnTest extends TestCase
     public function testSuccessAndPendingRedirectLoggedUsersToOrdersAndGuestsToOrderReceived(): void
     {
         $GLOBALS['petshop_test_orders'][30] = new WC_Order(30, MercadoPagoReturn::GATEWAY_ID);
-        MercadoPagoReturn::armReturnSession($GLOBALS['petshop_test_orders'][30]);
+        $this->authorizeReturn($GLOBALS['petshop_test_orders'][30]);
         $GLOBALS['petshop_test_logged_in'] = true;
         self::assertSame('https://store.test/minha-conta/orders/', MercadoPagoReturn::processReturn('success'));
         self::assertNull(WC()->session->get(MercadoPagoReturn::SESSION_KEY));
 
         $GLOBALS['petshop_test_logged_in'] = false;
-        MercadoPagoReturn::armReturnSession($GLOBALS['petshop_test_orders'][30]);
+        $this->authorizeReturn($GLOBALS['petshop_test_orders'][30]);
         self::assertSame(
             'https://store.test/checkout/order-received/30/?key=wc_order_30',
             MercadoPagoReturn::processReturn('pending')
@@ -158,19 +168,19 @@ final class MercadoPagoReturnTest extends TestCase
         $GLOBALS['petshop_test_orders'][40] = $payable;
         $GLOBALS['petshop_test_orders'][41] = $paid;
 
-        MercadoPagoReturn::armReturnSession($payable);
+        $this->authorizeReturn($payable);
         self::assertSame(
             'https://store.test/checkout/order-pay/40/?pay_for_order=true&key=wc_order_40',
             MercadoPagoReturn::processReturn('failure')
         );
 
-        MercadoPagoReturn::armReturnSession($paid);
+        $this->authorizeReturn($paid);
         self::assertSame(
             'https://store.test/checkout/order-received/41/?key=wc_order_41',
             MercadoPagoReturn::processReturn('failure')
         );
 
-        MercadoPagoReturn::armReturnSession($paid);
+        $this->authorizeReturn($paid);
         $GLOBALS['petshop_test_logged_in'] = true;
         self::assertSame('https://store.test/minha-conta/orders/', MercadoPagoReturn::processReturn('failure'));
     }
@@ -180,7 +190,7 @@ final class MercadoPagoReturnTest extends TestCase
         $payable = new WC_Order(40, MercadoPagoReturn::GATEWAY_ID, true);
         $GLOBALS['petshop_test_orders'][40] = $payable;
 
-        MercadoPagoReturn::armReturnSession($payable);
+        $this->authorizeReturn($payable);
         self::assertSame(
             'https://store.test/checkout/order-pay/40/?pay_for_order=true&key=wc_order_40',
             MercadoPagoReturn::processReturn('failure')
@@ -197,6 +207,7 @@ final class MercadoPagoReturnTest extends TestCase
         $_GET['order_id'] = '50';
         $_GET['external_reference'] = 'store50';
         $_GET['payment_id'] = 'fake-payment';
+        $_GET[MercadoPagoReturn::TOKEN_QUERY_ARG] = self::TOKEN;
         $GLOBALS['petshop_test_orders'][50] = new WC_Order(50, MercadoPagoReturn::GATEWAY_ID);
 
         self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
@@ -206,6 +217,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time() - 8000,
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => false,
+            'token' => self::TOKEN,
         ]);
         self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
 
@@ -214,6 +226,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time(),
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => true,
+            'token' => self::TOKEN,
         ]);
         self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
 
@@ -222,6 +235,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time(),
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => false,
+            'token' => self::TOKEN,
         ]);
         self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
 
@@ -230,6 +244,7 @@ final class MercadoPagoReturnTest extends TestCase
             'created_at' => time(),
             'gateway' => MercadoPagoReturn::GATEWAY_ID,
             'ambiguous' => false,
+            'token' => self::TOKEN,
         ]);
         $GLOBALS['petshop_test_orders'][51] = new WC_Order(51, 'cod');
         self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
@@ -245,7 +260,6 @@ final class MercadoPagoReturnTest extends TestCase
     public function testMalformedReturnQueryInputIsIgnored(): void
     {
         $method = new ReflectionMethod(MercadoPagoReturn::class, 'currentReturnType');
-        $method->setAccessible(true);
 
         $GLOBALS['petshop_test_query_vars'][MercadoPagoReturn::QUERY_VAR] = ['success'];
         self::assertNull($method->invoke(null));
@@ -255,74 +269,97 @@ final class MercadoPagoReturnTest extends TestCase
         self::assertNull($method->invoke(null));
     }
 
-    public function testGatewayGuardLeavesMissingGatewayAloneAndPreservesOtherGateways(): void
+    public function testSharedReturnWithoutMatchingTokenDoesNotExposeOrderKey(): void
     {
-        $gateways = ['cod' => new PetshopTestGateway([])];
+        $order = new WC_Order(30, MercadoPagoReturn::GATEWAY_ID);
+        $GLOBALS['petshop_test_orders'][30] = $order;
+        MercadoPagoReturn::armReturnSession($order);
 
-        self::assertSame($gateways, MercadoPagoReturn::filterAvailablePaymentGateways($gateways));
+        self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('success'));
+
+        MercadoPagoReturn::armReturnSession($order);
+        $_GET[MercadoPagoReturn::TOKEN_QUERY_ARG] = str_repeat('b', 32);
+        self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('pending'));
+
+        MercadoPagoReturn::armReturnSession($order);
+        $_GET[MercadoPagoReturn::TOKEN_QUERY_ARG] = ['not-a-token'];
+        self::assertSame('https://store.test/', MercadoPagoReturn::processReturn('failure'));
     }
 
-    public function testGatewayGuardRequiresExactHttpsEndpointsAndAutoReturn(): void
+    public function testPrepareCheckoutReturnWritesPerPaymentBackUrlsWithoutRemovingGateway(): void
     {
-        $validGateway = new PetshopTestGateway([
-            'auto_return' => 'yes',
-            'success_url' => MercadoPagoReturn::returnUrl('success'),
-            'pending_url' => MercadoPagoReturn::returnUrl('pending'),
-            'failure_url' => MercadoPagoReturn::returnUrl('failure'),
+        $gateway = new PetshopTestGateway([
+            'enabled' => 'yes',
+            'auto_return' => 'no',
+            'success_url' => '',
         ]);
-        $gateways = [
-            MercadoPagoReturn::GATEWAY_ID => $validGateway,
-            'cod' => new PetshopTestGateway([]),
+        WC()->gateways = [
+            MercadoPagoReturn::GATEWAY_ID => $gateway,
+            'cod' => new PetshopTestGateway(['enabled' => 'yes']),
         ];
+        $GLOBALS['petshop_test_orders'][70] = new WC_Order(70, MercadoPagoReturn::GATEWAY_ID);
 
-        self::assertArrayHasKey(MercadoPagoReturn::GATEWAY_ID, MercadoPagoReturn::filterAvailablePaymentGateways($gateways));
+        MercadoPagoReturn::prepareCheckoutReturn($GLOBALS['petshop_test_orders'][70]);
 
-        self::assertArrayNotHasKey(MercadoPagoReturn::GATEWAY_ID, MercadoPagoReturn::filterAvailablePaymentGateways([
-            MercadoPagoReturn::GATEWAY_ID => new PetshopTestGateway([
-                'auto_return' => 'no',
-                'success_url' => MercadoPagoReturn::returnUrl('success'),
-                'pending_url' => MercadoPagoReturn::returnUrl('pending'),
-                'failure_url' => MercadoPagoReturn::returnUrl('failure'),
-            ]),
-            'cod' => new PetshopTestGateway([]),
-        ]));
+        $token = MercadoPagoReturn::sessionState()['token'];
+        self::assertSame('yes', $gateway->settings['auto_return']);
+        self::assertSame('yes', $gateway->settings['enabled']);
+        self::assertSame(MercadoPagoReturn::returnUrl('success', $token), $gateway->settings['success_url']);
+        self::assertSame(MercadoPagoReturn::returnUrl('pending', $token), $gateway->settings['pending_url']);
+        self::assertSame(MercadoPagoReturn::returnUrl('failure', $token), $gateway->settings['failure_url']);
+        self::assertSame('yes', WC()->gateways['cod']->settings['enabled']);
 
-        foreach (['success_url', 'pending_url', 'failure_url'] as $invalidOption) {
-            $options = [
-                'auto_return' => 'yes',
-                'success_url' => MercadoPagoReturn::returnUrl('success'),
-                'pending_url' => MercadoPagoReturn::returnUrl('pending'),
-                'failure_url' => MercadoPagoReturn::returnUrl('failure'),
-            ];
-            $options[$invalidOption] = 'https://store.test/wrong';
-
-            $filtered = MercadoPagoReturn::filterAvailablePaymentGateways([
-                MercadoPagoReturn::GATEWAY_ID => new PetshopTestGateway($options),
-                'cod' => new PetshopTestGateway([]),
-            ]);
-            self::assertArrayNotHasKey(MercadoPagoReturn::GATEWAY_ID, $filtered);
-            self::assertArrayHasKey('cod', $filtered);
-        }
+        $GLOBALS['petshop_test_orders'][71] = new WC_Order(71, MercadoPagoReturn::GATEWAY_ID);
+        MercadoPagoReturn::prepareCheckoutReturn($GLOBALS['petshop_test_orders'][71]);
+        $secondToken = MercadoPagoReturn::sessionState()['token'];
+        self::assertNotSame($token, $secondToken);
+        self::assertSame(MercadoPagoReturn::returnUrl('success', $secondToken), $gateway->settings['success_url']);
     }
 
-    public function testGatewayGuardRejectsHttpLocalhostLoopbackAndIpv6Loopback(): void
+    public function testPreferenceSettingsStayUntouchedOnHttpLocalhostAndLoopback(): void
     {
         foreach (['http://store.test', 'https://localhost', 'https://127.0.0.1', 'https://[::1]'] as $homeUrl) {
             $GLOBALS['petshop_test_home_url'] = $homeUrl;
-            $gateways = [
-                MercadoPagoReturn::GATEWAY_ID => new PetshopTestGateway([
-                    'auto_return' => 'yes',
-                    'success_url' => MercadoPagoReturn::returnUrl('success'),
-                    'pending_url' => MercadoPagoReturn::returnUrl('pending'),
-                    'failure_url' => MercadoPagoReturn::returnUrl('failure'),
-                ]),
-                'cod' => new PetshopTestGateway([]),
-            ];
+            $gateway = new PetshopTestGateway([
+                'enabled' => 'yes',
+                'auto_return' => 'no',
+                'success_url' => '',
+            ]);
 
-            $filtered = MercadoPagoReturn::filterAvailablePaymentGateways($gateways);
-            self::assertArrayNotHasKey(MercadoPagoReturn::GATEWAY_ID, $filtered);
-            self::assertArrayHasKey('cod', $filtered);
+            self::assertFalse(MercadoPagoReturn::applyPreferenceReturnSettings($gateway, self::TOKEN));
+            self::assertSame('no', $gateway->settings['auto_return']);
+            self::assertSame('', $gateway->settings['success_url']);
+            self::assertArrayNotHasKey('pending_url', $gateway->settings);
+            self::assertArrayNotHasKey('failure_url', $gateway->settings);
         }
+    }
+
+    public function testPreferenceSettingsLoadExistingGatewayOptionsBeforeWritingBackUrls(): void
+    {
+        $gateway = new class {
+            /** @var array<string, string> */
+            public array $settings = [];
+
+            public function init_settings(): void
+            {
+                $this->settings = ['enabled' => 'yes'];
+            }
+        };
+
+        self::assertTrue(MercadoPagoReturn::applyPreferenceReturnSettings($gateway, self::TOKEN));
+        self::assertSame('yes', $gateway->settings['enabled']);
+        self::assertSame('yes', $gateway->settings['auto_return']);
+        self::assertSame(MercadoPagoReturn::returnUrl('success', self::TOKEN), $gateway->settings['success_url']);
+    }
+
+    public function testReturnRequestIsMarkedUncacheable(): void
+    {
+        $_GET[MercadoPagoReturn::QUERY_VAR] = 'success';
+
+        MercadoPagoReturn::markUncacheableReturnRequest();
+
+        self::assertTrue(defined('DONOTCACHEPAGE') && DONOTCACHEPAGE);
+        self::assertTrue($GLOBALS['petshop_test_nocache_headers'] ?? false);
     }
 
     public function testRegisterQueryVarAndReturnUrlsAreDeterministic(): void
@@ -331,6 +368,16 @@ final class MercadoPagoReturnTest extends TestCase
         self::assertSame('https://store.test/?petshop_mp_return=success', MercadoPagoReturn::returnUrl('success'));
         self::assertSame('https://store.test/?petshop_mp_return=pending', MercadoPagoReturn::returnUrl('pending'));
         self::assertSame('https://store.test/?petshop_mp_return=failure', MercadoPagoReturn::returnUrl('failure'));
+        self::assertSame(
+            'https://store.test/?petshop_mp_return=success&petshop_mp_token=' . self::TOKEN,
+            MercadoPagoReturn::returnUrl('success', self::TOKEN)
+        );
+    }
+
+    private function authorizeReturn(WC_Order $order): void
+    {
+        MercadoPagoReturn::armReturnSession($order);
+        $_GET[MercadoPagoReturn::TOKEN_QUERY_ARG] = MercadoPagoReturn::sessionState()['token'];
     }
 }
 
@@ -364,13 +411,13 @@ final class PetshopTestSession
 
 final class PetshopTestGateway
 {
-    /** @param array<string, string> $options */
-    public function __construct(private readonly array $options)
+    /** @param array<string, string> $settings */
+    public function __construct(public array $settings)
     {
     }
 
     public function get_option(string $key): string
     {
-        return $this->options[$key] ?? '';
+        return $this->settings[$key] ?? '';
     }
 }

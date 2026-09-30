@@ -20,8 +20,14 @@ if (has_filter('woocommerce_payment_successful_result', [MercadoPagoReturn::clas
 if (has_action('woocommerce_store_api_checkout_order_processed', [MercadoPagoReturn::class, 'handleStoreApiCheckoutOrderProcessed']) === false) {
     $failures[] = 'Hook woocommerce_store_api_checkout_order_processed nao registrado.';
 }
-if (has_filter('woocommerce_available_payment_gateways', [MercadoPagoReturn::class, 'filterAvailablePaymentGateways']) === false) {
-    $failures[] = 'Filtro woocommerce_available_payment_gateways nao registrado.';
+if (has_action('woocommerce_checkout_order_processed', [MercadoPagoReturn::class, 'handleClassicCheckoutOrderProcessed']) === false) {
+    $failures[] = 'Hook woocommerce_checkout_order_processed nao registrado.';
+}
+if (has_action('wp', [MercadoPagoReturn::class, 'markUncacheableReturnRequest']) === false) {
+    $failures[] = 'Hook wp de no-cache do retorno nao registrado.';
+}
+if (has_filter('woocommerce_available_payment_gateways', [MercadoPagoReturn::class, 'filterAvailablePaymentGateways']) !== false) {
+    $failures[] = 'Filtro que removia o gateway Mercado Pago ainda esta registrado.';
 }
 if (has_filter('query_vars', [MercadoPagoReturn::class, 'registerQueryVar']) === false) {
     $failures[] = 'Filtro query_vars nao registrado.';
@@ -40,60 +46,56 @@ foreach ($expectedTypes as $type) {
     }
 }
 
-$withoutMercadoPago = [
-    'cod' => new class {
-    },
-];
-if (MercadoPagoReturn::filterAvailablePaymentGateways($withoutMercadoPago) !== $withoutMercadoPago) {
-    $failures[] = 'Gateway ausente do Mercado Pago deveria deixar demais gateways intactos.';
-}
-
-$candidateGateway = new class($expectedTypes) {
-    /** @param array<int, string> $types */
-    public function __construct(private readonly array $types)
-    {
-    }
-
-    public function get_option(string $key): string
-    {
-        if ($key === 'auto_return') {
-            return 'yes';
-        }
-
-        foreach ($this->types as $type) {
-            if ($key === $type . '_url') {
-                return MercadoPagoReturn::returnUrl($type);
-            }
-        }
-
-        return '';
-    }
+$candidateGateway = new class {
+    /** @var array<string, string> */
+    public array $settings = [
+        'enabled' => 'yes',
+        'auto_return' => 'no',
+        'success_url' => '',
+    ];
 };
-
-$filtered = MercadoPagoReturn::filterAvailablePaymentGateways([
-    MercadoPagoReturn::GATEWAY_ID => $candidateGateway,
-    'cod' => new class {
-    },
-]);
+$returnToken = bin2hex(random_bytes(16));
+$applied = MercadoPagoReturn::applyPreferenceReturnSettings($candidateGateway, $returnToken);
 $homeHost = strtolower(trim((string) (wp_parse_url(home_url('/'), PHP_URL_HOST) ?: ''), '[]'));
 $homeScheme = strtolower((string) (wp_parse_url(home_url('/'), PHP_URL_SCHEME) ?: ''));
-$mustFailClosed = $homeScheme !== 'https' || in_array($homeHost, ['localhost', '127.0.0.1', '::1'], true);
-if ($mustFailClosed && array_key_exists(MercadoPagoReturn::GATEWAY_ID, $filtered)) {
-    $failures[] = 'Ambiente HTTP/local deveria remover o gateway Mercado Pago.';
+$mustRefuseLocal = $homeScheme !== 'https' || in_array($homeHost, ['localhost', '127.0.0.1', '::1'], true);
+if ($mustRefuseLocal && $applied) {
+    $failures[] = 'Ambiente HTTP/local nao deveria gravar back_urls do Mercado Pago.';
 }
-if (!$mustFailClosed && !array_key_exists(MercadoPagoReturn::GATEWAY_ID, $filtered)) {
-    $failures[] = 'Ambiente HTTPS publico com settings exatos deveria preservar o gateway Mercado Pago.';
+if ($mustRefuseLocal && ($candidateGateway->settings['success_url'] ?? '') !== '') {
+    $failures[] = 'Ambiente HTTP/local gravou success_url.';
 }
-if (!array_key_exists('cod', $filtered)) {
-    $failures[] = 'Guard removeu gateway nao relacionado.';
+if ($mustRefuseLocal && ($candidateGateway->settings['enabled'] ?? '') !== 'yes') {
+    $failures[] = 'Ambiente HTTP/local alterou opcao alheia do gateway.';
+}
+if (!$mustRefuseLocal && !$applied) {
+    $failures[] = 'Ambiente HTTPS publico deveria gravar back_urls e auto_return na instancia do gateway.';
+}
+if (!$mustRefuseLocal) {
+    foreach ($expectedTypes as $type) {
+        $configured = (string) ($candidateGateway->settings[$type . '_url'] ?? '');
+        $query = [];
+        wp_parse_str((string) (wp_parse_url($configured, PHP_URL_QUERY) ?: ''), $query);
+        if (($query[MercadoPagoReturn::QUERY_VAR] ?? '') !== $type || ($query[MercadoPagoReturn::TOKEN_QUERY_ARG] ?? '') !== $returnToken) {
+            $failures[] = "URL {$type} da preferencia nao ficou exclusiva deste pagamento.";
+        }
+    }
+    if (($candidateGateway->settings['auto_return'] ?? '') !== 'yes') {
+        $failures[] = 'auto_return da preferencia deveria ser yes.';
+    }
+    if (($candidateGateway->settings['enabled'] ?? '') !== 'yes') {
+        $failures[] = 'Gravacao das back_urls removeu opcao alheia do gateway.';
+    }
 }
 
 $moduleFile = WP_PLUGIN_DIR . '/petshop-core/includes/WooCommerce/MercadoPagoReturn.php';
 $source = is_file($moduleFile) ? (string) file_get_contents($moduleFile) : '';
-if (!str_contains($source, 'nocache_headers()')) {
-    $failures[] = 'Endpoint de retorno 029 nao envia headers no-cache.';
+foreach (['nocache_headers()', 'DONOTCACHEPAGE', 'Vary: Cookie'] as $required) {
+    if (!str_contains($source, $required)) {
+        $failures[] = "Endpoint de retorno 029 nao impede cache compartilhado ({$required}).";
+    }
 }
-foreach (['woocommerce_get_cancel_order_url', 'external_reference', 'payment_id', 'merchant_order_id', 'payment_complete('] as $forbidden) {
+foreach (['woocommerce_get_cancel_order_url', 'external_reference', 'payment_id', 'merchant_order_id', 'payment_complete(', 'unset($gateways'] as $forbidden) {
     if (str_contains($source, $forbidden)) {
         $failures[] = "Padrao proibido encontrado no modulo 029: {$forbidden}";
     }
@@ -103,4 +105,4 @@ if ($failures !== []) {
     WP_CLI::error('Gate 029 falhou: ' . implode(' | ', $failures));
 }
 
-WP_CLI::success('Gate 029: modulo de retorno Mercado Pago registrado, endpoints determinísticos e guard fail-closed verificados sem plugin Mercado Pago local.');
+WP_CLI::success('Gate 029: retorno Mercado Pago registrado, back_urls gravadas so em HTTPS publico e resposta de retorno marcada como nao cacheavel.');

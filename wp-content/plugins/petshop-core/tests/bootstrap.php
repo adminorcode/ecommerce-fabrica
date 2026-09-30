@@ -54,6 +54,28 @@ final class PetshopTestWpdb
 final class WooCommerce
 {
     public mixed $session = null;
+
+    /** @var array<string, object> */
+    public array $gateways = [];
+
+    public function payment_gateways(): PetshopTestPaymentGateways
+    {
+        return new PetshopTestPaymentGateways($this->gateways);
+    }
+}
+
+final class PetshopTestPaymentGateways
+{
+    /** @param array<string, object> $gateways */
+    public function __construct(private array $gateways)
+    {
+    }
+
+    /** @return array<string, object> */
+    public function payment_gateways(): array
+    {
+        return $this->gateways;
+    }
 }
 
 class WC_Order
@@ -249,6 +271,11 @@ function wc_get_account_endpoint_url(string $endpoint): string
 function is_user_logged_in(): bool
 {
     return (bool) ($GLOBALS['petshop_test_logged_in'] ?? false);
+}
+
+function nocache_headers(): void
+{
+    $GLOBALS['petshop_test_nocache_headers'] = true;
 }
 
 function WC(): WooCommerce

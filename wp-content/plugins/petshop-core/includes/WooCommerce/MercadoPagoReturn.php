@@ -11,16 +11,20 @@ final class MercadoPagoReturn
     public const GATEWAY_ID = 'woo-mercado-pago-basic';
     public const SESSION_KEY = 'petshop_mp_return_order';
     public const QUERY_VAR = 'petshop_mp_return';
+    public const TOKEN_QUERY_ARG = 'petshop_mp_token';
 
     private const RETURN_TTL = 7200;
     private const RETURN_TYPES = ['success', 'pending', 'failure'];
 
+    private static bool $returnMarkedUncacheable = false;
+
     public static function bootstrap(): void
     {
         add_filter('woocommerce_payment_successful_result', [self::class, 'handlePaymentSuccessfulResult'], 10, 2);
+        add_action('woocommerce_checkout_order_processed', [self::class, 'handleClassicCheckoutOrderProcessed'], 10, 3);
         add_action('woocommerce_store_api_checkout_order_processed', [self::class, 'handleStoreApiCheckoutOrderProcessed'], 10, 1);
-        add_filter('woocommerce_available_payment_gateways', [self::class, 'filterAvailablePaymentGateways'], 20, 1);
         add_filter('query_vars', [self::class, 'registerQueryVar']);
+        add_action('wp', [self::class, 'markUncacheableReturnRequest'], 0);
         add_action('template_redirect', [self::class, 'handleReturnRequest'], 0);
     }
 
@@ -42,24 +46,66 @@ final class MercadoPagoReturn
         return $result;
     }
 
-    public static function handleStoreApiCheckoutOrderProcessed(\WC_Order $order): void
+    public static function handleClassicCheckoutOrderProcessed(mixed $orderId, mixed $postedData = null, mixed $order = null): void
     {
-        self::armReturnSession($order);
+        unset($postedData);
+        if (!$order instanceof \WC_Order && function_exists('wc_get_order')) {
+            $order = wc_get_order((int) $orderId);
+        }
+        if ($order instanceof \WC_Order) {
+            self::prepareCheckoutReturn($order);
+        }
     }
 
-    /** @param array<string, mixed> $gateways @return array<string, mixed> */
-    public static function filterAvailablePaymentGateways(array $gateways): array
+    public static function handleStoreApiCheckoutOrderProcessed(\WC_Order $order): void
     {
-        if (!array_key_exists(self::GATEWAY_ID, $gateways)) {
-            return $gateways;
+        self::prepareCheckoutReturn($order);
+    }
+
+    public static function prepareCheckoutReturn(\WC_Order $order): void
+    {
+        if (!self::armReturnSession($order)) {
+            return;
         }
 
-        $gateway = $gateways[self::GATEWAY_ID];
-        if (!is_object($gateway) || !method_exists($gateway, 'get_option') || !self::hasExpectedGatewaySettings($gateway)) {
-            unset($gateways[self::GATEWAY_ID]);
+        $state = self::sessionState();
+        $gateway = self::checkoutProGateway();
+        if ($state === null || $gateway === null) {
+            return;
         }
 
-        return $gateways;
+        self::applyPreferenceReturnSettings($gateway, $state['token']);
+    }
+
+    /**
+     * Writes Checkout Pro back_urls and auto_return on the gateway instance the
+     * official plugin reads while creating the preference. Nothing is persisted:
+     * each payment gets its own token, and localhost is never sent to Mercado Pago.
+     */
+    public static function applyPreferenceReturnSettings(object $gateway, string $token): bool
+    {
+        if (!self::isReturnToken($token) || !property_exists($gateway, 'settings') || !is_array($gateway->settings)) {
+            return false;
+        }
+
+        if ($gateway->settings === [] && method_exists($gateway, 'init_settings')) {
+            $gateway->init_settings();
+        }
+        if (!is_array($gateway->settings)) {
+            return false;
+        }
+
+        $successUrl = self::returnUrl('success', $token);
+        if (!self::isPublicHttpsUrl($successUrl)) {
+            return false;
+        }
+
+        $gateway->settings['auto_return'] = 'yes';
+        $gateway->settings['success_url'] = $successUrl;
+        $gateway->settings['pending_url'] = self::returnUrl('pending', $token);
+        $gateway->settings['failure_url'] = self::returnUrl('failure', $token);
+
+        return true;
     }
 
     /** @param array<int, string> $vars @return array<int, string> */
@@ -70,6 +116,15 @@ final class MercadoPagoReturn
         return array_values(array_unique($vars));
     }
 
+    public static function markUncacheableReturnRequest(): void
+    {
+        if (self::currentReturnType() === null) {
+            return;
+        }
+
+        self::markReturnUncacheable();
+    }
+
     public static function handleReturnRequest(): void
     {
         $type = self::currentReturnType();
@@ -77,19 +132,47 @@ final class MercadoPagoReturn
             return;
         }
 
+        self::markReturnUncacheable();
         $redirect = self::processReturn($type);
-        nocache_headers();
         wp_safe_redirect($redirect, 302, 'Petshop Mercado Pago return');
         exit;
     }
 
-    public static function returnUrl(string $type): string
+    public static function markReturnUncacheable(): void
+    {
+        if (self::$returnMarkedUncacheable) {
+            return;
+        }
+        self::$returnMarkedUncacheable = true;
+
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
+        nocache_headers();
+        if (PHP_SAPI === 'cli' || headers_sent()) {
+            return;
+        }
+
+        header('Cache-Control: no-cache, must-revalidate, max-age=0, no-store, private');
+        header('Vary: Cookie', false);
+    }
+
+    public static function returnUrl(string $type, string $token = ''): string
     {
         if (!in_array($type, self::RETURN_TYPES, true)) {
             throw new \InvalidArgumentException('Invalid Mercado Pago return type.');
         }
 
-        return add_query_arg(self::QUERY_VAR, $type, home_url('/'));
+        $url = add_query_arg(self::QUERY_VAR, $type, home_url('/'));
+        if ($token === '') {
+            return $url;
+        }
+        if (!self::isReturnToken($token)) {
+            throw new \InvalidArgumentException('Invalid Mercado Pago return token.');
+        }
+
+        return add_query_arg(self::TOKEN_QUERY_ARG, $token, $url);
     }
 
     public static function processReturn(string $type): string
@@ -99,7 +182,9 @@ final class MercadoPagoReturn
         }
 
         $order = self::returnOrderFromSession();
-        $redirect = $order instanceof \WC_Order ? self::redirectForOrder($order, $type) : self::safeFallbackUrl();
+        $redirect = ($order instanceof \WC_Order && self::requestTokenMatchesSession())
+            ? self::redirectForOrder($order, $type)
+            : self::safeFallbackUrl();
 
         self::clearReturnSession();
 
@@ -124,24 +209,28 @@ final class MercadoPagoReturn
         $orderId = (int) $order->get_id();
         $now = time();
         $current = self::sessionState();
-        $state = [
+        $ambiguous = false;
+        $token = bin2hex(random_bytes(16));
+        if ($current !== null && !self::isExpired($current, $now)) {
+            $ambiguous = $current['ambiguous'] || (int) $current['order_id'] !== $orderId;
+            if (!$ambiguous) {
+                $token = $current['token'];
+            }
+        }
+
+        $session->set(self::SESSION_KEY, [
             'order_id' => $orderId,
             'created_at' => $now,
             'gateway' => self::GATEWAY_ID,
-            'ambiguous' => false,
-        ];
-
-        if ($current !== null && !self::isExpired($current, $now)) {
-            $state['ambiguous'] = $current['ambiguous'] || (int) $current['order_id'] !== $orderId;
-        }
-
-        $session->set(self::SESSION_KEY, $state);
+            'ambiguous' => $ambiguous,
+            'token' => $token,
+        ]);
         self::saveSession($session);
 
         return true;
     }
 
-    /** @return array{order_id: int, created_at: int, gateway: string, ambiguous: bool}|null */
+    /** @return array{order_id: int, created_at: int, gateway: string, ambiguous: bool, token: string}|null */
     public static function sessionState(): ?array
     {
         $session = self::session();
@@ -157,7 +246,8 @@ final class MercadoPagoReturn
         $orderId = (int) ($state['order_id'] ?? 0);
         $createdAt = (int) ($state['created_at'] ?? 0);
         $gateway = (string) ($state['gateway'] ?? '');
-        if ($orderId <= 0 || $createdAt <= 0 || $gateway !== self::GATEWAY_ID) {
+        $token = strtolower((string) ($state['token'] ?? ''));
+        if ($orderId <= 0 || $createdAt <= 0 || $gateway !== self::GATEWAY_ID || !self::isReturnToken($token)) {
             return null;
         }
 
@@ -166,26 +256,8 @@ final class MercadoPagoReturn
             'created_at' => $createdAt,
             'gateway' => $gateway,
             'ambiguous' => (bool) ($state['ambiguous'] ?? false),
+            'token' => $token,
         ];
-    }
-
-    /** @param object $gateway */
-    private static function hasExpectedGatewaySettings(object $gateway): bool
-    {
-        if ((string) $gateway->get_option('auto_return') !== 'yes') {
-            return false;
-        }
-
-        foreach (self::RETURN_TYPES as $type) {
-            $option = $type . '_url';
-            $actual = (string) $gateway->get_option($option);
-            $expected = self::returnUrl($type);
-            if (!self::isPublicHttpsUrl($actual) || self::normalizeUrl($actual) !== self::normalizeUrl($expected)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static function currentReturnType(): ?string
@@ -209,6 +281,33 @@ final class MercadoPagoReturn
         $type = sanitize_key($raw);
 
         return in_array($type, self::RETURN_TYPES, true) ? $type : null;
+    }
+
+    private static function currentReturnToken(): string
+    {
+        if (!isset($_GET[self::TOKEN_QUERY_ARG])) {
+            return '';
+        }
+
+        $candidate = wp_unslash($_GET[self::TOKEN_QUERY_ARG]);
+        if (!is_scalar($candidate)) {
+            return '';
+        }
+
+        $token = strtolower(sanitize_text_field((string) $candidate));
+
+        return self::isReturnToken($token) ? $token : '';
+    }
+
+    private static function requestTokenMatchesSession(): bool
+    {
+        $state = self::sessionState();
+        $token = self::currentReturnToken();
+        if ($state === null || !self::isReturnToken($token)) {
+            return false;
+        }
+
+        return hash_equals($state['token'], $token);
     }
 
     private static function returnOrderFromSession(): ?\WC_Order
@@ -239,7 +338,7 @@ final class MercadoPagoReturn
         return is_user_logged_in() ? self::ordersUrl() : $order->get_checkout_order_received_url();
     }
 
-    /** @param array{order_id: int, created_at: int, gateway: string, ambiguous: bool} $state */
+    /** @param array{order_id: int, created_at: int, gateway: string, ambiguous: bool, token: string} $state */
     private static function isExpired(array $state, int $now): bool
     {
         return $state['created_at'] + self::RETURN_TTL < $now;
@@ -284,6 +383,33 @@ final class MercadoPagoReturn
         return is_object($woocommerce) && isset($woocommerce->session) ? $woocommerce->session : null;
     }
 
+    private static function checkoutProGateway(): ?object
+    {
+        if (!function_exists('WC')) {
+            return null;
+        }
+
+        $woocommerce = WC();
+        if (!is_object($woocommerce) || !method_exists($woocommerce, 'payment_gateways')) {
+            return null;
+        }
+
+        $registry = $woocommerce->payment_gateways();
+        if (!is_object($registry) || !method_exists($registry, 'payment_gateways')) {
+            return null;
+        }
+
+        $gateways = $registry->payment_gateways();
+        $gateway = is_array($gateways) ? ($gateways[self::GATEWAY_ID] ?? null) : null;
+
+        return is_object($gateway) ? $gateway : null;
+    }
+
+    private static function isReturnToken(string $token): bool
+    {
+        return preg_match('/^[a-f0-9]{32}$/', $token) === 1;
+    }
+
     private static function isPublicHttpsUrl(string $url): bool
     {
         $parts = wp_parse_url($url);
@@ -297,21 +423,5 @@ final class MercadoPagoReturn
         }
 
         return true;
-    }
-
-    private static function normalizeUrl(string $url): string
-    {
-        $parts = wp_parse_url(trim($url));
-        if (!is_array($parts)) {
-            return '';
-        }
-
-        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
-        $host = strtolower((string) ($parts['host'] ?? ''));
-        $port = isset($parts['port']) ? ':' . (string) $parts['port'] : '';
-        $path = (string) ($parts['path'] ?? '/');
-        $query = (string) ($parts['query'] ?? '');
-
-        return $scheme . '://' . $host . $port . $path . ($query !== '' ? '?' . $query : '');
     }
 }
