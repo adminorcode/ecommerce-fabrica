@@ -126,6 +126,22 @@ Não editar WooCommerce/Blocksy. Não copiar template de loop sem necessidade co
 
 | Risco | Mitigação |
 |---|---|
-| Muitos atributos estouram o card | Chips em wrap; altura de card estável; alvo 44 px |
+| Muitos atributos estouram o card | Chips compactos, centralizados e com quebra de linha; o botão permanece no fim do card |
 | Add to cart no Blocks | Store API, não clonar formulário clássico frágil |
 | Pix do concorrente | Fora de escopo; regra de dado real |
+
+## 10. Correção de layout do card
+
+O card variável ficou esticado: o preço usava `margin-top: auto` e descia para o botão, os chips de 44 px em pílula grudavam na esquerda e o rótulo do atributo aumentava a altura. A referência do Moda Bicho organiza o card de cima para baixo, sem copiar Pix, parcelas, estrelas nem a paleta.
+
+Ordem visual obrigatória:
+
+1. Foto.
+2. Título.
+3. Preço logo abaixo do título, em um bloco de altura fixa e compacto. Promoção mostra o valor riscado na primeira linha e o preço atual em laranja na segunda. Sem promoção, o preço atual ocupa a mesma segunda linha, para o card não crescer.
+4. Chips compactos, com cantos retos, na mesma coluna esquerda do título e do preço. Opção sem estoque continua visível, desabilitada e riscada.
+5. **Comprar agora** no fim do card, com respiro nas laterais, alinhado entre os cards da mesma fileira.
+
+O espaço entre foto, título, preço, chips e botão fica curto. O tema pai não pode recolocar a margem de 10 px entre os blocos do card.
+
+Fora desta correção: Pix, parcelas, avaliação inventada e redesign da PDP.

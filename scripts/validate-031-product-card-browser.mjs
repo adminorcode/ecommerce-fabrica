@@ -27,7 +27,7 @@ const pageUrl = (pathAndQuery) => `${baseUrl}${pathAndQuery}`;
 const shopFixtureUrls = () => [
   pageUrl('/loja/?petshop_categories%5B0%5D=bandanas&orderby=date'),
   pageUrl('/loja/?product_cat%5B%5D=bandanas&orderby=date'),
-  pageUrl('/categoria-produto/plano-031-card-variavel/'),
+  pageUrl('/product-category/plano-031-card-variavel/'),
 ];
 
 const gotoFixtureListing = async (page) => {
@@ -364,7 +364,7 @@ try {
 
   await clearCart(page);
   await verifySurface(page, 'busca', pageUrl('/?s=plan031busca&post_type=product'));
-  await verifySurface(page, 'relacionados', pageUrl('/produto/produto-relacionado-plano-031/'));
+  await verifySurface(page, 'relacionados', pageUrl('/product/produto-relacionado-plano-031/'));
   await verifyIncompleteSelection(page);
   await verifySoldoutSelection(page);
   await verifyPersonalizable(page);

@@ -8,11 +8,6 @@ defined('ABSPATH') || exit;
 
 final class StorefrontProductCard
 {
-    /**
-     * Limiar mínimo de vendas reais (meta total_sales) para exibir "Mais pedido".
-     */
-    private const BEST_SELLER_MIN_SALES = 5;
-
     private const PERSONALIZATION_QUERY_FLAG = 'petshop_personalize';
 
     private static bool $insideLoopCard = false;
@@ -72,7 +67,8 @@ final class StorefrontProductCard
                 'adding' => __('Adicionando…', 'petshop-core'),
                 'added' => __('Adicionado ao carrinho.', 'petshop-core'),
                 'selectOption' => __('Selecione uma opção disponível.', 'petshop-core'),
-                'unavailable' => __('Esta combinação está indisponível.', 'petshop-core'),
+                'unavailable' => __('Indisponível', 'petshop-core'),
+                'soldOut' => __('Esgotado', 'petshop-core'),
                 'error' => __('Não foi possível adicionar ao carrinho.', 'petshop-core'),
             ],
         ]);
@@ -158,11 +154,14 @@ final class StorefrontProductCard
                 $value = (string) $option['value'];
                 $optionLabel = (string) $option['label'];
                 $isSelected = $selected !== '' && $selected === $value;
+                $inStock = self::optionHasPurchasableVariation($data['variations'], $key, $value);
 
-                echo '<button type="button" class="petshop-product-card__chip' . ($isSelected ? ' is-selected' : '') . '"'
+                echo '<button type="button" class="petshop-product-card__chip' . ($isSelected ? ' is-selected' : '') . ($inStock ? '' : ' is-disabled') . '"'
                     . ' data-petshop-attribute="' . esc_attr($key) . '"'
                     . ' data-value="' . esc_attr($value) . '"'
-                    . ' aria-pressed="' . ($isSelected ? 'true' : 'false') . '">'
+                    . ' aria-pressed="' . ($isSelected ? 'true' : 'false') . '"'
+                    . ($inStock ? '' : ' disabled aria-disabled="true"')
+                    . '>'
                     . esc_html($optionLabel)
                     . '</button>';
             }
@@ -186,7 +185,16 @@ final class StorefrontProductCard
         }
 
         $productId = $product->get_id();
-        $label = __('Comprar agora', 'petshop-core');
+        $unavailable = false;
+        if ($product instanceof \WC_Product_Simple) {
+            $unavailable = !$product->is_purchasable() || !$product->is_in_stock();
+        } elseif ($product instanceof \WC_Product_Variable) {
+            $unavailable = self::variableCardData($product) === null;
+        }
+
+        $label = $unavailable
+            ? __('Indisponível', 'petshop-core')
+            : __('Comprar agora', 'petshop-core');
 
         if (\Petshop\Core\Personalization\Infrastructure\ProductSettings::isEnabledFor($productId)) {
             $url = add_query_arg(
@@ -199,25 +207,48 @@ final class StorefrontProductCard
                 . ' href="' . esc_url($url) . '"'
                 . ' data-petshop-personalizable="1"'
                 . ' aria-label="' . esc_attr(sprintf(__('Personalizar %s', 'petshop-core'), $product->get_name())) . '">'
-                . esc_html($label)
+                . self::buttonFaces(__('Comprar agora', 'petshop-core'))
                 . '</a>';
         }
 
-        $disabled = false;
-        if ($product instanceof \WC_Product_Simple) {
-            $disabled = !$product->is_purchasable() || !$product->is_in_stock();
-        } elseif ($product instanceof \WC_Product_Variable) {
-            $disabled = self::variableCardData($product) === null;
-        }
-
-        return '<button type="button" class="button petshop-product-card__buy-now"'
+        return '<button type="button" class="button petshop-product-card__buy-now' . ($unavailable ? ' is-unavailable' : '') . '"'
             . ' data-petshop-buy-now="1"'
             . ' data-product-id="' . esc_attr((string) $productId) . '"'
             . ($product instanceof \WC_Product_Variable ? ' data-product-type="variable"' : ' data-product-type="simple"')
-            . ($disabled ? ' disabled aria-disabled="true"' : '')
-            . ' aria-label="' . esc_attr(sprintf(__('Comprar %s agora', 'petshop-core'), $product->get_name())) . '">'
-            . esc_html($label)
+            . ($unavailable ? ' disabled aria-disabled="true"' : '')
+            . ' aria-label="' . esc_attr($label) . '">'
+            . self::buttonFaces($label)
             . '</button>';
+    }
+
+    private static function buttonFaces(string $label): string
+    {
+        return '<svg class="petshop-product-card__cart-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 6h15l-1.5 9h-12L6 6zm0 0L5 3H2"/><circle cx="9" cy="20" r="1.3" fill="currentColor" stroke="none"/><circle cx="18" cy="20" r="1.3" fill="currentColor" stroke="none"/></svg>'
+            . '<span class="petshop-product-card__buy-label">' . esc_html($label) . '</span>';
+    }
+
+    private static function discountLabel(\WC_Product $product): string
+    {
+        if (!$product->is_on_sale()) {
+            return '';
+        }
+
+        $regular = (float) $product->get_regular_price();
+        $sale = (float) $product->get_sale_price();
+        if ($sale <= 0) {
+            $sale = (float) $product->get_price();
+        }
+
+        if ($regular <= 0 || $sale <= 0 || $sale >= $regular) {
+            return '';
+        }
+
+        $percent = (int) round((($regular - $sale) / $regular) * 100);
+        if ($percent < 1) {
+            return '';
+        }
+
+        return sprintf('-%d%%', $percent);
     }
 
     private static function buildBadgesMarkup(): string
@@ -228,43 +259,54 @@ final class StorefrontProductCard
             return '';
         }
 
-        $labels = [];
-
-        if ($product->is_on_sale()) {
-            $regular = (float) $product->get_regular_price();
-            $sale = (float) $product->get_sale_price();
-            if ($regular > 0 && $sale > 0 && $sale < $regular) {
-                $percent = (int) round((($regular - $sale) / $regular) * 100);
-                if ($percent > 0) {
-                    $labels[] = [
-                        'class' => 'petshop-badge petshop-badge--save',
-                        'text' => sprintf(
-                            __('Economize %d%%', 'petshop-core'),
-                            $percent
-                        ),
-                    ];
-                }
-            }
-        }
-
-        if ((int) $product->get_total_sales() >= self::BEST_SELLER_MIN_SALES) {
-            $labels[] = [
-                'class' => 'petshop-badge petshop-badge--bestseller',
-                'text' => __('Mais pedido', 'petshop-core'),
-            ];
-        }
-
-        if ($labels === []) {
+        $state = self::badgeState($product);
+        if ($state === null) {
             return '';
         }
 
-        $html = '<div class="petshop-product-card__badges">';
-        foreach ($labels as $label) {
-            $html .= '<span class="' . esc_attr($label['class']) . '">' . esc_html($label['text']) . '</span>';
-        }
-        $html .= '</div>';
+        return '<div class="petshop-product-card__badges" data-petshop-card-badges>'
+            . '<span class="' . esc_attr($state['class']) . '">' . esc_html($state['text']) . '</span>'
+            . '</div>';
+    }
 
-        return $html;
+    /**
+     * @return array{class: string, text: string}|null
+     */
+    private static function badgeState(\WC_Product $product): ?array
+    {
+        if ($product instanceof \WC_Product_Variable) {
+            $data = self::variableCardData($product);
+            if ($data === null) {
+                return [
+                    'class' => 'petshop-badge petshop-badge--soldout',
+                    'text' => __('Esgotado', 'petshop-core'),
+                ];
+            }
+
+            $variation = wc_get_product((int) $data['initialVariationId']);
+            if (!$variation instanceof \WC_Product) {
+                return null;
+            }
+
+            $product = $variation;
+        }
+
+        if (!$product->is_purchasable() || !$product->is_in_stock()) {
+            return [
+                'class' => 'petshop-badge petshop-badge--soldout',
+                'text' => __('Esgotado', 'petshop-core'),
+            ];
+        }
+
+        $discount = self::discountLabel($product);
+        if ($discount === '') {
+            return null;
+        }
+
+        return [
+            'class' => 'petshop-badge petshop-badge--save',
+            'text' => $discount,
+        ];
     }
 
     /**
@@ -335,6 +377,7 @@ final class StorefrontProductCard
                 'id' => $variation->get_id(),
                 'attributes' => $normalizedAttributes,
                 'priceHtml' => $variation->get_price_html(),
+                'discountLabel' => self::discountLabel($variation),
                 'image' => $image,
                 'purchasable' => $isPurchasable,
                 'inStock' => $isInStock,
@@ -380,6 +423,25 @@ final class StorefrontProductCard
         ];
 
         return self::$variableDataCache[$productId];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $variations
+     */
+    private static function optionHasPurchasableVariation(array $variations, string $attributeKey, string $value): bool
+    {
+        foreach ($variations as $variation) {
+            if (empty($variation['purchasable']) || empty($variation['inStock'])) {
+                continue;
+            }
+
+            $expected = (string) ($variation['attributes'][$attributeKey] ?? '');
+            if ($expected === '' || $expected === $value) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function isBlocksyProductCard(): bool

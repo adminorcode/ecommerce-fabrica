@@ -154,15 +154,50 @@
     }
   };
 
+  const priceElement = (card) => card?.querySelector('[data-petshop-card-price]') || null;
+
   const updatePrice = (card, variation) => {
-    if (!card || !variation || !variation.priceHtml) {
+    const price = priceElement(card);
+    if (!price) {
       return;
     }
 
-    const price = card.querySelector('[data-petshop-card-price]');
-    if (price) {
-      price.innerHTML = variation.priceHtml;
+    if (!variation || !variation.priceHtml) {
+      price.textContent = '';
+      return;
     }
+
+    price.innerHTML = variation.priceHtml;
+  };
+
+  const variationSupports = (variation, key, value) => {
+    const expected = variation.attributes?.[key] ?? '';
+    return expected === '' || expected === value;
+  };
+
+  const optionIsPurchasable = (variations, key, value) => variations.some((variation) => {
+    if (!variation.purchasable || !variation.inStock) {
+      return false;
+    }
+
+    return variationSupports(variation, key, value);
+  });
+
+  const refreshChips = (root, variations) => {
+    root.querySelectorAll('[data-petshop-attribute]').forEach((chip) => {
+      const available = optionIsPurchasable(
+        variations,
+        chip.dataset.petshopAttribute || '',
+        chip.dataset.value || ''
+      );
+      chip.disabled = !available;
+      chip.setAttribute('aria-disabled', available ? 'false' : 'true');
+      chip.classList.toggle('is-disabled', !available);
+      if (!available && chip.getAttribute('aria-pressed') === 'true') {
+        chip.setAttribute('aria-pressed', 'false');
+        chip.classList.remove('is-selected');
+      }
+    });
   };
 
   const setBuyButtonState = (card, enabled) => {
@@ -175,9 +210,58 @@
       return;
     }
 
+    const text = enabled
+      ? (i18n.buyNow || 'Comprar agora')
+      : (i18n.unavailable || 'Indisponível');
+    const label = button.querySelector('.petshop-product-card__buy-label');
+
     button.disabled = false;
     button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
-    button.classList.toggle('is-disabled', !enabled);
+    button.classList.toggle('is-unavailable', !enabled);
+    button.setAttribute('aria-label', text);
+    if (label) {
+      label.textContent = text;
+    }
+  };
+
+  const updateBadge = (card, variation, available) => {
+    if (!card) {
+      return;
+    }
+
+    let slot = card.querySelector('[data-petshop-card-badges]');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.className = 'petshop-product-card__badges';
+      slot.setAttribute('data-petshop-card-badges', '');
+      (card.querySelector('figure') || card).prepend(slot);
+    }
+
+    const discount = available && variation && /^-\d+%$/.test(variation.discountLabel || '')
+      ? variation.discountLabel
+      : '';
+
+    if (!available && variation) {
+      slot.hidden = false;
+      slot.replaceChildren(badgeNode('petshop-badge petshop-badge--soldout', i18n.soldOut || 'Esgotado'));
+      return;
+    }
+
+    if (discount) {
+      slot.hidden = false;
+      slot.replaceChildren(badgeNode('petshop-badge petshop-badge--save', discount));
+      return;
+    }
+
+    slot.hidden = true;
+    slot.replaceChildren();
+  };
+
+  const badgeNode = (className, text) => {
+    const node = document.createElement('span');
+    node.className = className;
+    node.textContent = text;
+    return node;
   };
 
   const focusPendingAttribute = (root, selections) => {
@@ -188,7 +272,7 @@
     });
 
     const targetGroup = pending || groups[0];
-    const target = targetGroup?.querySelector('[data-petshop-attribute]');
+    const target = targetGroup?.querySelector('[data-petshop-attribute]:not(:disabled)');
     if (target) {
       window.setTimeout(() => {
         target.focus({ preventScroll: true });
@@ -198,12 +282,16 @@
 
   const syncVariableCard = (root, shouldFocus = false) => {
     const variations = parseVariations(root);
+    refreshChips(root, variations);
     const selections = getSelections(root);
     const card = getCard(root);
 
     if (!isComplete(root, selections)) {
+      updatePrice(card, null);
+      updateImage(card, null);
+      updateBadge(card, null, false);
       setBuyButtonState(card, false);
-      setStatus(root, i18n.selectOption || 'Selecione uma opção disponível.');
+      setStatus(root, '');
       resolvedVariableCards.delete(root);
       if (shouldFocus) {
         focusPendingAttribute(root, selections);
@@ -214,8 +302,11 @@
     const variation = resolveVariation(root, variations, selections);
 
     if (!variation) {
+      updatePrice(card, null);
+      updateImage(card, null);
+      updateBadge(card, null, false);
       setBuyButtonState(card, false);
-      setStatus(root, i18n.unavailable || 'Esta combinação está indisponível.');
+      setStatus(root, '');
       resolvedVariableCards.delete(root);
       if (shouldFocus) {
         focusPendingAttribute(root, selections);
@@ -227,8 +318,9 @@
     updateImage(card, variation);
 
     const available = Boolean(variation.purchasable && variation.inStock);
+    updateBadge(card, variation, available);
     setBuyButtonState(card, available);
-    setStatus(root, available ? '' : (i18n.unavailable || 'Esta combinação está indisponível.'));
+    setStatus(root, '');
 
     if (!available && shouldFocus) {
       focusPendingAttribute(root, selections);
@@ -263,10 +355,19 @@
       throw new Error('Store API endpoint unavailable.');
     }
 
-    const originalText = button.textContent;
+    const label = button.querySelector('.petshop-product-card__buy-label');
+    const originalText = label ? label.textContent : button.textContent;
+    const setLabel = (text) => {
+      if (label) {
+        label.textContent = text;
+        return;
+      }
+
+      button.textContent = text;
+    };
     button.disabled = true;
     button.classList.add('is-loading');
-    button.textContent = i18n.adding || 'Adicionando…';
+    setLabel(i18n.adding || 'Adicionando…');
 
     try {
       const response = await fetch(config.endpoint, {
@@ -292,10 +393,10 @@
 
       refreshCartUis(payload);
       button.classList.add('is-added');
-      button.textContent = i18n.added || 'Adicionado ao carrinho.';
+      setLabel(i18n.added || 'Adicionado ao carrinho.');
 
       window.setTimeout(() => {
-        button.textContent = originalText;
+        setLabel(originalText);
         button.classList.remove('is-added');
       }, 1400);
 
@@ -318,6 +419,10 @@
 
       const group = chip.closest('[data-petshop-attribute-group]');
       if (!group) {
+        return;
+      }
+
+      if (chip.disabled || chip.getAttribute('aria-disabled') === 'true') {
         return;
       }
 
