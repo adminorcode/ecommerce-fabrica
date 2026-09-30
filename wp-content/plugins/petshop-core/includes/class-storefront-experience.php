@@ -10,7 +10,7 @@ final class StorefrontExperience
 {
     use \Petshop\Core\Compatibility\StorefrontLegacyApi;
 
-    private const VERSION = '3.1.0';
+    private const VERSION = '3.2.1';
     private const OPTION = 'petshop_storefront_version';
     private const LOCK_OPTION = 'petshop_storefront_migration_lock';
     private const ERROR_OPTION = 'petshop_storefront_migration_error';
@@ -35,6 +35,7 @@ final class StorefrontExperience
         add_action('pre_get_posts', [self::class, 'resolveExactSkuSearch']);
         add_action('pre_get_posts', [self::class, 'applyCatalogCategoryFilter'], 20);
         add_filter('posts_search', [self::class, 'filterExactSkuSearch'], 20, 2);
+        add_filter('woocommerce_redirect_single_search_result', [self::class, 'allowSingleSearchResultRedirect']);
         add_action('wp_head', [self::class, 'renderMetaDescription'], 1);
         add_action('wp_head', [self::class, 'renderArchiveCanonical'], 2);
         add_shortcode('petshop_categories', [self::class, 'renderCategoryGrid']);
@@ -143,6 +144,7 @@ final class StorefrontExperience
 
         return (int) get_post_meta($homeId, '_petshop_home_schema_version', true)
             < \Petshop\Core\Migration\HomeMigrator::currentSchema()
-            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl);
+            || \Petshop\Core\Migration\HomeMigrator::needsProductGridShortcodeRepair($content, $shopUrl)
+            || \Petshop\Core\Migration\HomeMigrator::needsSupportSectionRepair($content);
     }
 }

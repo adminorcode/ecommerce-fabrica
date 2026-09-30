@@ -248,7 +248,7 @@ function Edit({ attributes, setAttributes }) {
 						label={__('Quantidade de produtos', 'petshop-core')}
 						value={attributes.limit}
 						min={1}
-						max={12}
+						max={20}
 						onChange={(limit) => setAttributes({ limit })}
 					/>
 					<RangeControl

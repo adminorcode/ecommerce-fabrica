@@ -39,6 +39,8 @@ Route by intent even if repo kind is broad (like `wp-site`):
   - Route → `wp-block-themes`.
 - **Plugins / hooks / activation hook / uninstall / Settings API / admin pages**
   - Route → `wp-plugin-development`.
+- **HostGator / cPanel / prepare:deploy / publicar loja / empacotar petshop-core para produção**
+  - Route → `preparar-deploy`. Do **not** zip the worktree `vendor/` or delete `myclabs`/`phpunit` without regenerating Composer autoload with `--no-dev` on the staged copy.
 - **REST endpoint / register_rest_route / permission_callback**
   - Route → `wp-rest-api`.
 - **WP-CLI / wp-cli.yml / commands**

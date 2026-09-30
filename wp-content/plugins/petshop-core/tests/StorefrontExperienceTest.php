@@ -16,6 +16,7 @@ final class StorefrontExperienceTest extends TestCase
     {
         unset($_GET['petshop_categories']);
         unset($_GET['product_cat'], $_GET['filter_pa_color'], $_GET['filter_pa_size'], $_GET['stock_status']);
+        unset($GLOBALS['wp_query']);
     }
 
     #[DataProvider('categoryQueryProvider')]
@@ -80,6 +81,28 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame('_stock_status', $query->get('meta_query')[0]['key']);
     }
 
+    public function testCatalogFilterReplacesNativeCategoryQueryWithUnionClause(): void
+    {
+        $_GET['product_cat'] = ['adesivos', 'bandanas'];
+        $query = new WP_Query([
+            'main_query' => true,
+            'post_type_archive' => 'product',
+            'tax_query' => [
+                ['taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => ['adesivos'], 'operator' => 'AND'],
+                ['taxonomy' => 'product_visibility', 'field' => 'name', 'terms' => ['exclude-from-catalog'], 'operator' => 'NOT IN'],
+            ],
+        ]);
+
+        CatalogFilter::applyCatalogCategoryFilter($query);
+
+        $taxQuery = $query->get('tax_query');
+        self::assertSame('', $query->get('product_cat'));
+        self::assertSame('product_visibility', $taxQuery[0]['taxonomy']);
+        self::assertSame('product_cat', $taxQuery[1]['taxonomy']);
+        self::assertSame('IN', $taxQuery[1]['operator']);
+        self::assertSame(['adesivos', 'bandanas'], $taxQuery[1]['terms']);
+    }
+
     public function testCanonicalCatalogParametersDropUnknownAndInvalidValues(): void
     {
         $parameters = CatalogFilter::canonicalParametersFromRequest([
@@ -91,10 +114,36 @@ final class StorefrontExperienceTest extends TestCase
         ]);
 
         self::assertSame([
-            'product_cat' => ['lacos', 'bandanas'],
+            'petshop_categories' => ['lacos', 'bandanas'],
             'filter_pa_color' => 'azul',
             'orderby' => 'price',
         ], $parameters);
+    }
+
+    public function testCanonicalCatalogParametersPreserveProductSearch(): void
+    {
+        $parameters = CatalogFilter::canonicalParametersFromRequest([
+            's' => ' Bandana Azul ',
+            'post_type' => 'product',
+            'product_cat' => 'lacos',
+            'search' => 'discard-me',
+        ]);
+
+        self::assertSame([
+            's' => 'Bandana Azul',
+            'post_type' => 'product',
+            'petshop_categories' => ['lacos'],
+        ], $parameters);
+    }
+
+    public function testCanonicalCatalogParametersIgnoreNonProductSearch(): void
+    {
+        $parameters = CatalogFilter::canonicalParametersFromRequest([
+            's' => 'Bandana Azul',
+            'post_type' => 'post',
+        ]);
+
+        self::assertSame([], $parameters);
     }
 
     public function testLocalizedWooCommerceRouteRegistryIsDeterministic(): void
@@ -144,10 +193,25 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame(42, $query->get('_petshop_exact_sku_product_id'));
     }
 
+    public function testSingleSearchResultRedirectIsLimitedToExactSku(): void
+    {
+        $GLOBALS['wp_query'] = new WP_Query(['_petshop_exact_sku_product_id' => 0]);
+
+        self::assertFalse(CatalogFilter::allowSingleSearchResultRedirect(true));
+    }
+
+    public function testSingleSearchResultRedirectAllowsExactSku(): void
+    {
+        $GLOBALS['wp_query'] = new WP_Query(['_petshop_exact_sku_product_id' => 42]);
+
+        self::assertTrue(CatalogFilter::allowSingleSearchResultRedirect(true));
+        self::assertFalse(CatalogFilter::allowSingleSearchResultRedirect(false));
+    }
+
     public function testHomeMigratorExposesTheCanonicalSchemaRegistry(): void
     {
-        self::assertSame(25, HomeMigrator::currentSchema());
-        self::assertSame(range(7, 25), array_keys(HomeMigrator::registry()));
+        self::assertSame(26, HomeMigrator::currentSchema());
+        self::assertSame(range(7, 26), array_keys(HomeMigrator::registry()));
         self::assertNotContains(false, array_map('is_callable', HomeMigrator::registry()));
         $showcase = '[petshop_product_showcase title="Sentinela"]';
         self::assertSame($showcase, HomeMigrator::registry()[17]($showcase, '', '', 0));
@@ -158,6 +222,7 @@ final class StorefrontExperienceTest extends TestCase
         self::assertSame('Atendimento', DefaultSettings::get('petshop_support_label'));
         self::assertSame('Compra segura', DefaultSettings::get('petshop_checkout_assurance_text'));
         self::assertSame('Antes de adicionar ao carrinho', DefaultSettings::get('petshop_product_assurance_title'));
+        self::assertSame('Parabéns! Seu pedido foi recebido!', DefaultSettings::get('petshop_order_received_text'));
     }
 
     public function testCatalogFilterDoesNotUseAStaticLayoutFlag(): void

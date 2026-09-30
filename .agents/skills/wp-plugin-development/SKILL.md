@@ -1,6 +1,6 @@
 ---
 name: wp-plugin-development
-description: "Use when developing WordPress plugins: architecture and hooks, activation/deactivation/uninstall, admin UI and Settings API, data storage, cron/tasks, security (nonces/capabilities/sanitization/escaping), and release packaging."
+description: "Use when developing WordPress plugins: architecture and hooks, activation/deactivation/uninstall, admin UI and Settings API, data storage, cron/tasks, security (nonces/capabilities/sanitization/escaping), and generic release artifacts. Do not use for HostGator/cPanel packaging of petshop-core — that is preparar-deploy."
 compatibility: "Targets WordPress 7.0+ (PHP 7.4.0+). Filesystem-based agent with bash + node. Some workflows require WP-CLI."
 ---
 
@@ -15,7 +15,7 @@ Use this skill for plugin work such as:
 - activation/deactivation/uninstall behavior and migrations
 - adding settings pages / options / admin UI (Settings API)
 - security fixes (nonces, capabilities, sanitization/escaping, SQL safety)
-- packaging a release (build artifacts, readme, assets)
+- packaging generic release artifacts (readme, built assets). **Not** HostGator/cPanel of this store — use `preparar-deploy` / `npm run prepare:deploy`
 
 ## Inputs required
 
@@ -88,6 +88,15 @@ See:
 See:
 - `references/data-and-cron.md`
 
+### 6) HostGator packaging (this repository)
+
+`petshop-core.php` loads `vendor/autoload.php` on every request. PHPUnit lives in Composer `require-dev`. Shipping the worktree `vendor/` or deleting `myclabs`/`phpunit` without regenerating autoload fatals production (`deep_copy.php`).
+
+- Package only via `preparar-deploy` (`npm run prepare:deploy`).
+- The script must `composer dump-autoload --no-dev --optimize` on the **staged** plugin, then fail if autoload still mentions `myclabs`, `phpunit/phpunit`, or `deep-copy`.
+- Never run `dump-autoload --no-dev` on the worktree plugin (breaks local PHPUnit).
+- Do not chmod leftover `vendor/myclabs` on the server as a “fix”.
+
 ## Verification
 
 - Plugin activates with no fatals/notices.
@@ -103,6 +112,8 @@ See:
   - settings not registered, wrong option group, missing capability, nonce failure
 - Security regressions:
   - nonce present but missing capability checks; or sanitized input not escaped on output
+- Production fatal `deep_copy.php` / `myclabs` / `Permission denied` under `vendor/`:
+  - Composer autoload was generated with PHPUnit (`require-dev`) and then `myclabs` was deleted. Re-package with `preparar-deploy`. Do not chmod leftovers.
 
 See:
 - `references/debugging.md`

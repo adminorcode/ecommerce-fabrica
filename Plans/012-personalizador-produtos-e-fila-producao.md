@@ -1,16 +1,47 @@
 # Plano 012 — Personalizador de produtos e fila de produção
 
-**Status:** Pendente  
+**Status:** Em andamento  
 **Data:** 2026-08-03  
-**Branch sugerida:** `012-personalizador-produtos-e-fila-producao`  
+**Atualização de produto:** 2026-08-19 — realinhamento do escopo do editor (página dedicada; bandana e adesivo; UX completa no JS)  
+**Branch sugerida:** `012-personalizador-produtos-e-fila-producao` / `codex/012-personalizador-produtos-e-fila-producao`  
 **Dependências:** [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) e [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) concluídos; implementar após o [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md)
 **Relacionamento:** entrega a área `Personalize` reservada nos Planos 004 e 005; não altera o catálogo convencional nem exige plugin de personalização de terceiros.
+**Referência de experiência (capacidade/UX, não copy nem marca):** [Editor de Design — Crie Camisetas Online](https://criecamisetasonline.com.br/design-editor/?product_id=4779&color=FFFFFF) — usar como norte de editor full-page com controle livre de objetos; **ignorar** parâmetro de cor na URL (não faz parte deste plano).
 
-**Base entregue pelo Plano 013 (2026-08-08):** existe um slot `petshop_product_personalization_slot` junto ao CTA, fixture `PLAN012-READY`, Cart/Checkout Blocks preservados e CRUD HPOS validado. O Plano 012 deve estender esse slot e os schemas oficiais, sem reorganizar a PDP nem substituir os blocos nativos.
+**Base entregue pelo Plano 013 (2026-08-08):** existe um slot `petshop_product_personalization_slot` junto ao CTA, fixture `PLAN012-READY`, Cart/Checkout Blocks preservados e CRUD HPOS validado.
+
+**Estado da implementação (2026-08-19):** existe uma **base técnica** no `petshop-core` (tabelas, storage privado, Store API/HPOS, fila admin, Fabric empacotado, rascunho→pedido). Essa base **não** satisfaz o produto de personalização descrito abaixo: o editor atual (modal na PDP, ferramentas limitadas) **não** é critério de aceite. O plano só fecha quando o comprador tiver um editor dedicado, rico e usável para bandana e adesivo, no padrão de liberdade da referência.
+
+## 0. Realinhamento de produto (obrigatório)
+
+### Decisões fechadas
+
+| # | Decisão |
+| --- | --- |
+| 1 | Editor em **página dedicada por produto** (não modal da PDP). A PDP só inicia o fluxo (CTA → rota do editor). |
+| 2 | Produtos de lançamento: **bandana** e **adesivo**. Laço/lacinho fica fora deste ciclo até novo alinhamento. |
+| 3 | Sem cor (ou outro atributo visual) na URL do editor. |
+| 4 | Experiência de edição é **quase toda em JavaScript** (canvas, camadas, tipografia, upload local no browser, transformações). O PHP recebe o resultado no **finalize** (JSON sanitizado + artefatos gerados + vínculo carrinho/pedido), não microgerencia cada gesto do canvas. |
+| 5 | Isto **não** é “plano de evolução” separado: o Plano 012 **é** a personalização. O que já foi entregue conta como fundação/infra; o aceite global deste plano exige o editor real. |
+
+### Norte de UX
+
+O comprador deve sentir que **controla a arte**: upload de imagens, posicionamento, tamanho, rotação, cores/tipografia e demais ajustes de objetos no canvas — com a liberdade típica de um editor de design de produto (referência acima), adaptado a bandana e adesivo (mockup + máscara + área imprimível configurados no produto).
+
+### Papel do PHP vs JavaScript
+
+| Camada | Responsabilidade |
+| --- | --- |
+| JavaScript (editor) | UI full-page, Fabric.js local, estado do canvas, histórico, uploads temporários no cliente, validação de qualidade no cliente, exportação de preview/produção no browser antes do envio |
+| PHP (`petshop-core`) | Página/rota do editor, config do produto, nonce/auth, validação defensiva do payload final, storage privado, rascunho/carrinho/Store API/pedido HPOS, fila **WooCommerce → Personalizações**, retenção |
+
+Nunca confiar no browser como fonte de verdade de segurança: o finalize revalida MIME, dimensões, limites técnicos, JSON e ownership.
+
+Inventário detalhado de ferramentas: **§0.1** (fechado).
 
 ## 1. Objetivo
 
-Permitir que compradores personalizem produtos WooCommerce — inicialmente bandanas, laços/lacinhos e adesivos — com texto e imagem em uma prévia visual, concluam a compra pelo Carrinho e Checkout Blocks e tenham a personalização preservada no item do pedido.
+Permitir que compradores personalizem **bandanas** e **adesivos** WooCommerce em um **editor dedicado full-page**, com controle amplo de texto e imagem (upload, posição, escala, rotação, tipografia/cores e gerenciamento de objetos no canvas), confirmem a arte, concluam a compra pelo Carrinho e Checkout Blocks e tenham a personalização preservada no item do pedido.
 
 Entregar ao cliente da loja uma área operacional em **WooCommerce → Personalizações**, vinculada aos pedidos, com prévia, arquivos privados, estado de produção, filtros e downloads protegidos.
 
@@ -18,10 +49,14 @@ O recurso será um módulo próprio do `petshop-core`, sem SaaS obrigatório e s
 
 ## 2. Resultado esperado
 
-- página pública `/personalize/` com conteúdo editorial em Gutenberg e vitrine dinâmica de produtos habilitados;
-- configuração da personalização dentro de cada produto WooCommerce;
-- editor responsivo com mockup, máscara, área imprimível, texto e upload de uma imagem;
-- prévia no produto, carrinho, Checkout Block, confirmação, e-mail e Minha conta;
+- página pública `/personalize/` com conteúdo editorial em Gutenberg e vitrine dinâmica de produtos habilitados (bandana/adesivo);
+- **rota dedicada de editor por produto** (ex.: `/personalize/editor/{product}` ou equivalente estável, documentada na implementação), full-page, responsiva;
+- configuração da personalização dentro de cada produto WooCommerce (mockup, máscara, mm/DPI);
+- editor JS rico: **sem limite de quantidade** de textos/imagens, tipografia/cores livres, painel de camadas, transformações, zoom/pan, desfazer/refazer;
+- CTA na PDP apenas para abrir o editor dedicado (slot `petshop_product_personalization_slot`);
+- **tela de confirmação com preview** (carrinho ou voltar ao editor);
+- prévia no carrinho, Checkout Block, confirmação de pedido, e-mail e Minha conta;
+- finalize ao PHP enviando JSON + PNG preview/produção;
 - snapshot imutável da arte e da configuração no fechamento do pedido;
 - PNG de produção nas dimensões configuradas, além do original e do JSON editável;
 - arquivos fora da exposição pública direta e entregues somente por endpoint autorizado;
@@ -29,7 +64,7 @@ O recurso será um módulo próprio do `petshop-core`, sem SaaS obrigatório e s
 - painel da personalização dentro do pedido HPOS;
 - capacidades próprias para equipe de produção;
 - retenção e limpeza de rascunhos/arquivos documentadas e configuráveis;
-- testes automatizados de segurança, Store API, pedidos, persistência e navegador.
+- testes automatizados de segurança, Store API, pedidos, persistência e navegador (incluindo editor dedicado mobile/desktop).
 
 ## 3. Decisões de arquitetura e produto
 
@@ -51,18 +86,24 @@ O `composer.json` atual do `petshop-core` declara licença `proprietary`. Portan
 
 Sem essa aprovação, o código poderá ser próprio e auditável, mas não deverá ser descrito como open source. Esse gate não pode ser contornado apenas porque Fabric.js usa licença MIT.
 
-### 3.3 Escopo funcional do MVP
+### 3.3 Escopo funcional do produto (aceite)
 
 - uma superfície de personalização por produto;
-- produtos simples, que correspondem ao catálogo atual; produtos variáveis ficam preparados no modelo de dados, mas não são requisito de lançamento;
+- produtos simples no lançamento (bandana e adesivo);
 - mockup base, máscara e dimensões configurados por produto;
-- uma ou mais caixas de texto, respeitando limite administrativo;
-- no máximo uma imagem enviada pelo comprador no MVP;
-- posicionar, redimensionar, girar, alinhar e remover objetos;
-- fontes e cores permitidas configuradas pelo lojista;
-- preview raster e PNG de produção;
+- **editor full-page dedicado** com liberdade de composição no canvas (texto + imagem), alinhado à referência de UX;
+- **sem limite de quantidade** de textos/imagens no canvas; limites apenas técnicos (bytes, megapixels, JSON, memória/render);
+- tipografia e cores **livres** (picker + fontes do editor);
+- **painel de camadas** (ordem, travar, remover, seleção);
+- somente upload do cliente (sem cliparts da loja);
+- posicionar, redimensionar, girar, alinhar, duplicar e remover objetos;
+- zoom/pan, desfazer/refazer;
+- tela de **confirmação com preview**, com ações **adicionar ao carrinho** ou **voltar ao editor**;
+- rascunho só até o carrinho (sem projeto salvo na conta);
+- preview raster e PNG de produção gerados no cliente e revalidados no servidor;
 - preço final vindo do próprio produto WooCommerce, sem cálculo por objeto;
-- revisão interna pela equipe, sem etapa obrigatória de aprovação do comprador.
+- revisão interna pela equipe, sem etapa obrigatória de aprovação do comprador;
+- reutilizar a fundação já existente (schema, storage, fila, Store API) sempre que não conflitar com o editor dedicado.
 
 ### 3.4 Compatibilidade obrigatória
 
@@ -72,37 +113,59 @@ Sem essa aprovação, o código poderá ser próprio e auditável, mas não deve
 - HPOS;
 - Cart Block, Checkout Block e Store API;
 - produtos simples no lançamento;
-- desktop, tablet e celular sem editor separado por dispositivo;
+- desktop, tablet e celular **no mesmo editor dedicado** (layout responsivo; sem app separado);
 - Mercado Pago e Stripe não podem perder os metadados da personalização durante a criação do pedido.
+
+### 3.5 O que a fundação atual já cobre (não é aceite de editor)
+
+Infra já presente e a preservar: tabelas, storage privado Compose, capabilities, CLI doctor/cleanup, ProductConfiguration, migrador `/personalize/`, bloco de vitrine, CreateDraft/Upload/Download, Cart/Store API/Order, admin Personalizações, Account/Privacy/Retention.
+
+**Substituir / redesenhar:** superfície do editor (de modal PDP → página dedicada), UX de ferramentas e fluxo “confirmar arte → carrinho” a partir do editor full-page.
 
 ## 4. Fora de escopo
 
 - editor 3D ou deformação realista acompanhando dobras do tecido;
 - múltiplas superfícies como frente, verso e manga;
+- laço/lacinho neste ciclo (pode voltar em alinhamento posterior);
 - produtos compostos, bundles ou matrizes de nomes/números;
 - preço dinâmico por texto, imagem, cor ou área ocupada;
-- geração por IA, biblioteca pública de cliparts ou marketplace de artes;
+- geração por IA, marketplace de artes de terceiros;
+- parâmetro de cor de produto na URL do editor;
 - upload SVG pelo comprador;
 - exportação PDF, EPS ou arquivo vetorial de corte;
 - integração automática com gráfica, ERP ou print-on-demand;
-- colaboração em tempo real ou salvamento de projetos na conta;
-- fluxo formal de prova, solicitação de alteração e aprovação pelo comprador;
+- colaboração em tempo real;
+- fluxo formal de prova e aprovação pelo comprador;
 - personalização de produtos externos, agrupados ou por assinatura;
-- alteração de WordPress Core, WooCommerce, Blocksy ou gateways.
+- alteração de WordPress Core, WooCommerce, Blocksy ou gateways;
+- “plano de evolução” separado — mudanças de escopo deste produto atualizam **este** Plano 012.
 
-Esses itens exigirão planos próprios após validar operação, conversão, qualidade de impressão e volume real de pedidos do MVP.
+Itens como cliparts da loja e salvar projeto na conta **permanecem fora** deste ciclo (decisão §0.1). Filtros avançados de imagem (brilho/contraste além de posição/escala/rotação) também ficam fora até novo alinhamento neste mesmo plano.
+
+## 0.1 Inventário de ferramentas do editor (fechado 2026-08-19)
+
+| Tema | Decisão |
+| --- | --- |
+| Limites de objetos | **Sem limite** de quantidade de imagens ou caixas de texto no canvas (permanecem apenas limites técnicos de segurança: bytes, megapixels, tamanho do JSON e tempo de render — configuráveis globalmente). |
+| Tipografia / cores | **Livre**: color picker e fontes disponíveis no editor (não restrito a paleta fixa do produto). O lojista configura mockup/máscara/mm/DPI; tipografia livre é do comprador. |
+| Camadas | **Sim** — painel de camadas com ordem (frente/trás), seleção, travar/destravar e remover. |
+| Cliparts | **Não** neste ciclo — somente **upload** do cliente. |
+| Persistência de projeto | **Só até o carrinho** (rascunho de sessão / pré-carrinho). Sem salvar projeto na conta para retomar depois. |
+| Pós-confirmação | (1) **tela de confirmação** com preview; (2) a partir dela **adicionar ao carrinho** ou **voltar ao editor**. |
+
+Pendências de inventário fino: **nenhuma**. A Sessão 03 pode ser implementada com este inventário.
 
 ## 5. Fluxos de usuário
 
 ### 5.1 Comprador
 
-1. Acessa `/personalize/` e escolhe um produto habilitado.
-2. Na página do produto, aciona **Personalizar produto**.
-3. Digita texto e, quando permitido, envia uma imagem.
-4. Ajusta os elementos dentro da área imprimível e recebe aviso de baixa resolução quando aplicável.
-5. Confirma a arte; o sistema cria prévia, JSON e arquivo de produção associados a um rascunho.
-6. Adiciona o item ao carrinho; itens com artes diferentes nunca são mesclados.
-7. Vê miniatura e resumo no Cart Block e Checkout Block.
+1. Acessa `/personalize/` e escolhe bandana ou adesivo habilitado (ou chega pela PDP).
+2. Aciona **Personalizar** e é levado à **página dedicada do editor** daquele produto.
+3. Compõe a arte no JS sem limite de objetos: uploads, textos, tipografia/cores livres, camadas, posição, escala, rotação.
+4. Recebe aviso de baixa resolução quando a imagem não cobre o mm/DPI do produto.
+5. Confirma a arte e vê a **tela de confirmação com preview**.
+6. Na confirmação: **adicionar ao carrinho** ou **voltar ao editor** para ajustar.
+7. No carrinho/checkout: miniatura e resumo; itens com artes diferentes nunca são mesclados.
 8. Finaliza o pedido; o rascunho vira snapshot imutável do item do pedido.
 9. Consulta prévia e estado em **Minha conta → Pedidos**, sem acesso aos arquivos técnicos de produção.
 
@@ -133,20 +196,26 @@ Somente pedidos pagos/em processamento entram automaticamente na fila ativa. Ped
 
 A migração substituirá a mensagem inicial “Personalização em preparação” apenas quando o conteúdo ainda corresponder exatamente ao placeholder gerenciado. Qualquer edição do cliente será preservada.
 
-### 6.2 Rota `/produto/{slug}/`
+### 6.2 Rota do editor dedicado (por produto)
+
+| Item | Onde o cliente edita | Persistência/regra |
+| --- | --- | --- |
+| Mockup, máscara, mm/DPI, limites, fontes, cores | Produto → Personalização | Meta do produto + Biblioteca de mídia |
+| Instrução comercial no editor | Mesma aba | Texto sanitizado administrável |
+| Labels de ferramentas / erros | Traduções `petshop-core` | Funcional, sem campanha comercial |
+| Arte do comprador | Editor JS → finalize PHP | Não é conteúdo editorial da loja |
+
+A rota do editor não hospeda copy comercial fixa em JS além de strings traduzíveis. Mockup/máscara vêm sempre da config do produto.
+
+### 6.3 Rota `/produto/{slug}/`
 
 | Item | Onde o cliente edita | Persistência/regra |
 | --- | --- | --- |
 | Nome, descrição, preço e imagem comercial | Produto WooCommerce | Fluxo nativo do catálogo. |
 | Habilitar personalização | Produto → Dados do produto → **Personalização** | Meta do produto. |
-| Instrução comercial acima do editor | Mesma aba | Texto administrável e sanitizado; sem constante PHP. |
-| Mockup | Mesma aba → Biblioteca de mídia | Attachment substituível e alt editável. |
-| Máscara/recorte | Mesma aba → Biblioteca de mídia | PNG/SVG administrativo validado; não é upload público do comprador. |
-| Área e tamanho físico de impressão | Mesma aba | Largura/altura em milímetros e DPI alvo. |
-| Ferramentas, fontes, cores e limites | Mesma aba | Configuração validada do produto. |
-| Texto do botão, diálogos e mensagens funcionais | Traduções do `petshop-core` | Funcional, traduzível e extensível; não contém campanha comercial. |
+| CTA “Personalizar” | Tradução + link para editor dedicado | Sem arte embutida na PDP. |
 
-### 6.3 Carrinho, checkout, confirmação, e-mails e Minha conta
+### 6.4 Carrinho, checkout, confirmação, e-mails e Minha conta
 
 | Item | Origem | Regra |
 | --- | --- | --- |
@@ -155,7 +224,7 @@ A migração substituirá a mensagem inicial “Personalização em preparação
 | Estado da produção | Registro operacional | Comprador vê rótulo funcional; equipe vê histórico completo. |
 | Labels funcionais | Traduções | Sem texto comercial hardcoded. |
 
-### 6.4 WP Admin
+### 6.5 WP Admin
 
 | Superfície | Conteúdo | Origem |
 | --- | --- | --- |
@@ -339,7 +408,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 ### Sessão 00 — Pré-requisitos e decisões irreversíveis
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída (licença própria permanece proprietary até aprovação GPL)
 
 - confirmar que a suíte PHPUnit e os gates Playwright existentes continuam verdes;
 - consumir a arquitetura PSR-4/ciclo de vida do Plano 007 sem duplicá-la;
@@ -350,14 +419,14 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 **Gate verificável**
 
-- [ ] licença e avisos de terceiros documentados;
-- [ ] especificação de produção possui exemplos reais para bandana, laço e adesivo;
-- [ ] storage privado escolhido para desenvolvimento, teste e produção;
-- [ ] nenhuma credencial ou dado pessoal foi adicionado ao repositório.
+- [x] licença e avisos de terceiros documentados;
+- [x] especificação de produção possui exemplos reais para bandana, laço e adesivo;
+- [x] storage privado escolhido para desenvolvimento, teste e produção;
+- [x] nenhuma credencial ou dado pessoal foi adicionado ao repositório.
 
 ### Sessão 01 — Domínio, schema, capacidades e storage
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - criar módulo PSR-4 e bootstrap leve;
 - implementar estados e validação de transições;
@@ -369,15 +438,15 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 **Gate verificável**
 
-- [ ] ativação e atualização de schema são idempotentes;
-- [ ] storage público ou fora do diretório permitido é recusado;
-- [ ] desativação preserva dados;
-- [ ] usuário sem capacidade recebe 403 em ações administrativas;
-- [ ] backup/restore preserva banco e arquivos com hashes iguais.
+- [x] ativação e atualização de schema são idempotentes;
+- [x] storage público ou fora do diretório permitido é recusado;
+- [x] desativação preserva dados;
+- [x] usuário sem capacidade recebe 403 em ações administrativas;
+- [ ] backup/restore preserva banco e arquivos com hashes iguais. (documentado; E2E de restore pendente)
 
 ### Sessão 02 — Configuração do produto e página Personalize
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - adicionar aba **Personalização** aos dados do produto;
 - cadastrar habilitação, instrução, mockup, máscara, área física, DPI, fontes, cores e limites;
@@ -394,30 +463,34 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 - [ ] página editada manualmente não é sobrescrita;
 - [ ] vitrine mostra apenas produtos publicados, compráveis e habilitados.
 
-### Sessão 03 — Editor visual e geração dos artefatos
+### Sessão 03 — Editor visual dedicado (JS-first) e artefatos
 
-**Status:** [ ] Pendente
+**Status:** [ ] Pendente (reabre o aceite de editor; modal atual não conta)
 
-- integrar Fabric.js localmente;
-- renderizar mockup e área/máscara configuradas;
-- implementar texto, imagem, transformação, desfazer/refazer e reset;
-- validar qualidade da imagem em relação ao tamanho físico/DPI;
-- criar rascunho, original, preview, JSON e PNG final;
-- congelar fontes e parâmetros necessários no snapshot;
-- garantir navegação por teclado, foco visível, mensagens de erro e toque.
+- publicar rota/página dedicada de editor por produto habilitado;
+- redesenhar UX full-page (referência de capacidade: Crie Camisetas Online), sem cor na URL;
+- concentrar composição no JavaScript (Fabric local): textos/imagens **sem limite de quantidade**, tipografia/cores livres, painel de camadas, transformações, histórico, zoom/pan;
+- tela de confirmação com preview + ações carrinho / voltar ao editor;
+- finalize envia JSON + preview/produção ao PHP; servidor revalida e persiste;
+- validar qualidade da imagem vs mm/DPI antes da confirmação;
+- teclado, foco, toque e `prefers-reduced-motion`;
+- remover dependência do modal da PDP como superfície principal.
 
 **Gate verificável**
 
-- [ ] editor funciona em 390, 768, 1024 e 1440 px;
+- [ ] editor abre em rota dedicada para bandana e adesivo;
+- [ ] composição livre no canvas (vários textos/imagens, cores/fontes livres, painel de camadas);
+- [ ] confirmação com preview permite ir ao carrinho ou voltar ao editor;
 - [ ] conteúdo não ultrapassa a máscara no arquivo de produção;
 - [ ] PNG possui exatamente as dimensões calculadas para o produto;
 - [ ] imagem insuficiente gera aviso antes da confirmação;
 - [ ] falha de upload/render impede personalização incompleta;
-- [ ] nenhuma requisição do editor depende de CDN ou SaaS.
+- [ ] nenhuma requisição do editor depende de CDN ou SaaS;
+- [ ] mobile e desktop usam a mesma página dedicada.
 
 ### Sessão 04 — Carrinho, Store API, Checkout Block e pedido HPOS
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída (smoke HPOS ok; gateways Mercado Pago/Stripe ainda sem prova sandbox)
 
 - anexar UUID e resumo ao item do carrinho;
 - impedir merge de artes diferentes;
@@ -439,7 +512,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 ### Sessão 05 — WooCommerce → Personalizações e painel do pedido
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - criar tela operacional separada sob WooCommerce;
 - implementar filtros, paginação, ordenação e estados vazios;
@@ -460,7 +533,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 ### Sessão 06 — Minha conta, e-mails e confirmação
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - mostrar prévia e resumo nas telas do pedido do comprador;
 - mostrar estado funcional da personalização;
@@ -477,7 +550,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 ### Sessão 07 — Retenção, privacidade e hardening
 
-**Status:** [ ] Pendente
+**Status:** [x] Concluída
 
 - implementar limpeza de rascunhos expirados;
 - aplicar política de pedidos cancelados e concluídos;
@@ -496,7 +569,7 @@ Transições automáticas devem reagir a eventos do WooCommerce de forma idempot
 
 ### Sessão 08 — Testes, documentação e aceite operacional
 
-**Status:** [ ] Pendente
+**Status:** [~] Parcial (gates PHP/browser/doctor/smoke; falta compra Blocks ponta a ponta dos 3 SKUs no navegador)
 
 - adicionar testes PHPUnit/integração para domínio, storage, uploads, Store API e HPOS;
 - adicionar Playwright para PDP, editor mobile, carrinho, checkout e admin;
@@ -572,6 +645,6 @@ docker compose --profile tools run --rm node node scripts/validate-012-personali
 
 ## 15. Critério de conclusão
 
-O Plano 012 só poderá ser marcado como concluído quando um comprador conseguir personalizar e comprar uma bandana, um laço/lacinho e um adesivo pelo fluxo real de Cart/Checkout Blocks; quando cada arte chegar intacta ao pedido HPOS e à fila **WooCommerce → Personalizações**; e quando a equipe conseguir revisar e baixar os arquivos privados de produção sem acessar o servidor ou modificar código.
+O Plano 012 só poderá ser marcado como concluído quando um comprador conseguir personalizar e comprar uma **bandana** e um **adesivo** pelo **editor dedicado full-page** e pelo fluxo real de Cart/Checkout Blocks; quando cada arte chegar intacta ao pedido HPOS e à fila **WooCommerce → Personalizações**; e quando a equipe conseguir revisar e baixar os arquivos privados de produção sem acessar o servidor ou modificar código.
 
-Também será obrigatório demonstrar que conteúdo e imagens permanecem administráveis, que pedidos antigos não mudam após reprovisionamento e que nenhum arquivo privado pode ser obtido por URL direta ou por usuário sem autorização.
+A fundação técnica já existente (schema, storage, fila, Store API) **não** substitui o aceite do editor. Também será obrigatório demonstrar que conteúdo e imagens da loja permanecem administráveis, que pedidos antigos não mudam após reprovisionamento e que nenhum arquivo privado pode ser obtido por URL direta ou por usuário sem autorização.

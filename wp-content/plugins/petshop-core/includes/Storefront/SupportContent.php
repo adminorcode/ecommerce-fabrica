@@ -11,6 +11,8 @@ defined('ABSPATH') || exit;
 
 final class SupportContent
 {
+    private const LEGACY_PLACEHOLDER_KEY = 'support-banner-whatsapp';
+
     public static function resolveSupportBannerUrl(string $fallbackUrl = ''): string
     {
         $url = trim((string) get_theme_mod('petshop_support_banner_url', ''));
@@ -32,6 +34,62 @@ final class SupportContent
         }
 
         return trim($fallbackUrl);
+    }
+
+    public static function resolveWhatsAppUrl(string $fallbackUrl = ''): string
+    {
+        foreach ([
+            trim((string) get_theme_mod('petshop_footer_whatsapp', '')),
+            trim((string) get_theme_mod('petshop_support_banner_url', '')),
+            trim($fallbackUrl),
+        ] as $url) {
+            if (self::isValidWhatsAppUrl($url)) {
+                return $url;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @return array{url: string, label: string, is_whatsapp: bool}
+     */
+    public static function resolveSupportCta(string $fallbackUrl = ''): array
+    {
+        $whatsAppUrl = self::resolveWhatsAppUrl($fallbackUrl);
+        if ($whatsAppUrl !== '') {
+            return [
+                'url' => $whatsAppUrl,
+                'label' => __('Falar pelo WhatsApp', 'petshop-core'),
+                'is_whatsapp' => true,
+            ];
+        }
+
+        $supportUrl = self::resolveSupportBannerUrl($fallbackUrl);
+        if ($supportUrl !== '') {
+            return [
+                'url' => $supportUrl,
+                'label' => __('Falar com atendimento', 'petshop-core'),
+                'is_whatsapp' => false,
+            ];
+        }
+
+        return ['url' => '', 'label' => '', 'is_whatsapp' => false];
+    }
+
+    public static function resolveSupportCtaUrl(string $fallbackUrl = ''): string
+    {
+        return self::resolveSupportCta($fallbackUrl)['url'];
+    }
+
+    public static function isValidWhatsAppUrl(string $url): bool
+    {
+        $parts = wp_parse_url(trim($url));
+
+        return is_array($parts)
+            && strtolower((string) ($parts['scheme'] ?? '')) === 'https'
+            && strtolower((string) ($parts['host'] ?? '')) === 'wa.me'
+            && preg_match('/^\/[1-9][0-9]{7,15}$/', (string) ($parts['path'] ?? '')) === 1;
     }
 
     public static function supportBannerContent(int $imageId, string $url): string
@@ -69,6 +127,96 @@ final class SupportContent
 <div class="wp-block-group petshop-section petshop-support-banner"><!-- wp:image {$imageAttrs} -->
 <figure class="wp-block-image size-full petshop-support-banner__image"><a href="{$url}"><img src="{$imageUrl}" alt="{$altAttribute}" class="wp-image-{$imageId}"/></a></figure>
 <!-- /wp:image --></div>
+<!-- /wp:group -->
+BLOCKS;
+    }
+
+    public static function supportSectionContent(int $desktopImageId, int $mobileImageId, string $ctaUrl = '', string $ctaLabel = ''): string
+    {
+        if ($desktopImageId <= 0 || $mobileImageId <= 0) {
+            return '';
+        }
+
+        $desktopImageUrl = wp_get_attachment_image_url($desktopImageId, 'full') ?: '';
+        $mobileImageUrl = wp_get_attachment_image_url($mobileImageId, 'full') ?: '';
+        if ($desktopImageUrl === '' || $mobileImageUrl === '') {
+            return '';
+        }
+
+        $desktopAlt = self::attachmentAlt(
+            $desktopImageId,
+            __('Bancada com acessórios pet organizados para atendimento e envio.', 'petshop-core')
+        );
+        $mobileAlt = self::attachmentAlt(
+            $mobileImageId,
+            __('Acessórios pet em embalagem sobre bancada de atendimento.', 'petshop-core')
+        );
+        $desktopImageAttrs = wp_json_encode([
+            'id' => $desktopImageId,
+            'sizeSlug' => 'full',
+            'className' => 'petshop-support-banner__image petshop-support-banner__image--desktop',
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $mobileImageAttrs = wp_json_encode([
+            'id' => $mobileImageId,
+            'sizeSlug' => 'full',
+            'className' => 'petshop-support-banner__image petshop-support-banner__image--mobile',
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (!is_string($desktopImageAttrs) || !is_string($mobileImageAttrs)) {
+            return '';
+        }
+
+        $button = '';
+        $ctaUrl = trim($ctaUrl);
+        if ($ctaUrl !== '') {
+            $url = esc_url($ctaUrl);
+            $label = esc_html($ctaLabel !== '' ? $ctaLabel : __('Falar com atendimento', 'petshop-core'));
+            $button = <<<BLOCKS
+<!-- wp:buttons {"className":"petshop-support-banner__actions","layout":{"type":"flex","justifyContent":"left"}} -->
+<div class="wp-block-buttons petshop-support-banner__actions"><!-- wp:button {"className":"petshop-support-banner__button"} -->
+<div class="wp-block-button petshop-support-banner__button"><a class="wp-block-button__link wp-element-button" href="{$url}">{$label}</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+BLOCKS;
+        }
+
+        $desktopImageUrl = esc_url($desktopImageUrl);
+        $mobileImageUrl = esc_url($mobileImageUrl);
+        $desktopAlt = esc_attr($desktopAlt);
+        $mobileAlt = esc_attr($mobileAlt);
+
+        return <<<BLOCKS
+<!-- wp:group {"className":"petshop-section petshop-support-banner","layout":{"type":"constrained"}} -->
+<div class="wp-block-group petshop-section petshop-support-banner"><!-- wp:group {"className":"petshop-support-banner__inner","layout":{"type":"constrained"}} -->
+<div class="wp-block-group petshop-support-banner__inner"><!-- wp:group {"className":"petshop-support-banner__content","layout":{"type":"constrained"}} -->
+<div class="wp-block-group petshop-support-banner__content"><!-- wp:paragraph {"className":"petshop-support-banner__eyebrow"} -->
+<p class="petshop-support-banner__eyebrow">Atendimento especializado</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":2,"className":"petshop-support-banner__title"} -->
+<h2 class="wp-block-heading petshop-support-banner__title">Precisa de ajuda para escolher?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"className":"petshop-support-banner__text"} -->
+<p class="petshop-support-banner__text">Nossa equipe ajuda voce a encontrar acessorios adequados para seu pet ou negocio.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph {"className":"petshop-support-banner__benefit"} -->
+<p class="petshop-support-banner__benefit">Orientacao para pedidos, kits e reposicao.</p>
+<!-- /wp:paragraph -->
+
+{$button}</div>
+<!-- /wp:group -->
+
+<!-- wp:group {"className":"petshop-support-banner__media","layout":{"type":"constrained"}} -->
+<div class="wp-block-group petshop-support-banner__media"><!-- wp:image {$desktopImageAttrs} -->
+<figure class="wp-block-image size-full petshop-support-banner__image petshop-support-banner__image--desktop"><img src="{$desktopImageUrl}" alt="{$desktopAlt}" class="wp-image-{$desktopImageId}"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {$mobileImageAttrs} -->
+<figure class="wp-block-image size-full petshop-support-banner__image petshop-support-banner__image--mobile"><img src="{$mobileImageUrl}" alt="{$mobileAlt}" class="wp-image-{$mobileImageId}"/></figure>
+<!-- /wp:image --></div>
+<!-- /wp:group --></div>
+<!-- /wp:group --></div>
 <!-- /wp:group -->
 BLOCKS;
     }
@@ -162,27 +310,246 @@ BLOCKS;
         return HomeCampaignBlocks::insertCampaignsIfMissing($content, $heroId, $shopUrl);
     }
 
+    public static function applyHomeSchemaTwentySix(
+        string $content,
+        int $desktopImageId,
+        int $mobileImageId,
+        string $ctaUrl,
+        string $ctaLabel = ''
+    ): string
+    {
+        $replacement = self::supportSectionContent($desktopImageId, $mobileImageId, $ctaUrl, $ctaLabel);
+        if ($replacement === '') {
+            return $content;
+        }
+
+        $replacementBlocks = parse_blocks($replacement);
+        if ($replacementBlocks === []) {
+            return $content;
+        }
+
+        $changed = false;
+        $blocks = self::replaceLegacySupportBannerBlocks(parse_blocks($content), $replacementBlocks[0], $changed);
+        if (!$changed) {
+            return $content;
+        }
+
+        return serialize_blocks($blocks);
+    }
+
+    public static function needsSupportSectionMigration(string $content): bool
+    {
+        if (!str_contains($content, '[petshop_support_banner]') && !str_contains($content, 'petshop-support-banner')) {
+            return false;
+        }
+
+        return self::hasLegacySupportBannerBlocks(parse_blocks($content))
+            || self::hasManagedSupportSectionWithoutCta(parse_blocks($content));
+    }
+
     public static function renderSupportBanner(): string
     {
-        $imageId = (int) get_theme_mod('petshop_support_banner_image', 0);
-        if ($imageId <= 0) {
-            $imageId = StorefrontProvisioner::supportBannerAttachment();
-        }
-        if ($imageId <= 0) {
+        $images = StorefrontProvisioner::supportSectionAttachments();
+        if ($images['desktop'] <= 0 || $images['mobile'] <= 0) {
             return '';
         }
 
-        $url = self::resolveSupportBannerUrl();
-        if ($url === '') {
-            return '';
-        }
-
-        $markup = self::supportBannerContent($imageId, $url);
+        $cta = self::resolveSupportCta();
+        $markup = self::supportSectionContent($images['desktop'], $images['mobile'], $cta['url'], $cta['label']);
         if ($markup === '') {
             return '';
         }
 
         return do_blocks($markup);
+    }
+
+    private static function attachmentAlt(int $imageId, string $fallback): string
+    {
+        $alt = trim((string) get_post_meta($imageId, '_wp_attachment_image_alt', true));
+
+        return $alt === '' ? $fallback : $alt;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     * @param array<string, mixed> $replacement
+     * @return array<int, array<string, mixed>>
+     */
+    private static function replaceLegacySupportBannerBlocks(array $blocks, array $replacement, bool &$changed): array
+    {
+        $updated = [];
+
+        foreach ($blocks as $block) {
+            if (($block['blockName'] ?? '') === 'core/shortcode') {
+                $shortcode = trim(strip_tags((string) ($block['innerHTML'] ?? '')));
+                if ($shortcode === '[petshop_support_banner]') {
+                    $updated[] = $replacement;
+                    $changed = true;
+                    continue;
+                }
+            }
+
+            if (self::isLegacySupportBannerBlock($block)) {
+                $updated[] = $replacement;
+                $changed = true;
+                continue;
+            }
+
+            if (self::isManagedSupportSectionWithoutCta($block)) {
+                $updated[] = $replacement;
+                $changed = true;
+                continue;
+            }
+
+            if (!empty($block['innerBlocks'])) {
+                $block['innerBlocks'] = self::replaceLegacySupportBannerBlocks($block['innerBlocks'], $replacement, $changed);
+            }
+
+            $updated[] = $block;
+        }
+
+        return $updated;
+    }
+
+    /**
+     * @param array<string, mixed> $block
+     */
+    private static function isLegacySupportBannerBlock(array $block): bool
+    {
+        if (($block['blockName'] ?? '') !== 'core/group') {
+            return false;
+        }
+
+        $className = (string) ($block['attrs']['className'] ?? '');
+        if (!str_contains($className, 'petshop-support-banner')) {
+            return false;
+        }
+
+        $imageBlocks = self::supportBannerImageBlocks($block);
+        if (count($imageBlocks) !== 1) {
+            return false;
+        }
+
+        $imageBlock = $imageBlocks[0];
+        if (!str_contains((string) ($imageBlock['attrs']['className'] ?? ''), 'petshop-support-banner__image')) {
+            return false;
+        }
+
+        $imageId = absint($imageBlock['attrs']['id'] ?? 0);
+        if (
+            $imageId > 0
+            && (string) get_post_meta($imageId, '_petshop_placeholder_key', true) === self::LEGACY_PLACEHOLDER_KEY
+        ) {
+            return true;
+        }
+
+        return str_contains((string) ($imageBlock['innerHTML'] ?? ''), 'banner-whatsapp-atendimento');
+    }
+
+    /**
+     * @param array<string, mixed> $block
+     * @return array<int, array<string, mixed>>
+     */
+    private static function supportBannerImageBlocks(array $block): array
+    {
+        $matches = [];
+        foreach (($block['innerBlocks'] ?? []) as $innerBlock) {
+            if (!is_array($innerBlock)) {
+                continue;
+            }
+            if (($innerBlock['blockName'] ?? '') === 'core/image') {
+                $matches[] = $innerBlock;
+                continue;
+            }
+            $matches = array_merge($matches, self::supportBannerImageBlocks($innerBlock));
+        }
+
+        return $matches;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     */
+    private static function hasLegacySupportBannerBlocks(array $blocks): bool
+    {
+        foreach ($blocks as $block) {
+            if (($block['blockName'] ?? '') === 'core/shortcode') {
+                $shortcode = trim(strip_tags((string) ($block['innerHTML'] ?? '')));
+                if ($shortcode === '[petshop_support_banner]') {
+                    return true;
+                }
+            }
+
+            if (self::isLegacySupportBannerBlock($block)) {
+                return true;
+            }
+
+            if (!empty($block['innerBlocks']) && self::hasLegacySupportBannerBlocks($block['innerBlocks'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed> $block
+     */
+    private static function isManagedSupportSectionWithoutCta(array $block): bool
+    {
+        if (($block['blockName'] ?? '') !== 'core/group') {
+            return false;
+        }
+
+        $className = (string) ($block['attrs']['className'] ?? '');
+        $blockMarkup = serialize_blocks([$block]);
+
+        return str_contains($className, 'petshop-support-banner')
+            && str_contains($blockMarkup, 'Atendimento especializado')
+            && str_contains($blockMarkup, 'Precisa de ajuda para escolher?')
+            && str_contains($blockMarkup, 'Nossa equipe ajuda voce')
+            && (
+                !str_contains($blockMarkup, 'wp-block-button__link')
+                || self::usesOutdatedSupportSectionPlaceholder($block)
+            );
+    }
+
+    /**
+     * @param array<string, mixed> $block
+     */
+    private static function usesOutdatedSupportSectionPlaceholder(array $block): bool
+    {
+        foreach (self::supportBannerImageBlocks($block) as $imageBlock) {
+            $imageId = absint($imageBlock['attrs']['id'] ?? 0);
+            if ($imageId <= 0) {
+                continue;
+            }
+
+            $key = (string) get_post_meta($imageId, '_petshop_placeholder_key', true);
+            if ($key === 'support-section-desktop' || $key === 'support-section-mobile') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $blocks
+     */
+    private static function hasManagedSupportSectionWithoutCta(array $blocks): bool
+    {
+        foreach ($blocks as $block) {
+            if (self::isManagedSupportSectionWithoutCta($block)) {
+                return true;
+            }
+
+            if (!empty($block['innerBlocks']) && self::hasManagedSupportSectionWithoutCta($block['innerBlocks'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

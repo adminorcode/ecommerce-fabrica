@@ -2,6 +2,10 @@
 .local
 node_modules
 **/vendor
+!wp-content/plugins/melhor-envio-cotacao/vendor
+!wp-content/plugins/melhor-envio-cotacao/vendor/**
+!wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor
+!wp-content/plugins/woo-better-shipping-calculator-for-brazil/vendor/**
 .env
 .wp-env.override.json
 wp-content/uploads

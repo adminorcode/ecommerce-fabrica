@@ -1,11 +1,12 @@
 import path from 'node:path';
-import { createEvidenceDirectory, launchBrowser } from './lib/browser-helpers.mjs';
+import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from './lib/browser-helpers.mjs';
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('011');
 
 const failures = [];
 const browser = await launchBrowser();
+const ratioWithin = (actual, expected, tolerance = 0.03) => Math.abs(actual - expected) <= tolerance;
 
 try {
   for (const viewport of [
@@ -14,6 +15,7 @@ try {
     { name: 'mobile-390', width: 390, height: 900 },
   ]) {
     const page = await browser.newPage({ viewport });
+    await routeCanonicalNavigation(page, baseUrl);
     const response = await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.evaluate(async () => {
       const images = [...document.images];
@@ -34,6 +36,20 @@ try {
       const campaignRect = campaigns?.getBoundingClientRect();
       const controls = campaigns ? [...campaigns.querySelectorAll('.petshop-home-campaigns__controls')].filter(visible) : [];
       const links = campaigns ? [...campaigns.querySelectorAll('.petshop-home-campaigns__link')].filter(visible) : [];
+      const linkRatios = links.map((link) => {
+        const rect = link.getBoundingClientRect();
+
+        return rect.height > 0 ? Number((rect.width / rect.height).toFixed(3)) : 0;
+      });
+      const imageRatios = links.map((link) => {
+        const image = link.querySelector('img');
+        if (!image || !visible(image)) {
+          return 0;
+        }
+        const rect = image.getBoundingClientRect();
+
+        return rect.height > 0 ? Number((rect.width / rect.height).toFixed(3)) : 0;
+      });
       const pictures = campaigns ? campaigns.querySelectorAll('picture source[media*="767"]') : [];
       const visibleSlides = campaigns
         ? [...campaigns.querySelectorAll('.petshop-home-campaigns__slide')].filter((slide) => !slide.hidden && visible(slide))
@@ -50,6 +66,8 @@ try {
         slideCount: visibleSlides.length,
         controlCount: controls.length,
         linkCount: links.length,
+        linkRatios,
+        imageRatios,
         pictureCount: pictures.length,
         heroBeforeCampaigns: !!(heroRect && campaignRect && heroRect.top <= campaignRect.top),
         overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
@@ -73,6 +91,19 @@ try {
     }
     if (metrics.hasCampaigns && metrics.linkCount < 1) {
       failures.push(`${viewport.name}: banner de campanha sem link clicavel visivel`);
+    }
+    if (metrics.hasCampaigns && metrics.linkCount > 0) {
+      const expectedRatio = viewport.width < 768 ? 0.8 : 3;
+      metrics.linkRatios.forEach((ratio, index) => {
+        if (!ratioWithin(ratio, expectedRatio)) {
+          failures.push(`${viewport.name}: link do banner ${index + 1} deveria renderizar proporcao ${expectedRatio}: recebido ${ratio}`);
+        }
+      });
+      metrics.imageRatios.forEach((ratio, index) => {
+        if (!ratioWithin(ratio, expectedRatio)) {
+          failures.push(`${viewport.name}: imagem do banner ${index + 1} deveria renderizar proporcao ${expectedRatio}: recebido ${ratio}`);
+        }
+      });
     }
     if (metrics.hasCampaigns && metrics.slideCount > 1 && metrics.controlCount !== 1) {
       failures.push(`${viewport.name}: multiplos banners deveriam exibir controles de carrossel`);

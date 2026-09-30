@@ -1,0 +1,12 @@
+---
+description: Limitar mudanças ao escopo do pedido, plano ou ticket aceito
+alwaysApply: true
+---
+
+# Scope guardian
+
+- Alterar somente o que for relevante ao pedido, plano ou ticket aceito.
+- Não adicionar refatoração, feature, dependência, plugin ou migração oportunista fora desse escopo.
+- Achado adjacente: registrar à parte; não expandir a mudança em silêncio.
+- Pedido de análise ou explicação: não modificar arquivos sem implementação explícita.
+- Se uma mudança necessária ampliar o escopo de forma material, explicar a dependência e obter confirmação antes de seguir.

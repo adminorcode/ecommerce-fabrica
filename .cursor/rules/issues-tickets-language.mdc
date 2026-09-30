@@ -1,0 +1,10 @@
+---
+description: Idioma dos tickets, planos e atualizações de entrega
+alwaysApply: true
+---
+
+# Idioma dos artefatos
+
+- Escrever tickets, planos, critérios de aceite e atualizações de entrega em **português (pt-BR)**.
+- Manter identificadores de código, hooks, slugs, APIs e nomes de produto no original técnico (WordPress, WooCommerce, Gutenberg, HPOS).
+- Não traduzir nem reescrever artefatos existentes só por consistência, salvo pedido explícito.
