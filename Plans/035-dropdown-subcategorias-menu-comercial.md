@@ -1,7 +1,7 @@
 # Plano 035 — Dropdown de subcategorias no menu comercial
 
-**Status:** Pendente  
-**Data:** 2026-08-30  
+**Status:** Concluído  
+**Data:** 2026-09-18  
 **Branch sugerida:** `035-dropdown-subcategorias-menu-comercial`  
 **Dependências:** menu `petshop-primary` / “Navegação comercial” (005/018); tokens e tipografia [014-evolucao-identidade-visual-autelle.md](./014-evolucao-identidade-visual-autelle.md); drawer mobile do header comercial  
 **Origem:** print de 2026-08-30 da [Moda Bicho](https://www.modabicho.com.br/bandana-pet) (hover em **Bandana** abre lista vertical: Kits econômicos, Escolha a estampa, Data festiva, Renda e luxo). A referência manda o **padrão do dropdown**, não a cópia da marca, cores ou copy.  
@@ -96,29 +96,29 @@ O listener atual do drawer (`click` em qualquer `<a>` fecha o painel) precisa de
 
 ### Sessão 01 — Dropdown desktop
 
-- [ ] `.sub-menu` oculto até hover/foco/`aria-expanded="true"` no pai.
-- [ ] Painel vertical, alinhado à esquerda do pai, borda + sombra, nomes em lista.
-- [ ] Clique no pai navega; item sem filhos não abre painel.
-- [ ] Header não corta o painel; um dropdown por vez.
+- [x] `.sub-menu` oculto até hover/foco/`aria-expanded="true"` no pai.
+- [x] Painel vertical, alinhado à esquerda do pai, borda + sombra, nomes em lista.
+- [x] Clique no pai navega; item sem filhos não abre painel.
+- [x] Header não corta o painel; um dropdown por vez.
 
 **Gate**
 
-- [ ] Em 1440px, hover em um pai com filhos mostra só as filhas daquele item; o outro pai com filhos permanece fechado.
-- [ ] Clique na filha abre a URL da filha (HTTP 200).
-- [ ] Item de primeiro nível sem filhos não renderiza caixa vazia.
+- [x] Em 1440px, hover em um pai com filhos mostra só as filhas daquele item; o outro pai com filhos permanece fechado.
+- [x] Clique na filha abre a URL da filha (HTTP 200).
+- [x] Item de primeiro nível sem filhos não renderiza caixa vazia.
 
 ### Sessão 02 — Drawer, teclado e persistência
 
-- [ ] Em 390px o drawer lista só o primeiro nível; chevron 44×44px revela as filhas.
-- [ ] Teclado: foco abre no desktop; Escape fecha o dropdown; foco visível.
-- [ ] Documentação do menu atualizada.
-- [ ] Alterar título ou aninhamento em **Aparência → Menus** reflete no dropdown sem código.
+- [x] Em 390px o drawer lista só o primeiro nível; chevron 44×44px revela as filhas.
+- [x] Teclado: foco abre no desktop; Escape fecha o dropdown; foco visível.
+- [x] Documentação do menu atualizada.
+- [x] Alterar título ou aninhamento em **Aparência → Menus** reflete no dropdown sem código.
 
 **Gate**
 
-- [ ] Em 390px, abrir o chevron de um pai não navega e não fecha o drawer; a filha navega.
-- [ ] Amostra fora do exemplo Bandana da Moda Bicho: um segundo pai com filhos segue o mesmo padrão.
-- [ ] Persistência: item filho renomeado no menu aparece com o novo rótulo após reload.
+- [x] Em 390px, abrir o chevron de um pai não navega e não fecha o drawer; a filha navega.
+- [x] Amostra fora do exemplo Bandana da Moda Bicho: um segundo pai com filhos segue o mesmo padrão.
+- [x] Persistência: item filho renomeado no menu aparece com o novo rótulo após reload.
 
 ## 8. Riscos
 

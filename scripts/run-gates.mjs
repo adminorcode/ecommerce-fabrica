@@ -148,6 +148,8 @@ const classifySuites = (files) => {
     for (const file of files) {
         if (file === 'package.json' || file === 'scripts/run-gates.mjs' || file === 'scripts/run-gates.sh' || file === 'scripts/run-gates.ps1') {
             suites.add('runner');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
         }
         if (file.startsWith('docs/') || file.startsWith('Plans/')) {
             suites.add('docs');
@@ -234,6 +236,19 @@ const classifySuites = (files) => {
             suites.add('checkout-013');
             browserScripts.add('validate-013-browser.mjs');
         }
+        if (
+            file.includes('025-cadastro-senha-escolhida')
+            || file.includes('AccountRegistration')
+            || file.includes('AccountPrivacy')
+            || file.includes('account-registration')
+            || file.includes('checkout-account-password-confirmation')
+            || file.includes('validate-025-account-registration')
+            || file.includes('GuestAccount.php')
+            || file.includes('AddressLookup')
+        ) {
+            suites.add('account-025');
+            browserScripts.add('validate-025-account-registration-browser.mjs');
+        }
         if (file.includes('014-identity') || file.includes('validate-014-docs-and-tokens')) {
             suites.add('identity-014');
         }
@@ -281,6 +296,47 @@ const classifySuites = (files) => {
             || file.includes('petshop_email_')
         ) {
             suites.add('emails-034');
+        }
+        if (
+            file.includes('039-quantidade-carrinho')
+            || file.includes('CartQuantityStability')
+            || file.includes('cart-quantity-guard')
+            || file.includes('cart-quantity-stability')
+            ||             file.includes('validate-039-cart-qty')
+        ) {
+            suites.add('cart-qty-039');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
+            suites.add('cart-auto-update-037');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+        }
+        if (
+            file.includes('037-atualizacao-automatica-valores-carrinho')
+            || file.includes('validate-037-cart-auto-update')
+        ) {
+            suites.add('cart-auto-update-037');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+            suites.add('cart-qty-039');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
+        }
+        if (
+            file.includes('035-dropdown-subcategorias-menu-comercial')
+            || file.includes('commercial-menu')
+            || file.includes('validate-035-menu-dropdown')
+            || file === 'wp-content/themes/petshop-theme/functions.php'
+            || file === 'wp-content/themes/petshop-theme/style.css'
+        ) {
+            suites.add('menu-035');
+            browserScripts.add('validate-035-menu-dropdown-browser.mjs');
+        }
+        if (
+            file.includes('026-checkout-dados-salvos-viacep')
+            || file.includes('CheckoutCustomerData')
+            || file.includes('AddressLookup')
+            || file.includes('address-lookup')
+            || file.includes('validate-026-checkout')
+        ) {
+            suites.add('checkout-026');
+            browserScripts.add('validate-026-checkout-browser.mjs');
         }
         if (
             file.includes('027-calculadora-frete-hub')
@@ -343,6 +399,9 @@ const runFocusedSuites = (suites) => {
         evalFile('validate-013-security.php');
         evalFile('test-013-persistence.php');
     }
+    if (suites.has('account-025')) {
+        evalFile('validate-025-account-registration.php');
+    }
     if (suites.has('identity-014')) {
         evalFile('validate-014-identity-campaigns.php');
     }
@@ -377,8 +436,20 @@ const runFocusedSuites = (suites) => {
     if (suites.has('product-card-031')) {
         run('node', ['scripts/validate-031-product-card.mjs']);
     }
+    if (suites.has('cart-qty-039')) {
+        evalFile('validate-039-cart-qty.php');
+    }
+    if (suites.has('cart-auto-update-037')) {
+        run('node', ['--check', 'scripts/validate-037-cart-auto-update-browser.mjs']);
+    }
     if (suites.has('emails-034')) {
         evalFile('validate-034-emails.php');
+    }
+    if (suites.has('menu-035')) {
+        evalFile('validate-035-menu-dropdown.php');
+    }
+    if (suites.has('checkout-026')) {
+        evalFile('validate-026-checkout.php');
     }
     if (suites.has('product-grid')) {
         evalFile('validate-016-product-grid.php');
@@ -405,7 +476,7 @@ const runBrowserScripts = (browserScripts) => {
         dockerCli('cache', 'flush');
 
         for (const script of browserScripts) {
-            run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=localhost:8888', 'node', 'node', `/workspace/scripts/${script}`]);
+            run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=wordpress', 'node', 'node', `/workspace/scripts/${script}`]);
         }
     } finally {
         dockerCli('option', 'update', 'home', restoreHome);

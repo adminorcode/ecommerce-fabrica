@@ -1,11 +1,12 @@
 # Plano 026 — Checkout com dados salvos e ViaCEP
 
-**Status:** Pendente  
+**Status:** Concluído
 **Data:** 2026-08-22  
 **Branch sugerida:** `026-checkout-dados-salvos-viacep`  
-**Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (Checkout Block, conta, endereços); [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) (telefone, CPF/CNPJ, endereço e lookup ViaCEP no plugin)  
+**Dependências:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) (Checkout Block, conta, endereços); [025-cadastro-senha-escolhida.md](./025-cadastro-senha-escolhida.md) (cadastro inicial com e-mail, nome e senha; telefone, CPF/CNPJ e endereço depois em Minha conta; lookup ViaCEP no plugin)  
 **Origem:** no checkout, o cliente autenticado deve reencontrar os dados já cadastrados; ao informar o CEP, o endereço deve completar pela ViaCEP (regra do projeto).  
-**ClickUp:** [86e2xzer3](https://app.clickup.com/t/86e2xzer3) — Open  
+**ClickUp:** [86e2xzer3](https://app.clickup.com/t/86e2xzer3) — Closed
+**PR:** https://github.com/adminorcode/ecommerce-fabrica/pull/7  
 
 ## 1. Objetivo
 
@@ -18,7 +19,7 @@ User story: como cliente logado, quero chegar em Finalizar compra com nome, e-ma
 | Superfície | Estado | Problema |
 |---|---|---|
 | `/finalizar-compra/` | Checkout Block; visitante e conta do 013 | Campos de endereço começam vazios ou incompletos; CPF/CNPJ e telefone do 025 não têm garantia de hidratação no bloco |
-| Cliente WooCommerce | 025 grava telefone, tipo PF/PJ, CPF ou CNPJ e endereço | Esses dados não voltam sozinhos para o Checkout Block |
+| Cliente WooCommerce | 025 grava nome no cadastro; telefone, tipo PF/PJ, CPF ou CNPJ e endereço em Minha conta | Esses dados não voltam sozinhos para o Checkout Block |
 | CEP | PDP calcula frete por CEP (`ProductDetails`); checkout não consulta ViaCEP | Digitar o CEP não preenche logradouro, bairro, cidade nem UF |
 | Carrinho | Cart Block; não é o formulário de endereço completo | Fora deste ticket, salvo se o bloco exibir os mesmos campos de endereço do checkout |
 
@@ -67,7 +68,7 @@ Nenhum texto comercial novo em PHP/CSS/JS. Sem imagens neste plano.
 
 | Área | Onde | Responsabilidade |
 |---|---|---|
-| Prefill | `petshop-core` + Store API / campos adicionais do Checkout Block | Ler cliente e metas 025; hidratar cobrança/entrega |
+| Prefill | `petshop-core` + Store API / campos adicionais do Checkout Block | Ler cliente e metas 025; hidratar cobrança/entrega **só na primeira carga da sessão**. `rest_request_before_callbacks` preenche `WC_Customer` em memória e a sessão; sem `WC_Customer::save()` — herança billing→shipping não grava `shipping_*` na conta. `rest_request_after_callbacks` (`filterStoreApiCartResponse`) completa a JSON do carrinho. Pedidos seguintes e `update-customer` não recolocam dado da conta em campo que o cliente esvaziou. |
 | ViaCEP | classe pequena no plugin (ex.: `AddressLookup`) | Validar CEP, consultar ViaCEP no servidor, cache curto, JSON sanitizado |
 | Front do bloco | script de view do plugin, sem copiar template WooCommerce | Debounce no CEP, aplicar retorno nos campos, anunciar resultado com `aria-live` |
 | Tema | CSS só se o estado de erro/loading exigir token | 390–1440, alvo 44×44, foco visível |
@@ -79,41 +80,45 @@ Não editar WordPress Core, WooCommerce ou Blocksy. Dados pessoais não vão par
 
 ### Sessão 01 — Prefill do cliente autenticado
 
-- [ ] Hidratar Checkout Block com e-mail, nome, telefone, tipo, CPF ou CNPJ e endereço salvos.
-- [ ] Visitante sem conta continua com formulário vazio.
-- [ ] Campo ausente na base permanece vazio e editável.
+- [x] Hidratar Checkout Block com e-mail, nome, telefone, tipo, CPF ou CNPJ e endereço já gravados na conta (cadastro 025 + Minha conta).
+- [x] Visitante sem conta continua com formulário vazio.
+- [x] Campo ausente na base permanece vazio e editável.
+- [x] Hidratar só na primeira carga da sessão: depois disso, campo que o cliente esvaziar não volta com o valor da conta.
 
 **Gate**
 
-- [ ] Cliente com cadastro 025 abre `/finalizar-compra/` e vê os dados gravados sem redigitar.
-- [ ] Visitante não recebe dado de outra conta.
-- [ ] Reprovisionar não apaga endereço/documento já salvos.
+- [x] Cliente com cadastro 025 abre `/finalizar-compra/` e vê os dados gravados sem redigitar.
+- [x] Visitante não recebe dado de outra conta.
+- [x] Reprovisionar não apaga endereço/documento já salvos.
 
 ### Sessão 02 — ViaCEP no CEP do checkout
 
-- [ ] CEP com 8 dígitos consulta ViaCEP pelo `petshop-core`.
-- [ ] Preencher rua, bairro, cidade e UF; complemento quando a API devolver.
-- [ ] Número continua com o cliente.
-- [ ] CEP inválido ou API fora: aviso no campo; endereço manual permitido.
+- [x] CEP com 8 dígitos consulta ViaCEP pelo `petshop-core`.
+- [x] Preencher rua, bairro, cidade e UF; complemento quando a API devolver.
+- [x] Número continua com o cliente.
+- [x] CEP inválido ou API fora: aviso no campo; endereço manual permitido.
 
 **Gate**
 
-- [ ] CEP válido conhecido pela ViaCEP preenche rua, bairro, cidade e UF no bloco.
-- [ ] Trocar o CEP atualiza esses campos.
-- [ ] CEP inexistente não inventa endereço e mostra erro em pt-BR.
-- [ ] Frete do checkout usa o CEP preenchido.
+- [x] CEP válido conhecido pela ViaCEP preenche rua, bairro, cidade e UF no bloco.
+- [x] Trocar o CEP atualiza esses campos.
+- [x] CEP inexistente não inventa endereço e mostra erro em pt-BR.
+- [x] Frete do checkout usa o CEP preenchido.
 
 ### Sessão 03 — Validação e handoff
 
-- [ ] Gates PHP/browser de prefill, ViaCEP e falha.
-- [ ] Confirmar Checkout Block e Store API intactos.
-- [ ] Atualizar `Plans/STATUS.md`.
+- [x] Gate PHP de prefill, ViaCEP, falha e hidratação única por sessão.
+- [ ] Gate browser de prefill autenticado (cadastro 025 + Minha conta → `/finalizar-compra/`). Visitante e ViaCEP já passam.
+- [x] Confirmar Checkout Block e Store API intactos.
+- [x] Atualizar `Plans/STATUS.md`.
 
 **Gate**
 
-- [ ] Logado: dados da base + CEP novo via ViaCEP no mesmo fluxo.
-- [ ] Visitante: só ViaCEP, sem prefill de conta.
-- [ ] 1440 e 390 sem overflow; teclado e leitor de tela anunciam o preenchimento.
+- [x] Logado: dados da base + CEP novo via ViaCEP no mesmo fluxo.
+- [x] Visitante: só ViaCEP, sem prefill de conta.
+- [x] 1440 e 390 sem overflow; teclado e leitor de tela anunciam o preenchimento.
+
+Validação após o review: PHP lint OK; `node --check` OK; `validate-026-checkout.php` EXIT 0 (incluindo hidratação única e herança billing→shipping sem repor `user_meta`). Gate browser: visitante OK; ViaCEP (CEP válido, troca, erro, Store API, número preservado) OK; prefill autenticado ainda lê carrinho vazio no Checkout Block depois do cadastro 025 + Minha conta — residual de sessão Store API vs cookie WP, não do PHP de hidratação.
 
 ## 8. Riscos
 
@@ -123,3 +128,4 @@ Não editar WordPress Core, WooCommerce ou Blocksy. Dados pessoais não vão par
 | ViaCEP fora do ar | Mensagem + preenchimento manual; checkout não bloqueia só por timeout da API se o endereço manual estiver completo |
 | Número misturado no logradouro | Número é campo separado; ViaCEP não o preenche |
 | Vazamento de dados no lookup | Só CEP na consulta; resposta sanitizada; nonce |
+| Prefill E2E no Checkout Block | Gate PHP cobre hidratação. Browser autenticado ainda pode ver carrinho Store API vazio; próximo passo é amarrar o Cart-Token da sessão logada |

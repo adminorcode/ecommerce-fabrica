@@ -43,7 +43,7 @@ Na desativação, o agendamento e o lock técnico são limpos. O `uninstall.php`
 | Rodapé global | Descrição, WhatsApp, horário, CNPJ, endereço, redes e formas de pagamento | Aparência → Personalizar → Rodapé da loja |
 | Loja e categorias | Descrição SEO da loja; nome, descrição, ícone e imagem das categorias | Aparência → Personalizar → Petshop; Produtos → Categorias |
 | Produto | Dados comerciais, galeria, alt, descrição e aviso global de compra | Produtos; Biblioteca de mídia; Aparência → Personalizar → Petshop |
-| Navegação | Destinos do menu comercial | Aparência → Menus |
+| Navegação | Destinos do menu comercial; subcategorias no dropdown = itens filhos aninhados em `petshop-primary`. Item de primeiro nível sem filhos permanece só o link. | Aparência → Menus |
 
 Os defaults globais estão centralizados em `Settings\DefaultSettings`. Eles são apenas valores iniciais/fallbacks: valores salvos no Customizer continuam prevalecendo após migração ou reprovisionamento.
 

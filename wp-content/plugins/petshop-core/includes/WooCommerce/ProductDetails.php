@@ -31,6 +31,7 @@ final class ProductDetails
         add_action('created_pa_color', [self::class, 'saveColorField']);
         add_action('edited_pa_color', [self::class, 'saveColorField']);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductionAndSizeGuide'], 24);
+        add_action('woocommerce_single_product_summary', [self::class, 'renderQuantityTotal'], 11);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderShippingCalculator'], 8);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderPersonalizationSlot'], 20);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAssets']);
@@ -187,6 +188,20 @@ final class ProductDetails
         echo '<div class="petshop-shipping-calculator__result" data-petshop-shipping-result aria-live="polite"></div></section>';
     }
 
+    public static function renderQuantityTotal(): void
+    {
+        global $product;
+        if (!$product instanceof \WC_Product || !$product->is_purchasable()) return;
+
+        $price = $product->is_type('variable') ? null : (float) wc_get_price_to_display($product);
+
+        echo '<p class="petshop-product-quantity-total" data-petshop-quantity-total hidden'
+            . ' data-unit-price="' . esc_attr($price === null ? '' : wc_format_decimal($price, wc_get_price_decimals())) . '">'
+            . '<span class="petshop-product-quantity-total__label" data-petshop-quantity-total-label></span>'
+            . '<strong class="petshop-product-quantity-total__value" data-petshop-quantity-total-value aria-live="polite"></strong>'
+            . '</p>';
+    }
+
     public static function renderPersonalizationSlot(): void
     {
         global $product;
@@ -209,6 +224,7 @@ final class ProductDetails
             'receiveIn' => __('Receba em', 'petshop-core'),
             'deliveryAtCheckout' => __('Prazo confirmado no carrinho', 'petshop-core'),
             'productionLabel' => __('Produção', 'petshop-core'),
+            'priceFormat' => self::priceFormatConfig(),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
     }
 
@@ -232,5 +248,17 @@ final class ProductDetails
         $options = [0 => __('Nenhum guia selecionado', 'petshop-core')];
         foreach (get_pages(['sort_column' => 'post_title']) as $page) $options[(int) $page->ID] = $page->post_title;
         return $options;
+    }
+
+    /** @return array{currencySymbol: string, decimalSeparator: string, thousandSeparator: string, decimals: int, priceFormat: string} */
+    private static function priceFormatConfig(): array
+    {
+        return [
+            'currencySymbol' => html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, get_bloginfo('charset') ?: 'UTF-8'),
+            'decimalSeparator' => wc_get_price_decimal_separator(),
+            'thousandSeparator' => wc_get_price_thousand_separator(),
+            'decimals' => wc_get_price_decimals(),
+            'priceFormat' => html_entity_decode(get_woocommerce_price_format(), ENT_QUOTES | ENT_HTML5, get_bloginfo('charset') ?: 'UTF-8'),
+        ];
     }
 }

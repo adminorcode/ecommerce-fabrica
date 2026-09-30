@@ -86,6 +86,7 @@ run_eval_file test-005-session-02-persistence.php
 run_eval_file test-013-persistence.php
 run_eval_file validate-013-hpos.php
 run_eval_file validate-013-security.php
+run_eval_file validate-025-account-registration.php
 run_eval_file validate-014-identity-campaigns.php
 run_eval_file validate-015-support-section.php
 run_eval_file validate-016-product-grid.php
@@ -96,7 +97,9 @@ run_eval_file validate-023-footer.php
 run_eval_file validate-024-home-campaigns-carousel.php
 run_eval_file validate-030.php
 run_eval_file validate-032-search.php
+run_eval_file validate-039-cart-qty.php
 run_eval_file validate-034-emails.php
+run_eval_file validate-035-menu-dropdown.php
 run_eval_file smoke-012-order-flow.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then
@@ -137,10 +140,9 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
   if [[ "$RUN_BROWSER" -eq 1 ]]; then
     echo "==> browser gates (container)"
-    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-no-theme-hero-browser.mjs; do
-      docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+    for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-025-account-registration-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-037-cart-auto-update-browser.mjs validate-039-cart-qty-browser.mjs validate-035-menu-dropdown-browser.mjs validate-no-theme-hero-browser.mjs; do
+      docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script"
     done
-
     plan031_fixture_ready=0
     cleanup_plan031_fixture() {
       if [[ "$plan031_fixture_ready" -eq 1 ]]; then
@@ -156,15 +158,15 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
     cleanup_plan031_fixture
     trap restore_urls EXIT
 
-    docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
+    docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-016-product-grid-editor.mjs
   fi
 
   if [[ "$RUN_PDP" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
-    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+    docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-pdp-browser.mjs
   fi
 
   if [[ "$RUN_CART" -eq 1 || "$RUN_BROWSER" -eq 1 ]]; then
-    docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+    docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-cart-browser.mjs
   fi
 
   restore_urls

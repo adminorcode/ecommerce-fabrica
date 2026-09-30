@@ -75,9 +75,16 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin
 | `validate-023-footer-browser.mjs` | 023 | Browser: composição do rodapé (4 colunas, redes na marca, ícones, 1440/390) |
 | `validate-024-home-campaigns-carousel.php` | 024 | Carrossel promocional: limite 3, duração por imagem, persistência |
 | `validate-024-home-campaigns-carousel-browser.mjs` | 024 | Browser: overlay de setas/indicadores, 44px, 1440/1024/768/390 |
+| `validate-026-checkout.php` | 026 | Checkout: dados salvos da conta, ponte para campos BR, ViaCEP unico e PDP sem ViaCEP |
+| `validate-026-checkout-browser.mjs` | 026 | Browser: prefill PF/PJ, visitante sem vazamento, ViaCEP, Store API, erro e viewports 1440×900/390×844 |
 | `validate-027-shipping-hub.php` | 027 | Calculadora PDP como hub WooCommerce: taxas ativas sem filtro, preço sem entidades, prazo e CEP persistente |
 | `validate-027-shipping-hub-browser.mjs` | 027 | Browser: uma UI de frete na PDP, widgets extras ocultos em PDP/carrinho/checkout e CEP no checkout |
 | `validate-036-versioned-shipping-dependencies.php` | 036 | Melhor Envio e base brasileira versionados: plugins ativos, vendors presentes e aviso de dependencia ausente |
+| `validate-039-cart-qty.php` | 039 | Carrinho: JS do plugin brasileiro ausente e CEP proprio presente |
+| `validate-039-cart-qty-browser.mjs` | 039 | Browser: quantidade persiste depois do CEP no carrinho |
+| `validate-035-menu-dropdown.php` | 035 | Menu comercial: markup de dropdown, dois pais com filhos, persistência e rodapé depth 1 |
+| `validate-035-menu-dropdown-browser.mjs` | 035 | Browser: hover 1440, accordion 390, segundo pai e item sem filhos |
+| `validate-037-cart-auto-update-browser.mjs` | 037 | Browser: `/carrinho` e mini-cart atualizam quantidade e valores finais sem refresh, com Store API como fonte oficial |
 | `validate-030.php` | 030 | Frase da confirmação: setting, filtros WC/bloco, persistência e HTML do pedido recebido |
 | `validate-030-order-received-browser.mjs` | 030 | Browser: Checkout Block + página de pedido recebido com a frase do Personalizar |
 | `test-004b-persistence.php` | 004b | Persistência editorial |
