@@ -3,16 +3,104 @@ import { createEvidenceDirectory, launchBrowser, routeCanonicalNavigation } from
 
 const baseUrl = process.env.PETSHOP_BASE_URL || 'http://localhost:8888';
 const evidenceDir = createEvidenceDirectory('039-cart-qty');
-const products = [
-  { id: Number(process.env.PETSHOP_REPRO_PRODUCT_ID || 259), label: 'bandana-neon' },
-  { id: 1563, label: 'perfume-amostra' },
-];
+const primaryProductId = Number(process.env.PETSHOP_REPRO_PRODUCT_ID || 259);
 const postcode = '01001-000';
 const failures = [];
+let selectedProducts = [];
 
 const qtyInput = (page) => page.locator('.wc-block-components-quantity-selector__input').first();
 const qtyPlus = (page) => page.locator('.wc-block-components-quantity-selector__button--plus').first();
 const readQty = async (page) => Number(await qtyInput(page).inputValue());
+
+const clearCart = async (page) => {
+  const cartProbe = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
+  const response = await page.request.delete(`${baseUrl}/wp-json/wc/store/v1/cart/items`, {
+    headers: { Nonce: cartProbe.headers()['nonce'] || '' },
+  });
+
+  if (!response.ok()) {
+    throw new Error(`clear cart HTTP ${response.status()}`);
+  }
+};
+
+const addProductToCart = async (page, productId) => {
+  const cartProbe = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
+  return page.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
+    headers: { Nonce: cartProbe.headers()['nonce'] || '' },
+    data: { id: productId, quantity: 1 },
+  });
+};
+
+const validateCandidate = async (page, candidate) => {
+  await clearCart(page);
+
+  const add = await addProductToCart(page, candidate.id);
+  if (!add.ok()) {
+    const body = await add.json().catch(async () => ({ raw: await add.text().catch(() => '') }));
+    return {
+      ok: false,
+      reason: `add-item HTTP ${add.status()} ${body?.code || ''}`.trim(),
+    };
+  }
+
+  const apiCart = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
+  const apiBody = await apiCart.json();
+  const apiItem = (apiBody.items || []).find((entry) => Number(entry.id) === Number(candidate.id)) || apiBody.items?.[0];
+  const maximum = Number(apiItem?.quantity_limits?.maximum || 1);
+
+  if (!apiItem) {
+    return { ok: false, reason: 'produto nao entrou no carrinho' };
+  }
+  if (maximum < 2) {
+    return { ok: false, reason: `quantity_limits.maximum=${maximum}` };
+  }
+
+  return {
+    ok: true,
+    product: {
+      id: Number(apiItem.id),
+      label: candidate.label,
+      name: apiItem.name || candidate.name || candidate.label,
+      maximum,
+      source: candidate.source,
+    },
+  };
+};
+
+const requiredProducts = () => {
+  if (!Number.isFinite(primaryProductId) || primaryProductId <= 0) {
+    throw new Error(`PETSHOP_REPRO_PRODUCT_ID invalido: ${process.env.PETSHOP_REPRO_PRODUCT_ID}`);
+  }
+
+  const primary = {
+    id: primaryProductId,
+    label: primaryProductId === 259 ? 'bandana-neon' : `product-${primaryProductId}`,
+    source: primaryProductId === 259 ? 'fixture-259' : 'PETSHOP_REPRO_PRODUCT_ID',
+  };
+  const second = {
+    id: 1563,
+    label: 'perfume-amostra',
+    source: 'fixture-1563',
+  };
+  if (primary.id === second.id) {
+    throw new Error('O gate 039 exige duas amostras distintas: a primaria e o produto 1563.');
+  }
+
+  return [primary, second];
+};
+
+const requireProducts = async (page) => {
+  const selected = [];
+  for (const candidate of requiredProducts()) {
+    const result = await validateCandidate(page, candidate);
+    if (!result.ok) {
+      throw new Error(`${candidate.label} (${candidate.id}, ${candidate.source}) e amostra obrigatoria do 039 e nao entrou no carrinho anonimo: ${result.reason}`);
+    }
+    selected.push(result.product);
+  }
+
+  return selected;
+};
 
 const waitShippingReady = async (page) => {
   await page.waitForFunction(() => {
@@ -51,30 +139,53 @@ const assertQtyHolds = async (page, expected, label) => {
 };
 
 const browser = await launchBrowser();
+let context;
+let page;
+
+const closeSafely = async (label, close) => {
+  let timer;
+  try {
+    await Promise.race([
+      close(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('timeout ao fechar recurso')), 5000);
+      }),
+    ]);
+  } catch (error) {
+    failures.push(`${label}: ${error.message || error}`);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const isNavigationFailure = (error) => (
+  /page\.goto|net::|chrome-error/i.test(error?.message || String(error))
+);
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  page = await context.newPage();
   await routeCanonicalNavigation(page, baseUrl);
   await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (await page.locator('#wpadminbar').count() > 0 || page.url().includes('/wp-admin')) {
+    throw new Error('Fluxo 039 deve rodar como visitante, mas uma sessao admin foi detectada.');
+  }
+  selectedProducts = await requireProducts(page);
 
-  for (const product of products) {
+  for (const product of selectedProducts) {
     try {
-    await page.evaluate(async () => {
-      const nonce = (await fetch('/wp-json/wc/store/v1/cart')).headers.get('Nonce') || '';
-      await fetch('/wp-json/wc/store/v1/cart/items', { method: 'DELETE', headers: { Nonce: nonce } });
-    });
+    await clearCart(page);
 
-    const cartProbe = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
-    const add = await page.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
-      headers: { Nonce: cartProbe.headers()['nonce'] || '' },
-      data: { id: product.id, quantity: 1 },
-    });
+    const add = await addProductToCart(page, product.id);
     if (!add.ok()) {
       failures.push(`${product.label}: add-item HTTP ${add.status()}`);
       continue;
     }
 
-    await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const cartResponse = await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    if (page.url().startsWith('chrome-error://') || !cartResponse?.ok()) {
+      throw new Error(`falha ao abrir carrinho: status=${cartResponse?.status() ?? 'sem resposta'} url=${page.url()}`);
+    }
     await qtyInput(page).waitFor({ timeout: 15000 });
     await page.locator('[data-petshop-cart-shipping-form]').waitFor({ timeout: 15000 });
 
@@ -120,7 +231,10 @@ try {
     const itemPosts = [];
     const onItemPost = (request) => {
       if (request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/update-item')) {
-        itemPosts.push(Date.now());
+        itemPosts.push({
+          at: Date.now(),
+          flush: request.headers()['x-petshop-qty-flush'] || '',
+        });
       }
     };
     page.on('request', onItemPost);
@@ -156,6 +270,8 @@ try {
     await page.waitForTimeout(800);
     if (itemPosts.length !== 1) {
       failures.push(`${product.label}: frete deveria ter 1 update-item apos a quantidade, veio ${itemPosts.length}.`);
+    } else if (itemPosts[0].flush !== '1') {
+      failures.push(`${product.label}: update-item sem header X-Petshop-Qty-Flush: 1 (valor: ${itemPosts[0].flush || 'ausente'}).`);
     }
     page.off('request', onItemPost);
 
@@ -175,18 +291,28 @@ try {
 
     await page.screenshot({ path: path.join(evidenceDir, `${product.label}-after-cep.png`), fullPage: true });
     } catch (error) {
-      failures.push(`${product.label}: ${error.message || error}`);
+      const message = error.message || String(error);
+      failures.push(`${product.label}: ${message}`);
+      if (isNavigationFailure(error) || page.url().startsWith('chrome-error://')) {
+        break;
+      }
     }
   }
-
-  await page.close();
+} catch (error) {
+  failures.push(error.message || String(error));
 } finally {
-  await browser.close();
+  if (page && !page.isClosed()) {
+    await closeSafely('page.close', () => page.close());
+  }
+  if (context) {
+    await closeSafely('context.close', () => context.close());
+  }
+  await closeSafely('browser.close', () => browser.close());
 }
 
 if (failures.length) {
-  console.error(JSON.stringify({ failures, evidenceDir }, null, 2));
+  console.error(JSON.stringify({ failures, products: selectedProducts, evidenceDir }, null, 2));
   process.exit(1);
 }
 
-console.log(JSON.stringify({ ok: true, evidenceDir }, null, 2));
+console.log(JSON.stringify({ ok: true, session: 'anonymous', products: selectedProducts, evidenceDir }, null, 2));

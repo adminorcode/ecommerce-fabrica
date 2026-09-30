@@ -136,6 +136,8 @@ const classifySuites = (files) => {
     for (const file of files) {
         if (file === 'package.json' || file === 'scripts/run-gates.mjs' || file === 'scripts/run-gates.sh' || file === 'scripts/run-gates.ps1') {
             suites.add('runner');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
         }
         if (file.startsWith('docs/') || file.startsWith('Plans/')) {
             suites.add('docs');
@@ -274,9 +276,21 @@ const classifySuites = (files) => {
         if (
             file.includes('039-quantidade-carrinho')
             || file.includes('CartQuantityStability')
+            || file.includes('cart-quantity-guard')
             || file.includes('cart-quantity-stability')
             ||             file.includes('validate-039-cart-qty')
         ) {
+            suites.add('cart-qty-039');
+            browserScripts.add('validate-039-cart-qty-browser.mjs');
+            suites.add('cart-auto-update-037');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
+        }
+        if (
+            file.includes('037-atualizacao-automatica-valores-carrinho')
+            || file.includes('validate-037-cart-auto-update')
+        ) {
+            suites.add('cart-auto-update-037');
+            browserScripts.add('validate-037-cart-auto-update-browser.mjs');
             suites.add('cart-qty-039');
             browserScripts.add('validate-039-cart-qty-browser.mjs');
         }
@@ -398,6 +412,9 @@ const runFocusedSuites = (suites) => {
     if (suites.has('cart-qty-039')) {
         evalFile('validate-039-cart-qty.php');
     }
+    if (suites.has('cart-auto-update-037')) {
+        run('node', ['--check', 'scripts/validate-037-cart-auto-update-browser.mjs']);
+    }
     if (suites.has('emails-034')) {
         evalFile('validate-034-emails.php');
     }
@@ -432,7 +449,7 @@ const runBrowserScripts = (browserScripts) => {
         dockerCli('cache', 'flush');
 
         for (const script of browserScripts) {
-            run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=localhost:8888', 'node', 'node', `/workspace/scripts/${script}`]);
+            run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=wordpress', 'node', 'node', `/workspace/scripts/${script}`]);
         }
     } finally {
         dockerCli('option', 'update', 'home', restoreHome);
