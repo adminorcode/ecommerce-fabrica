@@ -110,7 +110,7 @@ const lintChangedFiles = (files) => {
 
 const runFocusedProvision = (suites) => {
     if (skipProvision) {
-        return;
+        return false;
     }
 
     if (suites.has('storefront') || suites.has('commercial') || suites.has('product-grid') || suites.has('order-received-030') || suites.has('search-032')) {
@@ -126,6 +126,18 @@ const runFocusedProvision = (suites) => {
     if (suites.has('commercial')) {
         evalFile('seed-animal-republik-launches.php');
         evalFile('sync-commercial-page-catalog-links.php');
+    }
+
+    if (suites.has('product-card-031')) {
+        evalFile('setup-031-product-card-fixture.php');
+    }
+
+    return true;
+};
+
+const runFocusedCleanup = (suites) => {
+    if (suites.has('product-card-031')) {
+        evalFile('cleanup-031-product-card-fixture.php');
     }
 };
 
@@ -201,6 +213,18 @@ const classifySuites = (files) => {
         ) {
             suites.add('search-032');
             browserScripts.add('validate-032-search-browser.mjs');
+        }
+        if (
+            file.includes('031-card-variavel-comprar-preco')
+            || file.includes('product-card.js')
+            || file.includes('class-storefront-product-card.php')
+            || file.startsWith('wp-content/themes/petshop-theme/')
+            || file.includes('validate-031-product-card')
+            || file.includes('setup-031-product-card-fixture')
+            || file.includes('cleanup-031-product-card-fixture')
+        ) {
+            suites.add('product-card-031');
+            browserScripts.add('validate-031-product-card-browser.mjs');
         }
         if (file.includes('005-pdp')) {
             browserScripts.add('validate-005-pdp-browser.mjs');
@@ -409,6 +433,9 @@ const runFocusedSuites = (suites) => {
     if (suites.has('search-032')) {
         evalFile('validate-032-search.php');
     }
+    if (suites.has('product-card-031')) {
+        run('node', ['scripts/validate-031-product-card.mjs']);
+    }
     if (suites.has('cart-qty-039')) {
         evalFile('validate-039-cart-qty.php');
     }
@@ -470,9 +497,16 @@ const runChangedValidation = () => {
     lintChangedFiles(files);
 
     const { suites, browserScripts } = classifySuites(files);
-    runFocusedProvision(suites);
-    runFocusedSuites(suites);
-    runBrowserScripts(browserScripts);
+    let focusedProvisionRan = false;
+    try {
+        focusedProvisionRan = runFocusedProvision(suites);
+        runFocusedSuites(suites);
+        runBrowserScripts(browserScripts);
+    } finally {
+        if (focusedProvisionRan) {
+            runFocusedCleanup(suites);
+        }
+    }
 
     if (suites.size === 0 && (!browser || browserScripts.size === 0)) {
         console.log('validate:changed: apenas lint/check sintatico foi necessario para os arquivos alterados.');

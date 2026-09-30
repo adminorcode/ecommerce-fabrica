@@ -143,6 +143,21 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
     for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-025-account-registration-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-037-cart-auto-update-browser.mjs validate-039-cart-qty-browser.mjs validate-035-menu-dropdown-browser.mjs validate-no-theme-hero-browser.mjs; do
       docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script"
     done
+    plan031_fixture_ready=0
+    cleanup_plan031_fixture() {
+      if [[ "$plan031_fixture_ready" -eq 1 ]]; then
+        run_eval_file cleanup-031-product-card-fixture.php
+        plan031_fixture_ready=0
+      fi
+    }
+
+    run_eval_file setup-031-product-card-fixture.php
+    plan031_fixture_ready=1
+    trap 'cleanup_plan031_fixture; restore_urls' EXIT
+    docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=localhost:8888 node node /workspace/scripts/validate-031-product-card-browser.mjs
+    cleanup_plan031_fixture
+    trap restore_urls EXIT
+
     docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-016-product-grid-editor.mjs
   fi
 

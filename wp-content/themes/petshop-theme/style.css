@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.21
+Version: 0.6.22
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -297,14 +297,14 @@ a:hover { color: var(--color-brand-orange-dark); }
 .woocommerce ul.products li.product .woocommerce-loop-product__title {
   display: -webkit-box;
   margin: 0;
-  padding: var(--space-2) var(--space-2) 0;
+  padding: .5rem var(--space-2) 0;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  min-height: 2.75em;
+  min-height: 2.6em;
   font-size: .95rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .woocommerce ul.products li.product ul.entry-meta {
@@ -542,14 +542,25 @@ a:hover { color: var(--color-brand-orange-dark); }
   }
 }
 
+.woocommerce ul.products li.product {
+  display: flex;
+  flex-direction: column;
+  --product-element-spacing: 0;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+  order: 2;
+}
+
 .woocommerce ul.products li.product .ct-woo-card-actions {
-  padding: var(--space-2);
+  order: 5;
+  padding: .4rem var(--space-2) .55rem;
   margin-top: auto;
 }
 
 .woocommerce ul.products li.product .ct-woo-card-actions .button {
   width: 100%;
-  min-height: 44px;
+  min-height: 40px;
   margin: 0;
 }
 
@@ -578,34 +589,68 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .woocommerce ul.products li.product .price,
 .wc-block-components-product-price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1);
-  margin-top: auto;
+  order: 3;
+  margin: .25rem 0 0;
   padding: 0 var(--space-2);
   color: var(--color-ink);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
+.woocommerce ul.products li.product .price {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  height: 1.35rem;
+  min-height: 1.35rem;
+  max-height: 1.35rem;
+  overflow: hidden;
+  line-height: 1.35rem;
+  text-align: left;
+}
+
+.woocommerce ul.products li.product .price .petshop-product-card__selected-price,
+.woocommerce ul.products li.product .price .sale-price {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: .4rem;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  text-align: left;
+}
+
 .woocommerce ul.products li.product .price del {
+  order: 2;
   color: var(--color-muted);
-  font-size: .9rem;
+  font-size: .82rem;
   font-weight: 500;
+  line-height: 1;
+  text-decoration: line-through;
 }
 
 .woocommerce ul.products li.product .price ins {
+  order: 1;
   color: var(--color-brand-orange);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
   text-decoration: none;
 }
 
-.woocommerce ul.products li.product .button {
+.woocommerce ul.products li.product .button,
+.woocommerce ul.products li.product .petshop-product-card__buy-now {
   align-self: stretch;
-  width: calc(100% - (var(--space-2) * 2));
-  min-height: 44px;
-  margin: var(--space-2);
-  margin-top: var(--space-2);
+  width: 100%;
+  min-height: 40px;
+  margin: 0;
   text-align: center;
 }
 
@@ -616,13 +661,15 @@ a:hover { color: var(--color-brand-orange-dark); }
 
 .petshop-product-card__badges {
   position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
+  top: 1.35rem;
+  right: .65rem;
+  left: auto;
   z-index: 2;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: .35rem;
-  max-width: calc(100% - 4.5rem);
+  max-width: calc(100% - 1.5rem);
   pointer-events: none;
 }
 
@@ -638,6 +685,11 @@ a:hover { color: var(--color-brand-orange-dark); }
 .petshop-badge--save {
   background: var(--color-brand-orange);
   color: var(--color-on-orange);
+}
+
+.petshop-badge--soldout {
+  background: var(--color-border);
+  color: var(--color-disabled);
 }
 
 .petshop-badge--bestseller {
@@ -4665,5 +4717,151 @@ footer.ct-footer .ct-footer-copyright {
   *, *::before, *::after {
     scroll-behavior: auto;
     transition-duration: .01ms;
+  }
+}
+
+/* Ticket 031 - Card de produto vari�vel */
+
+.woocommerce ul.products li.product .petshop-product-card__variations {
+  order: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .25rem;
+  width: 100%;
+  margin: .3rem 0 0;
+  padding: 0 var(--space-2);
+}
+
+.petshop-product-card__attribute {
+  min-width: 0;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.petshop-product-card__attribute-label {
+  display: block;
+  margin: 0 0 .2rem;
+  color: var(--color-muted);
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.petshop-product-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: .35rem;
+}
+
+.petshop-product-card__chip {
+  position: relative;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 .45rem;
+  border: 1px solid var(--color-border, #d8d9db);
+  border-radius: .5rem;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-ink, #252426);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.petshop-product-card__chip:hover:not(:disabled) {
+  border-color: var(--color-brand-teal-dark, #126e70);
+}
+
+.petshop-product-card__chip:disabled,
+.petshop-product-card__chip[aria-disabled="true"] {
+  cursor: not-allowed;
+  color: var(--color-disabled);
+  border-color: var(--color-border);
+  background: var(--color-surface, #ffffff);
+  opacity: .4;
+}
+
+.petshop-product-card__chip.is-selected,
+.petshop-product-card__chip[aria-pressed="true"] {
+  border-color: var(--color-brand-teal-dark, #126e70);
+  background: var(--color-brand-teal-dark, #126e70);
+  color: var(--color-surface, #ffffff);
+}
+
+.petshop-product-card__chip:focus-visible,
+.petshop-product-card__buy-now:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-focus, #005fcc) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.petshop-product-card__selected-price {
+  display: inline-block;
+}
+
+.petshop-product-card__status:empty {
+  display: none;
+}
+
+.petshop-product-card__status {
+  margin: 0;
+  color: var(--color-muted, #5e5d61);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.woocommerce ul.products li.product .petshop-product-card__buy-now {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-orange-dark);
+  color: var(--color-on-orange);
+  font-weight: 700;
+  text-align: center;
+}
+
+.woocommerce ul.products li.product .petshop-product-card__cart-icon {
+  flex: 0 0 auto;
+}
+
+.woocommerce ul.products li.product .petshop-product-card__buy-now.is-unavailable,
+.woocommerce ul.products li.product .petshop-product-card__buy-now[aria-disabled="true"] {
+  background: var(--color-border);
+  color: var(--color-disabled);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.petshop-wishlist-page__products .woocommerce ul.products li.product .petshop-wishlist-toggle {
+  display: inline-flex;
+}
+
+.woocommerce ul.products li.product .petshop-wishlist-toggle {
+  display: none;
+}
+
+.petshop-product-card__buy-now.is-loading {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.petshop-product-card__buy-now.is-added {
+  border-color: var(--color-brand-teal-dark, #126e70);
+  background: var(--color-brand-teal-dark, #126e70);
+  color: var(--color-surface, #ffffff);
+}
+
+@media (max-width: 689px) {
+  .petshop-product-card__variations {
+    gap: 0.4rem;
   }
 }
