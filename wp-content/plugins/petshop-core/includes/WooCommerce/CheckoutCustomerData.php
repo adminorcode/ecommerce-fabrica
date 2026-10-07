@@ -320,7 +320,7 @@ final class CheckoutCustomerData
 
         foreach (['billing', 'shipping'] as $group) {
             $addressKey = $group . '_address';
-            $data[$addressKey] = is_array($data[$addressKey] ?? null) ? $data[$addressKey] : [];
+            $data[$addressKey] = self::normalizeCartAddress($data[$addressKey] ?? null);
             if ($fromAccount) {
                 self::mergeNativeAddressIntoResponse($data[$addressKey], $group, $userId);
                 self::mergeAdditionalAddressIntoResponse($data[$addressKey], $group, $userId, $session);
@@ -329,8 +329,46 @@ final class CheckoutCustomerData
 
         self::inheritBillingResponseWhenShippingEmpty($data);
 
+        foreach (['billing', 'shipping'] as $group) {
+            $addressKey = $group . '_address';
+            if (is_array($data[$addressKey] ?? null)) {
+                self::ensureNativeAddressKeys($data[$addressKey], $group);
+            }
+        }
+
         if ($fromAccount) {
             self::mergeContactAdditionalFieldsIntoResponse($data, $userId, $session);
+        }
+    }
+
+    /**
+     * WooCommerce pode devolver o endereço como objeto. Lista vazia não é endereço.
+     *
+     * @return array<string, mixed>
+     */
+    private static function normalizeCartAddress(mixed $address): array
+    {
+        if (is_object($address)) {
+            $address = get_object_vars($address);
+        }
+
+        if (!is_array($address) || ($address !== [] && array_is_list($address))) {
+            return [];
+        }
+
+        return $address;
+    }
+
+    /**
+     * O Checkout Block chama toUpperCase em state e country. Chave ausente quebra o bloco.
+     *
+     * @param array<string, mixed> $address
+     */
+    private static function ensureNativeAddressKeys(array &$address, string $group): void
+    {
+        foreach (self::addressFieldsForResponse($group) as $field) {
+            $value = $address[$field] ?? '';
+            $address[$field] = is_scalar($value) ? (string) $value : '';
         }
     }
 

@@ -42,6 +42,7 @@
 | [037-atualizacao-automatica-valores-carrinho.md](./037-atualizacao-automatica-valores-carrinho.md) | Concluído | Browser 037 aprovado isolado e com tax `excl`/`incl`; `validate:changed:browser` aprovado; regressão 039 aprovada como visitante; sem alteração funcional de produção. Full validate global bloqueado por gate 005 fora do escopo (`Kits Economicos`) |
 | [038-total-quantidade-pagina-produto.md](./038-total-quantidade-pagina-produto.md) | Concluído | PDP: total reativo por quantidade validado para simples, promocional e variável, sem refresh e com formatação WooCommerce. Regressão leve do carrinho via Store API/Cart Block validada; 037 segue responsável por atualização do carrinho e 039 por estabilidade quantidade/CEP |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
+| [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
 
 ## Ordem recomendada de execução
 
@@ -85,7 +86,8 @@
   ├── 034 (layout HTML dos e-mails de compra; cores da identidade atual)
   ├── 035 (dropdown de subcategorias no menu comercial do header)
   ├── 036 (dependencias de frete e checkout versionadas)
-  └── 039 (quantidade do carrinho após o CEP)
+  ├── 039 (quantidade do carrinho após o CEP)
+  └── 040 (card mobile: sem legenda, padding menor, CTA Comprar no mobile e no desktop)
 ```
 
 ## Origem
@@ -130,4 +132,6 @@ Plano 036 derivado do aviso administrativo do Melhor Envio (2026-08-31): o plugi
 
 Plano 039 derivado do ticket 86e31yvgj (2026-09-10): depois do CEP no carrinho a quantidade voltava a 1; o JS do plugin brasileiro reconsulta o frete e invalida o Cart Block.
 
-**Última atualização:** 2026-09-18 (Plano 035: dropdown de subcategorias no menu comercial, gates PHP/browser aprovados)
+Plano 040 derivado do mockup mobile de “Destaques da loja” (2026-10-01): no card, a legenda da variação some e o padding diminui; “Comprar agora” vira “Comprar” com o ícone de carrinho, no mobile e no desktop.
+
+**Última atualização:** 2026-10-01 (Plano 040 planejado; tarefa ClickUp ainda não criada)

@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.22
+Version: 0.6.25
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -794,10 +794,57 @@ a:hover { color: var(--color-brand-orange-dark); }
   pointer-events: auto;
 }
 
-.wc-block-cart .wc-block-components-quantity-selector__button,
-.wc-block-cart .wc-block-components-quantity-selector__input {
+.wc-block-cart .wc-block-components-quantity-selector {
+  box-sizing: border-box;
+  width: calc(8.25rem + 2px);
+  min-width: calc(8.25rem + 2px);
+  max-width: calc(8.25rem + 2px);
+}
+
+.wc-block-cart .wc-block-components-quantity-selector > .wc-block-components-quantity-selector__button,
+.wc-block-cart .wc-block-components-quantity-selector > input.wc-block-components-quantity-selector__input {
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-width: 2.75rem;
+  height: 44px;
   min-height: 44px;
-  min-width: 44px;
+  box-sizing: border-box;
+}
+
+.wc-block-cart table.wc-block-cart-items .wc-block-cart-item__quantity {
+  align-items: center;
+}
+
+.wc-block-cart table.wc-block-cart-items .wc-block-cart-items__row .wc-block-cart-item__quantity .wc-block-cart-item__remove-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+}
+
+.wc-block-cart table.wc-block-cart-items .wc-block-cart-items__row .wc-block-cart-item__quantity .wc-block-cart-item__remove-link svg {
+  width: 24px;
+  height: 24px;
+}
+
+.wc-block-cart .wc-block-components-product-price,
+.wc-block-mini-cart .wc-block-components-product-price {
+  order: 0;
+  padding: 0;
+}
+
+.wc-block-cart .wc-block-components-product-metadata__description,
+.wc-block-mini-cart .wc-block-components-product-metadata__description {
+  display: none;
+}
+
+.wc-block-cart table.wc-block-cart-items .wc-block-cart-item__prices:not(:has(del)) {
+  display: none;
 }
 
 .petshop-cart-shipping {

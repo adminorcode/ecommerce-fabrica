@@ -340,6 +340,32 @@ try {
     $record(($secondCartData['billing_address']['petshop/neighborhood'] ?? '') === '', 'segunda resposta do cart nao deve repor bairro da conta');
     $record(($secondCartData['additional_fields']['petshop/person-type'] ?? '') === '', 'segunda resposta do cart nao deve repor PF/PJ da conta');
     $record(($secondCartData['additional_fields']['petshop/document'] ?? '') === '', 'segunda resposta do cart nao deve repor documento da conta');
+    $record(is_string($secondCartData['shipping_address']['state'] ?? null), 'shipping sem estado nao pode omitir a chave state');
+    $record(is_string($secondCartData['billing_address']['state'] ?? null), 'billing sem estado nao pode omitir a chave state');
+    $record(is_string($secondCartData['shipping_address']['country'] ?? null), 'shipping sem pais nao pode omitir a chave country');
+
+    $objectCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
+        new WP_REST_Response([
+            'billing_address' => (object) [
+                'first_name' => 'Objeto',
+                'country' => 'BR',
+                'state' => 'SP',
+            ],
+            'shipping_address' => (object) [
+                'first_name' => 'Entrega',
+                'country' => 'BR',
+                'state' => 'RJ',
+            ],
+            'additional_fields' => [],
+        ]),
+        [],
+        new WP_REST_Request('GET', '/wc/store/v1/cart')
+    );
+    $objectCartData = $objectCartResponse instanceof WP_REST_Response ? $objectCartResponse->get_data() : [];
+    $record(($objectCartData['shipping_address']['state'] ?? '') === 'RJ', 'endereco objeto nao pode perder o estado');
+    $record(($objectCartData['shipping_address']['country'] ?? '') === 'BR', 'endereco objeto nao pode perder o pais');
+    $record(($objectCartData['billing_address']['first_name'] ?? '') === 'Objeto', 'endereco objeto nao pode ser descartado');
+    $record(is_string($objectCartData['shipping_address']['city'] ?? null), 'endereco objeto deve completar cidade ausente com string');
 
     $inheritAfterHydration = CheckoutCustomerData::filterStoreApiCartResponse(
         new WP_REST_Response([
