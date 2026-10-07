@@ -73,6 +73,12 @@ if (WC()->customer instanceof WC_Customer) {
     if (WC()->customer->get_shipping_postcode() !== $postcode || WC()->customer->get_shipping_country() !== 'BR') {
         $failures[] = 'CEP calculado na PDP nao persistiu no cliente WooCommerce.';
     }
+    if (WC()->customer->get_shipping_state() !== 'RS') {
+        $failures[] = 'CEP 94010450 deveria gravar UF RS na sessao, sem cidade.';
+    }
+    if (trim((string) WC()->customer->get_shipping_city()) !== '') {
+        $failures[] = 'Simulacao de frete gravou cidade no cliente.';
+    }
     if (WC()->customer->get_billing_postcode() !== $billingPostcodeBefore || WC()->customer->get_billing_country() !== $billingCountryBefore) {
         $failures[] = 'Simulacao de frete alterou dados de cobranca do cliente.';
     }
@@ -95,6 +101,9 @@ if (is_wp_error($userId)) {
     ShippingQuotes::quote($product, $postcode);
     if (get_user_meta((int) $userId, 'shipping_postcode', true) !== '11111111' || get_user_meta((int) $userId, 'billing_postcode', true) !== '22222222') {
         $failures[] = 'Simulacao de frete salvou CEP no cadastro do usuario logado.';
+    }
+    if ((string) get_user_meta((int) $userId, 'shipping_state', true) !== '') {
+        $failures[] = 'Simulacao de frete salvou UF no cadastro do usuario logado.';
     }
     wp_delete_user((int) $userId);
     if ($originalCustomer instanceof WC_Customer) {

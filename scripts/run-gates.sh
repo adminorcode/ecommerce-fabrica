@@ -98,6 +98,7 @@ run_eval_file validate-024-home-campaigns-carousel.php
 run_eval_file validate-030.php
 run_eval_file validate-032-search.php
 run_eval_file validate-039-cart-qty.php
+run_eval_file validate-shipping-quote-destination.php
 run_eval_file validate-034-emails.php
 run_eval_file validate-035-menu-dropdown.php
 run_eval_file smoke-012-order-flow.php

@@ -302,8 +302,9 @@ const classifySuites = (files) => {
             || file.includes('CartQuantityStability')
             || file.includes('cart-quantity-guard')
             || file.includes('cart-quantity-stability')
-            ||             file.includes('validate-039-cart-qty')
+            || file.includes('validate-039-cart-qty')
         ) {
+            suites.add('shipping-quote-destination');
             suites.add('cart-qty-039');
             browserScripts.add('validate-039-cart-qty-browser.mjs');
             suites.add('cart-auto-update-037');
@@ -339,6 +340,13 @@ const classifySuites = (files) => {
             browserScripts.add('validate-026-checkout-browser.mjs');
         }
         if (
+            file.includes('ShippingQuoteDestination')
+            || file.includes('BrazilianPostcode')
+            || file.includes('validate-shipping-quote-destination')
+        ) {
+            suites.add('shipping-quote-destination');
+        }
+        if (
             file.includes('027-calculadora-frete-hub')
             || file.includes('036-dependencias-frete-checkout-versionadas')
             || file.includes('ShippingQuotes')
@@ -350,6 +358,7 @@ const classifySuites = (files) => {
             || file.startsWith('wp-content/plugins/woo-better-shipping-calculator-for-brazil/')
         ) {
             suites.add('shipping-hub-027');
+            suites.add('shipping-quote-destination');
             suites.add('shipping-dependencies-036');
             browserScripts.add('validate-027-shipping-hub-browser.mjs');
         }
@@ -426,6 +435,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('shipping-hub-027')) {
         evalFile('validate-027-shipping-hub.php');
+    }
+    if (suites.has('shipping-quote-destination')) {
+        evalFile('validate-shipping-quote-destination.php');
     }
     if (suites.has('shipping-dependencies-036')) {
         evalFile('validate-036-versioned-shipping-dependencies.php');

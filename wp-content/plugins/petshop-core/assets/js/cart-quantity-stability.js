@@ -28,7 +28,7 @@
       return { response, body: await response.json(), nonce: response.headers.get('Nonce') || storeNonce };
     },
     async updateCustomer(postcode, nonce, current) {
-      const shipping = { ...(current?.shipping_address || {}), country: 'BR', postcode };
+      const shipping = { ...(current?.shipping_address || {}), country: 'BR', postcode, state: '' };
       const response = await originalFetch('/wp-json/wc/store/v1/cart/update-customer', {
         method: 'POST',
         credentials: 'same-origin',

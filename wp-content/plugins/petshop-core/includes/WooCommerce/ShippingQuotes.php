@@ -36,14 +36,7 @@ final class ShippingQuotes
             'contents_cost' => $price,
             'applied_coupons' => [],
             'user' => ['ID' => get_current_user_id()],
-            'destination' => [
-                'country' => 'BR',
-                'state' => '',
-                'postcode' => $postcode,
-                'city' => '',
-                'address' => '',
-                'address_2' => '',
-            ],
+            'destination' => self::destinationFor($postcode),
             'cart_subtotal' => $price,
             'product_page_calculation' => true,
         ];
@@ -100,20 +93,44 @@ final class ShippingQuotes
         return is_object($formatted) ? $formatted : null;
     }
 
+    /**
+     * Destination for a CEP-only quote. The city is a transient space so
+     * carriers receive a non-empty value; it is not a stored address.
+     *
+     * @return array{country: string, state: string, postcode: string, city: string, address: string, address_2: string}
+     */
+    public static function destinationFor(string $postcode): array
+    {
+        $state = BrazilianPostcode::stateFromPostcode($postcode);
+
+        return [
+            'country' => 'BR',
+            'state' => $state,
+            'postcode' => $postcode,
+            'city' => $state === '' ? '' : ' ',
+            'address' => '',
+            'address_2' => '',
+        ];
+    }
+
     private static function persistPostcode(string $postcode): void
     {
         if (!function_exists('WC') || !WC()->customer) return;
 
+        $state = BrazilianPostcode::stateFromPostcode($postcode);
         WC()->customer->set_shipping_country('BR');
         WC()->customer->set_shipping_postcode($postcode);
+        WC()->customer->set_shipping_state($state);
 
         if (WC()->session) {
             WC()->session->set_customer_session_cookie(true);
             $customer = (array) WC()->session->get('customer', []);
             $customer['shipping_country'] = 'BR';
             $customer['shipping_postcode'] = $postcode;
+            $customer['shipping_state'] = $state;
             WC()->session->set('shipping_country', 'BR');
             WC()->session->set('shipping_postcode', $postcode);
+            WC()->session->set('shipping_state', $state);
             WC()->session->set('customer', $customer);
             WC()->session->set('petshop_shipping_postcode', $postcode);
         }
