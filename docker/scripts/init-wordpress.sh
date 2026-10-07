@@ -61,10 +61,8 @@ wp rewrite flush --path="$runtime" --allow-root
 wp language core install pt_BR --activate --path="$runtime" --allow-root || true
 wp language plugin install woocommerce pt_BR --path="$runtime" --allow-root || true
 wp language plugin install blocksy-companion pt_BR --path="$runtime" --allow-root || true
-wp language plugin install fluentform pt_BR --path="$runtime" --allow-root || true
-wp language plugin install stackable-ultimate-gutenberg-blocks pt_BR --path="$runtime" --allow-root || true
 wp language theme install blocksy pt_BR --path="$runtime" --allow-root || true
-wp plugin activate woocommerce blocksy-companion stackable-ultimate-gutenberg-blocks fluentform petshop-core woo-better-shipping-calculator-for-brazil melhor-envio-cotacao --path="$runtime" --allow-root
+wp plugin activate woocommerce blocksy-companion petshop-core woo-better-shipping-calculator-for-brazil melhor-envio-cotacao --path="$runtime" --allow-root
 
 if ! wp option get petshop_shipping_dependencies_036_configured --path="$runtime" --allow-root >/dev/null 2>&1; then
   wp option update woo_better_calc_enable_product_page no --path="$runtime" --allow-root
