@@ -67,6 +67,33 @@ $fail(
     has_action('woocommerce_after_calculate_totals', [ShippingQuoteDestination::class, 'endCalculation']) !== false,
     'Fechamento do calculo de frete ausente.'
 );
+$fail(
+    has_filter('woocommerce_cart_shipping_packages', [ShippingQuoteDestination::class, 'fillPackageCity']) !== false,
+    'A releitura do frete nao completa a cidade transitoria no pacote.'
+);
+$fail(
+    has_action('woocommerce_store_api_cart_update_customer_from_request', [ShippingQuoteDestination::class, 'keepCartQuantities']) !== false,
+    'A cotacao de frete nao protege a quantidade do carrinho.'
+);
+$fail(
+    preg_match("/form.addEventListener\\('submit', async \\(event\\) => \\{([\\s\\S]*?)return true;/", $cartJs, $submitMatch) === 1,
+    'Submit do CEP do carrinho nao encontrado.'
+);
+$submit = $submitMatch[1] ?? '';
+$fail(str_contains($submit, 'await settleQuantities()'), 'O CEP precisa esperar a quantidade gravar antes de cotar.');
+$fail(!str_contains($submit, 'receiveCart'), 'A resposta do frete nao pode substituir o carrinho.');
+$fail(str_contains($submit, 'applyFreightToCart(after.body)'), 'O frete confirmado precisa atualizar somente a entrega.');
+$fail(str_contains($cartJs, 'items: current.items'), 'A aplicacao do frete precisa manter os itens que ja estao no carrinho.');
+$fail(str_contains($cartJs, 'showStoredPostcode'), 'O campo de CEP precisa mostrar o CEP ja gravado na sessao.');
+$fail(
+    str_contains($cartJs, 'shipping_address?.postcode'),
+    'O CEP exibido tem de vir do endereco de entrega ja gravado.'
+);
+$fail(
+    strpos($submit, 'if (rates.length === 0)') !== false
+    && strpos($submit, 'if (rates.length === 0)') < strpos($submit, 'applyFreightToCart(after.body)'),
+    'CEP sem opcao de entrega nao pode alterar o carrinho.'
+);
 
 $customer = WC()->customer;
 $fail($customer instanceof WC_Customer, 'WC()->customer indisponivel.');
@@ -203,6 +230,32 @@ if ($customer instanceof WC_Customer) {
             $fail(trim((string) ($destination['address_1'] ?? $destination['address'] ?? '')) === '', 'Pacote do carrinho levou logradouro.');
             $fail(trim((string) $customer->get_shipping_city()) === '', 'Calculo gravou a cidade transitoria no cliente.');
             $fail(trim((string) $customer->get_shipping_address_1()) === '', 'Calculo gravou logradouro no cliente.');
+
+            $cartKey = array_key_first(WC()->cart->get_cart());
+            if (is_string($cartKey) && $cartKey !== '') {
+                $quantityBeforeQuote = (int) (WC()->cart->get_cart_item($cartKey)['quantity'] ?? 0);
+                ShippingQuoteDestination::keepCartQuantities($customer, new WP_REST_Request('POST', '/wc/store/v1/cart/update-customer'));
+                WC()->cart->set_quantity($cartKey, $quantityBeforeQuote + 1, false);
+                ShippingQuoteDestination::restoreCartQuantities(WC()->cart);
+                $fail(
+                    (int) (WC()->cart->get_cart_item($cartKey)['quantity'] ?? 0) === $quantityBeforeQuote,
+                    'A cotacao de frete alterou a quantidade do carrinho.'
+                );
+            } else {
+                $fail(false, 'Carrinho vazio na protecao de quantidade.');
+            }
+
+            $reread = WC()->cart->get_shipping_packages();
+            $fail(($reread[0]['destination']['city'] ?? null) === ' ', 'A releitura do frete perdeu a cidade transitoria.');
+            $quotedPackages = WC()->shipping()->calculate_shipping($reread);
+            $rereadRates = 0;
+            foreach ($quotedPackages as $package) {
+                if (is_array($package['rates'] ?? null)) {
+                    $rereadRates += count($package['rates']);
+                }
+            }
+            $fail($rereadRates > 0, 'A releitura da Store API devolveu o frete sem opcoes.');
+            $fail(trim((string) $customer->get_shipping_city()) === '', 'A releitura gravou cidade no cliente.');
 
             $customer->set_shipping_city('');
             WC()->cart->calculate_totals();

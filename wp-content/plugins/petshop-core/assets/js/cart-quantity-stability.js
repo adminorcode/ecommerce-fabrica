@@ -12,6 +12,7 @@
   let intentGeneration = 0;
   let flushTimer = 0;
   let flushing = false;
+  let flushPromise = Promise.resolve();
   let paintFrame = 0;
   let paintQuietSince = 0;
   let dispatchWrapped = false;
@@ -158,42 +159,83 @@
     }
   };
 
-  const flushQuantities = async () => {
+  const currentCart = () => {
+    try {
+      return window.wp?.data?.select('wc/store/cart')?.getCartData?.() || null;
+    } catch (_error) {
+      return null;
+    }
+  };
+
+  const applyFreightToCart = (quoted) => {
+    const current = currentCart();
+    if (!current?.items || !quoted || !window.wp?.data?.dispatch) return;
+    window.wp.data.dispatch('wc/store/cart').receiveCart(mergeIntended({
+      ...current,
+      items: current.items,
+      items_count: current.items_count,
+      shipping_rates: quoted.shipping_rates,
+      shipping_address: quoted.shipping_address,
+      has_calculated_shipping: quoted.has_calculated_shipping,
+      totals: quoted.totals,
+    }));
+  };
+
+  const flushQuantities = () => {
     if (flushing) {
       scheduleFlush();
-      return;
+      return flushPromise;
     }
-    if (intendedQty.size === 0) return;
+    if (intendedQty.size === 0) return Promise.resolve();
 
     flushing = true;
     qtyState.beginFlush?.();
     setShippingRefreshing(true);
-    try {
-      do {
-        const generation = intentGeneration;
-        let nonce = storeNonce;
-        if (!nonce) {
-          nonce = (await storeApi.cart()).nonce;
-        }
-        for (const [key, quantity] of intendedQty.entries()) {
-          const wanted = liveIntended(key) || quantity;
-          if (!wanted) continue;
-          const after = await storeApi.updateItem(key, wanted, nonce);
-          if (after.response.ok && window.wp?.data?.dispatch && liveIntended(key)) {
-            window.wp.data.dispatch('wc/store/cart').receiveCart(mergeIntended(after.body));
+    flushPromise = (async () => {
+      try {
+        do {
+          const generation = intentGeneration;
+          let nonce = storeNonce;
+          if (!nonce) {
+            nonce = (await storeApi.cart()).nonce;
           }
-          qtyState.settleHeld?.(after.response);
-        }
-        if (generation === intentGeneration) {
-          break;
-        }
-      } while (true);
-    } catch (error) {
-      qtyState.rejectHeld?.(error);
-      // The next quantity change retries the same intended value.
-    } finally {
-      flushing = false;
-      window.requestAnimationFrame(() => setShippingRefreshing(false));
+          for (const [key, quantity] of intendedQty.entries()) {
+            const wanted = liveIntended(key) || quantity;
+            if (!wanted) continue;
+            const after = await storeApi.updateItem(key, wanted, nonce);
+            if (after.response.ok && window.wp?.data?.dispatch && liveIntended(key)) {
+              window.wp.data.dispatch('wc/store/cart').receiveCart(mergeIntended(after.body));
+            }
+            qtyState.settleHeld?.(after.response);
+          }
+          if (generation === intentGeneration) {
+            break;
+          }
+        } while (true);
+      } catch (error) {
+        qtyState.rejectHeld?.(error);
+        // The next quantity change retries the same intended value.
+      } finally {
+        flushing = false;
+        window.requestAnimationFrame(() => setShippingRefreshing(false));
+      }
+    })();
+
+    return flushPromise;
+  };
+
+  const settleQuantities = async () => {
+    if (flushTimer) {
+      window.clearTimeout(flushTimer);
+      flushTimer = 0;
+      await flushQuantities();
+    } else if (flushing) {
+      await flushPromise;
+    }
+    if (flushTimer) {
+      window.clearTimeout(flushTimer);
+      flushTimer = 0;
+      await flushQuantities();
     }
   };
 
@@ -443,6 +485,7 @@
     if (root.querySelector('[data-petshop-cart-shipping-form]')) {
       root.hidden = false;
       if (!host.contains(root)) host.prepend(root);
+      showStoredPostcode();
       return true;
     }
 
@@ -482,6 +525,7 @@
     form.append(label, row);
     root.append(form, status);
     if (!host.contains(root)) host.prepend(root);
+    showStoredPostcode();
 
     const setStatus = (message) => {
       status.textContent = message;
@@ -503,19 +547,19 @@
 
       button.disabled = true;
       setStatus(copy.updating);
+      const generation = intentGeneration;
       try {
+        await settleQuantities();
         const current = await storeApi.cart();
         const after = await storeApi.updateCustomer(digits, current.nonce, current.body);
+        if (generation !== intentGeneration || flushTimer || flushing) {
+          await settleQuantities();
+          setStatus('');
+          return;
+        }
         if (!after.response.ok) {
           setStatus(copy.error);
           return;
-        }
-        if (window.wp?.data?.dispatch) {
-          try {
-            window.wp.data.dispatch('wc/store/cart').receiveCart(mergeIntended(after.body));
-          } catch (_error) {
-            // The direct Store API response is still the source of truth.
-          }
         }
 
         const rates = selectedRates(after.body);
@@ -528,6 +572,7 @@
           setStatus(copy.emptyRates);
           return;
         }
+        applyFreightToCart(after.body);
         setStatus('');
       } catch (_error) {
         setStatus(copy.error);
@@ -537,6 +582,47 @@
     });
 
     return true;
+  };
+
+  let storedPostcodeWatch = false;
+  let storedPostcodeFetch = false;
+
+  const showStoredPostcode = () => {
+    const input = document.querySelector('#petshop-cart-shipping-postcode');
+    if (!(input instanceof HTMLInputElement) || document.activeElement === input) return;
+
+    const apply = (postcode) => {
+      const digits = digitsOf(postcode);
+      if (digits.length !== 8 || digitsOf(input.value) === digits) return;
+      input.value = formatPostcode(digits);
+    };
+
+    try {
+      apply(window.wp?.data?.select('wc/store/cart')?.getCartData?.()?.shipping_address?.postcode);
+    } catch (_error) {
+      // The cart store is not ready yet. The request below reads the same CEP.
+    }
+    if (digitsOf(input.value).length === 8) return;
+
+    if (!storedPostcodeWatch && window.wp?.data?.subscribe) {
+      storedPostcodeWatch = true;
+      window.wp.data.subscribe(() => {
+        if (document.activeElement === input) return;
+        try {
+          apply(window.wp.data.select('wc/store/cart')?.getCartData?.()?.shipping_address?.postcode);
+        } catch (_error) {
+          // Ignore a cart store that is still booting.
+        }
+      });
+    }
+
+    if (storedPostcodeFetch) return;
+    storedPostcodeFetch = true;
+    storeApi.cart()
+      .then((current) => apply(current.body?.shipping_address?.postcode))
+      .catch(() => {
+        storedPostcodeFetch = false;
+      });
   };
 
   const hidePluginWidgets = () => {

@@ -43,6 +43,7 @@
 | [038-total-quantidade-pagina-produto.md](./038-total-quantidade-pagina-produto.md) | Concluído | PDP: total reativo por quantidade validado para simples, promocional e variável, sem refresh e com formatação WooCommerce. Regressão leve do carrinho via Store API/Cart Block validada; 037 segue responsável por atualização do carrinho e 039 por estabilidade quantidade/CEP |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 | [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
+| [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Pendente | Plano detalhado em 08/10/2026, fundamentado em documentação oficial e auditoria F01–F13; integração nativa dos Blocks, destino de cotação, ViaCEP e matriz T01–T20. Substitui o mecanismo técnico de quantidade do 039. Implementação e ClickUp não iniciados |
 
 ## Ordem recomendada de execução
 
@@ -87,7 +88,8 @@
   ├── 035 (dropdown de subcategorias no menu comercial do header)
   ├── 036 (dependencias de frete e checkout versionadas)
   ├── 039 (quantidade do carrinho após o CEP)
-  └── 040 (card mobile: sem legenda, padding menor, CTA Comprar no mobile e no desktop)
+  ├── 040 (card mobile: sem legenda, padding menor, CTA Comprar no mobile e no desktop)
+  └── 041 (integridade global de frete/carrinho/checkout; consolida e corrige 026/027/037/038/039)
 ```
 
 ## Origem

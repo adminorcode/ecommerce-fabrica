@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.25
+Version: 0.6.28
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -3083,6 +3083,7 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   min-height: 44px;
   border: 2px solid var(--color-neutral-border);
   border-radius: var(--radius-sm);
+  padding: 5px;
 }
 
 .petshop-shipping-calculator button {
@@ -3169,17 +3170,25 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   font-size: .94rem;
 }
 
-.single-product .petshop-product-price-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: .2em;
-  row-gap: .2em;
+.single-product .woocommerce-variation-price {
+  margin-bottom: 10px;
 }
 
-.single-product .petshop-product-price-row > .price {
+.single-product .petshop-product-price-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .15em;
+}
+
+.single-product .petshop-product-price-row > .price,
+.single-product form.variations_form .single_variation .petshop-product-price-row > :is(.price, .petshop-product-quantity-total) {
   width: auto;
   margin: 0;
+}
+
+.single-product form.variations_form .single_variation .petshop-product-price-row > .petshop-product-quantity-total {
+  display: inline-flex;
 }
 
 .petshop-product-quantity-total {
@@ -3187,8 +3196,8 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   align-items: baseline;
   gap: .2em;
   margin: 0;
-  color: var(--color-muted);
-  font-size: .6em;
+  color: #146349;
+  font-size: .8em;
   font-weight: 600;
   font-style: italic;
   letter-spacing: .01em;

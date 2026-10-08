@@ -43,13 +43,37 @@
     return value;
   };
 
-  const placeQuantityTotal = () => {
-    const price = document.querySelector('.entry-summary > .price, .summary > .price');
-    if (!price || !quantityTotal || quantityTotal.parentElement?.classList.contains('petshop-product-price-row')) return;
+  const summaryPrice = () => document.querySelector(
+    '.entry-summary > .price, .summary > .price, .entry-summary > .petshop-product-price-row > .price, .summary > .petshop-product-price-row > .price'
+  );
+
+  const variationPrice = () => document.querySelector('.woocommerce-variation-price .price');
+
+  const restorePriceRow = (row) => {
+    const price = row.querySelector(':scope > .price');
+    if (price) row.insertAdjacentElement('beforebegin', price);
+    if (quantityTotal?.parentElement === row) row.insertAdjacentElement('beforebegin', quantityTotal);
+    row.remove();
+  };
+
+  const placeQuantityTotal = (price = summaryPrice()) => {
+    if (!quantityTotal || !price) return;
+    const currentRow = quantityTotal.parentElement?.classList.contains('petshop-product-price-row')
+      ? quantityTotal.parentElement
+      : null;
+    if (currentRow && price.parentElement === currentRow) return;
+    if (currentRow) restorePriceRow(currentRow);
     const row = document.createElement('div');
     row.className = 'petshop-product-price-row';
     price.insertAdjacentElement('beforebegin', row);
     row.append(price, quantityTotal);
+  };
+
+  const detachFromSummaryPrice = () => {
+    const row = quantityTotal?.closest('.petshop-product-price-row');
+    if (!row || row.closest('.woocommerce-variation-price')) return;
+    restorePriceRow(row);
+    quantityTotal?.remove();
   };
 
   const updateQuantityTotal = () => {
@@ -116,6 +140,15 @@
       if (variationInput) variationInput.value = variation.variation_id || '';
       currentUnitPrice = Number.parseFloat(variation.display_price);
       updateQuantityTotal();
+      detachFromSummaryPrice();
+    });
+    window.jQuery(form).on('show_variation', () => {
+      const variationId = form.querySelector('[name="variation_id"]')?.value || '';
+      if (!variationId) {
+        placeQuantityTotal(summaryPrice());
+        return;
+      }
+      placeQuantityTotal(variationPrice() || summaryPrice());
     });
     window.jQuery(form).on('reset_data', () => {
       if (lead) lead.textContent = defaultLead;
@@ -124,6 +157,7 @@
       if (variationInput) variationInput.value = '';
       currentUnitPrice = Number.parseFloat(quantityTotal?.dataset.unitPrice || '');
       updateQuantityTotal();
+      placeQuantityTotal(summaryPrice());
     });
     form.addEventListener('submit', (event) => {
       if (!form.checkValidity() || !form.querySelector('[name="variation_id"]')?.value) {

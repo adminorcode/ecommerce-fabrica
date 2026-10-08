@@ -145,6 +145,30 @@ const validateSaleProduct = async (page) => {
   await assertTotal(page, 43.00, 'produto promocional qty 2');
 };
 
+const assertBesideVariationPrice = async (page, label) => {
+  try {
+    await page.waitForFunction(() => {
+      const total = document.querySelector('[data-petshop-quantity-total]');
+      const price = document.querySelector('.woocommerce-variation-price .price');
+      const summaryPrice = document.querySelector('.entry-summary > .price, .summary > .price, .entry-summary > .petshop-product-price-row > .price, .summary > .petshop-product-price-row > .price');
+      const besideVariation = Boolean(price && total && price.parentElement === total.parentElement);
+      const notBesideSummary = !(summaryPrice && total && summaryPrice.parentElement === total.parentElement);
+      return besideVariation && notBesideSummary;
+    }, null, { timeout: 3000 });
+  } catch {
+    const placement = await page.evaluate(() => {
+      const total = document.querySelector('[data-petshop-quantity-total]');
+      const price = document.querySelector('.woocommerce-variation-price .price');
+      return {
+        besideVariation: Boolean(price && total && price.parentElement === total.parentElement),
+        totalParent: total?.parentElement?.className || '',
+        hasVariationPrice: Boolean(price),
+      };
+    });
+    failures.push(`${label}: total deveria ficar ao lado do preco da variacao, veio ${JSON.stringify(placement)}.`);
+  }
+};
+
 const chooseVariation = async (page, value) => {
   const select = page.locator('form.variations_form select').first();
   await select.selectOption(value);
@@ -167,18 +191,28 @@ const validateVariableProduct = async (page) => {
   }
 
   await chooseVariation(page, 'p');
+  await assertBesideVariationPrice(page, 'produto variavel P');
   await assertHiddenTotal(page, 'produto variavel P qty 1');
   await setQuantity(page, 2);
   await assertTotal(page, 48.00, 'produto variavel P qty 2');
+  await assertBesideVariationPrice(page, 'produto variavel P qty 2');
 
   await chooseVariation(page, 'g');
   await assertTotal(page, 56.00, 'produto variavel G promocional qty 2');
+  await assertBesideVariationPrice(page, 'produto variavel G');
 
   await page.locator('form.variations_form .reset_variations').click();
   await page.waitForTimeout(300);
   state = await readTotal(page);
   if (!state.hidden || state.text !== '') {
     failures.push(`produto variavel reset: total deveria limpar/ocultar, veio ${JSON.stringify(state)}.`);
+  }
+  const parked = await page.evaluate(() => {
+    const total = document.querySelector('[data-petshop-quantity-total]');
+    return Boolean(total && !total.closest('.woocommerce-variation-price'));
+  });
+  if (!parked) {
+    failures.push('produto variavel reset: total permaneceu junto do preco da variacao.');
   }
 };
 
