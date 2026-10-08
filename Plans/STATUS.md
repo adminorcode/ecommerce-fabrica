@@ -43,7 +43,7 @@
 | [038-total-quantidade-pagina-produto.md](./038-total-quantidade-pagina-produto.md) | Concluído | PDP: total reativo por quantidade validado para simples, promocional e variável, sem refresh e com formatação WooCommerce. Regressão leve do carrinho via Store API/Cart Block validada; 037 segue responsável por atualização do carrinho e 039 por estabilidade quantidade/CEP |
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 | [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
-| [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Pendente | Plano detalhado em 08/10/2026, fundamentado em documentação oficial e auditoria F01–F13; integração nativa dos Blocks, destino de cotação, ViaCEP e matriz T01–T20. Substitui o mecanismo técnico de quantidade do 039. Implementação e ClickUp não iniciados |
+| [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Em andamento | Sessão 02 iniciada: guards globais e resposta manual removidos; callback Store API e bloco de CEP registrados. Cobertura T01–T20, migração Gutenberg, preferência PDP e staging ainda pendentes. |
 
 ## Ordem recomendada de execução
 
@@ -136,4 +136,4 @@ Plano 039 derivado do ticket 86e31yvgj (2026-09-10): depois do CEP no carrinho a
 
 Plano 040 derivado do mockup mobile de “Destaques da loja” (2026-10-01): no card, a legenda da variação some e o padding diminui; “Comprar agora” vira “Comprar” com o ícone de carrinho, no mobile e no desktop.
 
-**Última atualização:** 2026-10-01 (Plano 040 planejado; tarefa ClickUp ainda não criada)
+**Última atualização:** 2026-10-08 (Plano 041 iniciado; tarefa ClickUp ainda não criada)

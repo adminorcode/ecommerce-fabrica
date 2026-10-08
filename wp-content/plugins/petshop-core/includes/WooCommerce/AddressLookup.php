@@ -49,8 +49,6 @@ final class AddressLookup
                     'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
                     'petshop-core'
                 ),
-                'storeApiCartUrl' => rest_url('wc/store/v1/cart'),
-                'storeApiUpdateCustomerUrl' => rest_url('wc/store/v1/cart/update-customer'),
             ]
         );
     }

@@ -25,6 +25,9 @@ $postcode = '94010450';
 $originalCustomer = WC()->customer instanceof WC_Customer ? WC()->customer : null;
 $billingPostcodeBefore = $originalCustomer instanceof WC_Customer ? $originalCustomer->get_billing_postcode() : '';
 $billingCountryBefore = $originalCustomer instanceof WC_Customer ? $originalCustomer->get_billing_country() : '';
+$shippingPostcodeBefore = $originalCustomer instanceof WC_Customer ? $originalCustomer->get_shipping_postcode() : '';
+$shippingCountryBefore = $originalCustomer instanceof WC_Customer ? $originalCustomer->get_shipping_country() : '';
+$shippingStateBefore = $originalCustomer instanceof WC_Customer ? $originalCustomer->get_shipping_state() : '';
 $labels = [
     'Virtuaria PAC',
     'Melhor Envio Correios SEDEX',
@@ -70,11 +73,11 @@ foreach ($quotes['rates'] as $rate) {
 }
 
 if (WC()->customer instanceof WC_Customer) {
-    if (WC()->customer->get_shipping_postcode() !== $postcode || WC()->customer->get_shipping_country() !== 'BR') {
-        $failures[] = 'CEP calculado na PDP nao persistiu no cliente WooCommerce.';
+    if (WC()->customer->get_shipping_postcode() !== $shippingPostcodeBefore || WC()->customer->get_shipping_country() !== $shippingCountryBefore) {
+        $failures[] = 'Prévia da PDP persistiu destino no cliente WooCommerce.';
     }
-    if (WC()->customer->get_shipping_state() !== 'RS') {
-        $failures[] = 'CEP 94010450 deveria gravar UF RS na sessao, sem cidade.';
+    if (WC()->customer->get_shipping_state() !== $shippingStateBefore) {
+        $failures[] = 'Prévia da PDP persistiu UF no cliente WooCommerce.';
     }
     if (trim((string) WC()->customer->get_shipping_city()) !== '') {
         $failures[] = 'Simulacao de frete gravou cidade no cliente.';
@@ -135,7 +138,7 @@ if ($failures !== []) {
     WP_CLI::error('Gate 027 falhou: ' . implode(' | ', $failures));
 }
 
-WP_CLI::success('Gate 027: hub WooCommerce preserva taxas ativas, preco sem entidade HTML, prazo e CEP persistente.');
+WP_CLI::success('Gate 027: hub WooCommerce preserva taxas ativas, preco sem entidade HTML, prazo e prévia de CEP isolada.');
 if (!$melhorEnvioActive) {
     WP_CLI::warning('Plugin melhor-envio-cotacao nao esta ativo neste runtime; instale/ative no painel ou via WP-CLI para validar servicos reais do Melhor Envio.');
 }

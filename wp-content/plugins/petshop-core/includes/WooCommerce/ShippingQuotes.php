@@ -8,6 +8,7 @@ defined('ABSPATH') || exit;
 
 final class ShippingQuotes
 {
+    private static int $quoteTimeoutDepth = 0;
     /**
      * @return array{
      *     rates: list<array{id: string, methodId: string, instanceId: int, label: string, displayLabel: string, carrierLabel: string, badge: string, cost: float, costText: string, deliveryEstimate: string}>,
@@ -15,36 +16,46 @@ final class ShippingQuotes
      *     transportNote: string
      * }
      */
-    public static function quote(\WC_Product $product, string $postcode): array
+    public static function quote(\WC_Product $product, string $postcode, int $quantity = 1): array
     {
-        self::persistPostcode($postcode);
+        $postcode = BrazilianPostcode::normalize($postcode);
+        $quantity = max(1, $quantity);
 
         $price = (float) wc_get_price_to_display($product);
         $content = [
             'data' => $product,
-            'quantity' => 1,
-            'line_total' => $price,
-            'line_subtotal' => $price,
+            'quantity' => $quantity,
+            'line_total' => $price * $quantity,
+            'line_subtotal' => $price * $quantity,
         ];
-        $melhorEnvioData = self::melhorEnvioFormattedData($product);
+        $melhorEnvioData = self::melhorEnvioFormattedData($product, $quantity);
         if ($melhorEnvioData !== null) {
             $content['formatted_data'] = $melhorEnvioData;
         }
 
         $package = [
             'contents' => [$content],
-            'contents_cost' => $price,
+            'contents_cost' => $price * $quantity,
             'applied_coupons' => [],
             'user' => ['ID' => get_current_user_id()],
             'destination' => self::destinationFor($postcode),
-            'cart_subtotal' => $price,
+            'cart_subtotal' => $price * $quantity,
             'product_page_calculation' => true,
         ];
 
-        $packages = WC()->shipping()->calculate_shipping([$package]);
+        self::$quoteTimeoutDepth++;
+        add_filter('http_request_args', [self::class, 'limitMelhorEnvioQuoteTimeout'], 10, 2);
+        try {
+            // A named package key prevents WooCommerce from sharing the cart's
+            // `shipping_for_package_0` session cache with this PDP-only preview.
+            $packages = WC()->shipping()->calculate_shipping(['petshop_preview' => $package]);
+        } finally {
+            remove_filter('http_request_args', [self::class, 'limitMelhorEnvioQuoteTimeout'], 10);
+            self::$quoteTimeoutDepth = max(0, self::$quoteTimeoutDepth - 1);
+        }
         $rates = [];
 
-        foreach (($packages[0]['rates'] ?? []) as $rate) {
+        foreach (($packages['petshop_preview']['rates'] ?? []) as $rate) {
             if (!$rate instanceof \WC_Shipping_Rate) continue;
             $cost = self::rateCost($rate);
             $label = self::plainText($rate->get_label());
@@ -74,7 +85,30 @@ final class ShippingQuotes
         ];
     }
 
-    private static function melhorEnvioFormattedData(\WC_Product $product): ?object
+    /**
+     * Limits only Melhor Envio's quote endpoint while an isolated PDP preview
+     * is running; labels, payments and every other request retain their own
+     * configured timeout.
+     *
+     * @param array<string, mixed> $args
+     * @return array<string, mixed>
+     */
+    public static function limitMelhorEnvioQuoteTimeout(array $args, string $url): array
+    {
+        if (self::$quoteTimeoutDepth < 1) {
+            return $args;
+        }
+
+        $host = strtolower((string) wp_parse_url($url, PHP_URL_HOST));
+        $path = (string) wp_parse_url($url, PHP_URL_PATH);
+        if (str_contains($host, 'melhorenvio.com.br') && str_contains($path, '/shipment/calculate')) {
+            $args['timeout'] = 10;
+        }
+
+        return $args;
+    }
+
+    private static function melhorEnvioFormattedData(\WC_Product $product, int $quantity): ?object
     {
         if (!class_exists('\MelhorEnvio\Factory\ProductServiceFactory')) {
             return null;
@@ -82,7 +116,7 @@ final class ShippingQuotes
 
         try {
             $service = \MelhorEnvio\Factory\ProductServiceFactory::fromId($product->get_id());
-            $formatted = $service->getProduct($product->get_id(), 1);
+            $formatted = $service->getProduct($product->get_id(), $quantity);
         } catch (\Throwable $error) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('Petshop Melhor Envio product formatting failed: ' . $error->getMessage());
@@ -94,8 +128,8 @@ final class ShippingQuotes
     }
 
     /**
-     * Destination for a CEP-only quote. The city is a transient space so
-     * carriers receive a non-empty value; it is not a stored address.
+     * Destination for an isolated CEP-only preview. It is never persisted on
+     * the WooCommerce customer or copied into a checkout address.
      *
      * @return array{country: string, state: string, postcode: string, city: string, address: string, address_2: string}
      */
@@ -107,33 +141,10 @@ final class ShippingQuotes
             'country' => 'BR',
             'state' => $state,
             'postcode' => $postcode,
-            'city' => $state === '' ? '' : ' ',
+            'city' => '',
             'address' => '',
             'address_2' => '',
         ];
-    }
-
-    private static function persistPostcode(string $postcode): void
-    {
-        if (!function_exists('WC') || !WC()->customer) return;
-
-        $state = BrazilianPostcode::stateFromPostcode($postcode);
-        WC()->customer->set_shipping_country('BR');
-        WC()->customer->set_shipping_postcode($postcode);
-        WC()->customer->set_shipping_state($state);
-
-        if (WC()->session) {
-            WC()->session->set_customer_session_cookie(true);
-            $customer = (array) WC()->session->get('customer', []);
-            $customer['shipping_country'] = 'BR';
-            $customer['shipping_postcode'] = $postcode;
-            $customer['shipping_state'] = $state;
-            WC()->session->set('shipping_country', 'BR');
-            WC()->session->set('shipping_postcode', $postcode);
-            WC()->session->set('shipping_state', $state);
-            WC()->session->set('customer', $customer);
-            WC()->session->set('petshop_shipping_postcode', $postcode);
-        }
     }
 
     private static function rateCost(\WC_Shipping_Rate $rate): float

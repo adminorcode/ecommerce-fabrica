@@ -18,6 +18,8 @@ use Petshop\Core\WooCommerce\AccountPrivacy;
 use Petshop\Core\WooCommerce\AddressLookup;
 use Petshop\Core\WooCommerce\CartQuantityStability;
 use Petshop\Core\WooCommerce\ShippingQuoteDestination;
+use Petshop\Core\WooCommerce\ShippingQuoteCartExtension;
+use Petshop\Core\WooCommerce\CartBlocksIntegration;
 use Petshop\Core\WooCommerce\OrderTracking;
 use Petshop\Core\WooCommerce\OrderReceivedMessage;
 use Petshop\Core\WooCommerce\GuestAccount;
@@ -46,7 +48,8 @@ final class Plugin
         AccountPrivacy::bootstrap();
         AddressLookup::bootstrap();
         CartQuantityStability::bootstrap();
-        ShippingQuoteDestination::bootstrap();
+        ShippingQuoteCartExtension::bootstrap();
+        CartBlocksIntegration::bootstrap();
         OrderTracking::bootstrap();
         OrderReceivedMessage::bootstrap();
         GuestAccount::bootstrap();

@@ -340,6 +340,15 @@ const classifySuites = (files) => {
             browserScripts.add('validate-026-checkout-browser.mjs');
         }
         if (
+            file.includes('041-integridade-frete-carrinho-checkout')
+            || file.includes('ShippingQuoteCartExtension')
+            || file.includes('CartBlocksIntegration')
+            || file.includes('validate-041-shipping-destination')
+            || file.startsWith('wp-content/plugins/petshop-core/assets/src/cart-shipping-quote/')
+        ) {
+            suites.add('shipping-integrity-041');
+        }
+        if (
             file.includes('ShippingQuoteDestination')
             || file.includes('BrazilianPostcode')
             || file.includes('validate-shipping-quote-destination')
@@ -438,6 +447,9 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('shipping-quote-destination')) {
         evalFile('validate-shipping-quote-destination.php');
+    }
+    if (suites.has('shipping-integrity-041')) {
+        evalFile('validate-041-shipping-destination.php');
     }
     if (suites.has('shipping-dependencies-036')) {
         evalFile('validate-036-versioned-shipping-dependencies.php');

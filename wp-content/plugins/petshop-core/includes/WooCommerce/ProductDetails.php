@@ -232,12 +232,27 @@ final class ProductDetails
     {
         check_ajax_referer(self::NONCE_ACTION, 'nonce');
         $postcode = isset($_POST['postcode']) && is_scalar($_POST['postcode']) ? preg_replace('/\D+/', '', wp_unslash((string) $_POST['postcode'])) : '';
-        $productId = isset($_POST['variation_id']) && absint($_POST['variation_id']) > 0 ? absint($_POST['variation_id']) : absint($_POST['product_id'] ?? 0);
-        if (!is_string($postcode) || strlen($postcode) !== 8 || $productId <= 0) wp_send_json_error(['message' => __('Informe um CEP e um produto válidos.', 'petshop-core')], 400);
+        $parentId = absint($_POST['product_id'] ?? 0);
+        $variationId = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
+        $productId = $variationId > 0 ? $variationId : $parentId;
+        $rawQuantity = isset($_POST['quantity']) && is_scalar($_POST['quantity']) ? (string) wp_unslash($_POST['quantity']) : '1';
+        if (!ctype_digit($rawQuantity) || (int) $rawQuantity < 1) wp_send_json_error(['message' => __('Informe uma quantidade inteira válida.', 'petshop-core')], 400);
+        $quantity = (int) $rawQuantity;
+        if (!is_string($postcode) || BrazilianPostcode::stateFromPostcode($postcode) === '' || $productId <= 0) wp_send_json_error(['message' => __('Informe um CEP e um produto válidos.', 'petshop-core')], 400);
         $product = wc_get_product($productId);
         if (!$product instanceof \WC_Product || !$product->is_purchasable()) wp_send_json_error(['message' => __('Produto indisponível para cálculo.', 'petshop-core')], 400);
+        if ($product->is_type('variable')) {
+            wp_send_json_error(['message' => __('Selecione uma variação para calcular a entrega.', 'petshop-core')], 400);
+        }
+        if ($variationId > 0 && (!$product->is_type('variation') || (int) $product->get_parent_id() !== $parentId)) {
+            wp_send_json_error(['message' => __('A variação informada não corresponde ao produto.', 'petshop-core')], 400);
+        }
+        $maximum = $product->get_max_purchase_quantity();
+        if (!$product->has_enough_stock($quantity) || ($maximum >= 0 && $quantity > $maximum)) {
+            wp_send_json_error(['message' => __('A quantidade informada não está disponível para cálculo.', 'petshop-core')], 400);
+        }
 
-        $quotes = ShippingQuotes::quote($product, $postcode);
+        $quotes = ShippingQuotes::quote($product, $postcode, $quantity);
         if ($quotes['rates'] === []) wp_send_json_error(['message' => __('Não há opção de entrega para este CEP. Confira o endereço ou fale com o atendimento.', 'petshop-core')], 404);
         wp_send_json_success($quotes);
     }

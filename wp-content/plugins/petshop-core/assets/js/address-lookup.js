@@ -2,11 +2,11 @@
     'use strict';
 
     const digits = (value) => String(value || '').replace(/\D/g, '');
-    const checkoutStore = {
-        nonce: '',
-        noncePromise: null
-    };
     const autoComplements = new Map();
+    const generations = new WeakMap();
+    const revisionOf = (field) => Number(field?.dataset.petshopManualRevision || 0);
+    const revisionSnapshot = (fields) => Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, revisionOf(field)]));
+    const unchanged = (field, revisions, key) => revisionOf(field) === (revisions[key] || 0);
 
     const setNativeValue = (field, value) => {
         if (!field || value === undefined || value === null) {
@@ -167,34 +167,6 @@
         };
     };
 
-    const getStoreNonce = async () => {
-        const config = window.petshopAddressLookup || {};
-
-        if (!config.storeApiCartUrl) {
-            return '';
-        }
-
-        if (checkoutStore.nonce) {
-            return checkoutStore.nonce;
-        }
-
-        if (!checkoutStore.noncePromise) {
-            checkoutStore.noncePromise = fetch(config.storeApiCartUrl, {
-                credentials: 'same-origin',
-                headers: {
-                    Accept: 'application/json'
-                }
-            })
-                .then((response) => {
-                    checkoutStore.nonce = response.headers.get('Nonce') || '';
-                    return checkoutStore.nonce;
-                })
-                .catch(() => '');
-        }
-
-        return checkoutStore.noncePromise;
-    };
-
     const getFieldValue = (scope, selectors) => {
         const field = findField(scope, selectors);
 
@@ -208,127 +180,12 @@
         return id.includes('shipping') || name.includes('shipping') ? 'shipping' : 'billing';
     };
 
-    const collectAddress = (postcode, fields, lookup = {}) => {
-        const scope = getScope(postcode);
-        const type = getAddressType(postcode);
-        const number = getFieldValue(scope, [
-            `#${type}-petshop-number`,
-            `#${type}-number`,
-            `#${type}_number`,
-            `input[name="${type}_number"]`,
-            'input[name="petshop/number"]'
-        ]);
-        const neighborhood = fields.neighborhood?.value || lookup.bairro || '';
-
-        return {
-            first_name: getFieldValue(scope, [
-                `#${type}-first_name`,
-                `#${type}_first_name`,
-                `input[name="${type}_first_name"]`,
-                'input[autocomplete="given-name"]'
-            ]),
-            last_name: getFieldValue(scope, [
-                `#${type}-last_name`,
-                `#${type}_last_name`,
-                `input[name="${type}_last_name"]`,
-                'input[autocomplete="family-name"]'
-            ]),
-            company: getFieldValue(scope, [
-                `#${type}-company`,
-                `#${type}_company`,
-                `input[name="${type}_company"]`,
-                'input[autocomplete="organization"]'
-            ]),
-            country: getFieldValue(scope, [
-                `#${type}-country`,
-                `#${type}_country`,
-                `select[name="${type}_country"]`,
-                `input[name="${type}_country"]`,
-                'select[autocomplete="country"]',
-                'input[autocomplete="country"]'
-            ]) || 'BR',
-            address_1: fields.address?.value || lookup.logradouro || '',
-            address_2: fields.complement?.value || lookup.complemento || '',
-            city: fields.city?.value || lookup.localidade || '',
-            state: fields.state?.value || lookup.uf || '',
-            postcode: lookup.cep
-                ? `${String(lookup.cep).slice(0, 5)}-${String(lookup.cep).slice(5)}`
-                : (postcode.value || ''),
-            'petshop/number': number || lookup.number || '',
-            'petshop/neighborhood': neighborhood,
-            phone: getFieldValue(scope, [
-                `#${type}-phone`,
-                `#${type}_phone`,
-                `input[name="${type}_phone"]`,
-                'input[autocomplete="tel"]'
-            ]),
-            email: getFieldValue(scope, [
-                '#email',
-                '#billing-email',
-                '#billing_email',
-                'input[name="email"]',
-                'input[name="billing_email"]',
-                'input[autocomplete="email"]'
-            ])
-        };
-    };
-
-    const applyLookupFields = (fields, data) => {
-        setNativeValue(fields.address, data.logradouro);
-        applyComplement(fields.complement, data.complemento || '');
-        setNativeValue(fields.neighborhood, data.bairro);
-        setNativeValue(fields.city, data.localidade);
-        setNativeValue(fields.state, data.uf);
-    };
-
-    const syncStoreApiAddress = async (postcode, fields, lookup = {}) => {
-        if (!document.body.classList.contains('woocommerce-checkout')) {
-            return;
-        }
-
-        const config = window.petshopAddressLookup || {};
-
-        if (!config.storeApiUpdateCustomerUrl) {
-            return;
-        }
-
-        const nonce = await getStoreNonce();
-
-        if (!nonce) {
-            return;
-        }
-
-        const type = getAddressType(postcode);
-        const address = collectAddress(postcode, fields, lookup);
-        const payload = type === 'shipping'
-            ? { shipping_address: address }
-            : { billing_address: address };
-
-        try {
-            const response = await fetch(config.storeApiUpdateCustomerUrl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Nonce: nonce
-                },
-                body: JSON.stringify(payload)
-            });
-
-            checkoutStore.nonce = response.headers.get('Nonce') || checkoutStore.nonce;
-            const cart = await response.json().catch(() => null);
-
-            if (response.ok && cart && window.wp?.data?.dispatch) {
-                try {
-                    window.wp.data.dispatch('wc/store/cart').receiveCart(cart);
-                } catch (error) {
-                    // The direct Store API response is still the source of truth.
-                }
-            }
-        } catch (error) {
-            // Native field events keep the form usable when Store API sync is unavailable.
-        }
+    const applyLookupFields = (fields, data, revisions) => {
+        if (unchanged(fields.address, revisions, 'address')) setNativeValue(fields.address, data.logradouro);
+        if (unchanged(fields.complement, revisions, 'complement')) applyComplement(fields.complement, data.complemento || '');
+        if (unchanged(fields.neighborhood, revisions, 'neighborhood')) setNativeValue(fields.neighborhood, data.bairro);
+        if (unchanged(fields.city, revisions, 'city')) setNativeValue(fields.city, data.localidade);
+        if (unchanged(fields.state, revisions, 'state')) setNativeValue(fields.state, data.uf);
     };
 
     const getComplementKey = (field) => {
@@ -394,6 +251,8 @@
 
     const lookup = async (postcode) => {
         const cep = digits(postcode.value);
+        const generation = (generations.get(postcode) || 0) + 1;
+        generations.set(postcode, generation);
 
         if (cep.length !== 8) {
             return;
@@ -404,6 +263,7 @@
         }
 
         postcode.dataset.petshopLastCep = cep;
+        const lookupRevisions = revisionSnapshot(getAddressFields(postcode));
 
         const config = window.petshopAddressLookup || {};
 
@@ -443,6 +303,7 @@
             const result = await response.json();
 
             if (!response.ok || !result.success) {
+                if (generations.get(postcode) !== generation || digits(postcode.value) !== cep) return;
                 delete postcode.dataset.petshopLastCep;
 
                 showMessage(
@@ -457,6 +318,9 @@
             }
 
             const data = result.data;
+            if (generations.get(postcode) !== generation || digits(postcode.value) !== cep) {
+                return;
+            }
             const fields = getAddressFields(postcode);
 
             const numberBeforeLookup = getFieldValue(getScope(postcode), [
@@ -466,10 +330,7 @@
                 '#shipping-number',
                 'input[name="petshop/number"]'
             ]);
-            applyLookupFields(fields, data);
-            await syncStoreApiAddress(postcode, fields, { ...data, cep, number: numberBeforeLookup });
-            const refreshed = getAddressFields(postcode);
-            applyLookupFields(refreshed, data);
+            applyLookupFields(fields, data, lookupRevisions);
             if (numberBeforeLookup) {
                 const numberField = findField(getScope(postcode), [
                     '#billing-petshop-number',
@@ -481,11 +342,15 @@
                 setNativeValue(numberField, numberBeforeLookup);
             }
 
+            if (generations.get(postcode) !== generation || digits(postcode.value) !== cep) {
+                return;
+            }
             showMessage(
                 postcode,
                 config.found || 'Endereço encontrado pelo CEP.'
             );
         } catch (error) {
+            if (generations.get(postcode) !== generation || digits(postcode.value) !== cep) return;
             delete postcode.dataset.petshopLastCep;
 
             showMessage(
@@ -532,6 +397,17 @@
             }
 
             field.dataset.petshopComplementDirty = '1';
+            field.dataset.petshopManualRevision = String(revisionOf(field) + 1);
+        });
+    };
+
+    const bindAddressField = (field) => {
+        if (field.dataset.petshopAddressRevisionBound === '1') return;
+        field.dataset.petshopAddressRevisionBound = '1';
+        field.addEventListener('input', () => {
+            if (field.dataset.petshopProgrammaticValue !== '1') {
+                field.dataset.petshopManualRevision = String(revisionOf(field) + 1);
+            }
         });
     };
 
@@ -619,6 +495,15 @@
         document
             .querySelectorAll(complementSelectors.join(','))
             .forEach(bindComplement);
+
+        document.querySelectorAll([
+            'input[autocomplete="address-line1"]',
+            'input[autocomplete="address-level2"]',
+            'select[autocomplete="address-level1"]',
+            'input[autocomplete="address-level1"]',
+            '#billing-petshop-neighborhood', '#shipping-petshop-neighborhood',
+        ].join(','))
+            .forEach(bindAddressField);
 
         const phoneSelectors = [
             '#billing_phone',

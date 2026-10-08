@@ -58,45 +58,16 @@ final class BrazilianPostcodeTest extends TestCase
         self::assertSame('', BrazilianPostcode::stateFromPostcode('abc'));
     }
 
-    public function testCepOnlyQuoteDerivesStateAndAFilledAddressDoesNot(): void
+    public function testCepOnlyQuoteBuildsOnlyTheSupportedDestinationFields(): void
     {
-        self::assertTrue(ShippingQuoteDestination::shouldDeriveState([
-            'country' => 'BR',
-            'postcode' => '01310-100',
-        ]));
-        self::assertTrue(ShippingQuoteDestination::shouldDeriveState([
-            'state' => 'SP',
-            'city' => '',
-            'address_1' => '',
-        ]));
-        self::assertTrue(ShippingQuoteDestination::shouldDeriveState([
-            'state' => '',
-            'city' => 'São Paulo',
-            'address_1' => 'Avenida Paulista',
-        ]));
-        self::assertFalse(ShippingQuoteDestination::shouldDeriveState([
-            'state' => 'SP',
-            'city' => 'São Paulo',
-            'address_1' => 'Avenida Paulista',
-        ]));
-        self::assertTrue(ShippingQuoteDestination::shouldDeriveState([
-            'state' => '   ',
-            'city' => '   ',
-            'address_1' => '   ',
-        ]));
-    }
-
-    public function testTransientCityExistsOnlyForAMatchingBrazilianQuote(): void
-    {
-        self::assertSame(' ', ShippingQuoteDestination::transientCity('', 'BR', 'SP', '01310100'));
-        self::assertSame(' ', ShippingQuoteDestination::transientCity('', 'BR', 'SP', '01310-100'));
-        self::assertSame(' ', ShippingQuoteDestination::transientCity('   ', 'br', 'sp', '01310100'));
-        self::assertSame(' ', ShippingQuoteDestination::transientCity(null, 'BR', 'SP', '01310100'));
-        self::assertSame('São Paulo', ShippingQuoteDestination::transientCity('São Paulo', 'BR', 'SP', '01310100'));
-        self::assertSame('', ShippingQuoteDestination::transientCity('', 'BR', 'RJ', '01310100'));
-        self::assertSame('', ShippingQuoteDestination::transientCity('', 'BR', '', '01310100'));
-        self::assertSame('', ShippingQuoteDestination::transientCity('', 'US', 'SP', '01310100'));
-        self::assertSame('', ShippingQuoteDestination::transientCity('', 'BR', 'SP', '00000000'));
+        self::assertSame(
+            ['country' => 'BR', 'state' => 'SP', 'postcode' => '01310100'],
+            ShippingQuoteDestination::forPostcode('01310-100')
+        );
+        self::assertSame(
+            ['country' => '', 'state' => '', 'postcode' => ''],
+            ShippingQuoteDestination::forPostcode('00000-000')
+        );
     }
 
     public function testPdpDestinationCarriesTheUfAndNotAStoredCity(): void
@@ -108,7 +79,7 @@ final class BrazilianPostcodeTest extends TestCase
         self::assertSame('SP', $saoPaulo['state']);
         self::assertSame('RJ', $rio['state']);
         self::assertSame('', $unknown['state']);
-        self::assertSame(' ', $saoPaulo['city']);
+        self::assertSame('', $saoPaulo['city']);
         self::assertSame('', $unknown['city']);
         self::assertSame('', $saoPaulo['address']);
         self::assertSame('', $saoPaulo['address_2']);

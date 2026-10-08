@@ -53,7 +53,7 @@ final class BrazilianPostcode
 
     public static function stateFromPostcode(string $postcode): string
     {
-        $digits = preg_replace('/\D+/', '', $postcode) ?? '';
+        $digits = self::normalize($postcode);
         if (strlen($digits) !== 8) {
             return '';
         }
@@ -66,5 +66,12 @@ final class BrazilianPostcode
         }
 
         return '';
+    }
+
+    public static function normalize(string $postcode): string
+    {
+        $digits = preg_replace('/\D+/', '', $postcode) ?? '';
+
+        return strlen($digits) === 8 ? $digits : '';
     }
 }

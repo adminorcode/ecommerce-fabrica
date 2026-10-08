@@ -16,7 +16,6 @@ final class CheckoutCustomerData
         add_action('woocommerce_init', [self::class, 'registerCheckoutBlockFields']);
         add_action('template_redirect', [self::class, 'hydrateCheckoutPage'], 5);
         add_filter('rest_request_before_callbacks', [self::class, 'hydrateStoreApiRequest'], 5, 3);
-        add_filter('rest_request_after_callbacks', [self::class, 'filterStoreApiCartResponse'], 10, 3);
         add_action('wp_logout', [self::class, 'clearTaggedSessionData']);
         add_action('woocommerce_set_additional_field_value', [self::class, 'syncAdditionalFieldValue'], 10, 4);
         add_filter('woocommerce_get_default_value_for_petshop/number', [self::class, 'defaultNumber'], 10, 3);

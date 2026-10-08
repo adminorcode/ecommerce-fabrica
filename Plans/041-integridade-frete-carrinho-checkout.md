@@ -1,6 +1,6 @@
 # Plano 041 — Frete e carrinho consistentes em toda a loja
 
-**Status:** Pendente — planejamento detalhado; implementação não iniciada.
+**Status:** Em andamento — Sessão 02 iniciada; mecanismos legados de quantidade e resposta manual removidos, callback Store API e bloco de CEP registrados. A matriz completa T01–T20 continua pendente.
 **Data:** 2026-10-08.
 **Alcance:** global nos fluxos próprios de produto, cards/vitrines, minicarrinho, carrinho, checkout e formulários de endereço.
 **Branch de implementação:** `041-integridade-frete-carrinho-checkout`, a partir de `master`, conforme convenção do projeto.
