@@ -97,6 +97,13 @@ const cardMetrics = async (card) => card.evaluate((element) => {
 });
 
 const findPlan031Card = (page) => page.locator('li.product').filter({ hasText: 'Produto Variável Plano 031' }).first();
+const addOperations = (request) => {
+  if (request.method() !== 'POST' || !/\/wc\/store\/v1\/(cart\/add-item|batch)/.test(request.url())) return [];
+  const payload = request.postDataJSON();
+  return (payload?.requests || [{ path: new URL(request.url()).pathname, body: payload }])
+    .map((operation, index) => ({ ...operation, index }))
+    .filter((operation) => operation.path?.endsWith('/cart/add-item'));
+};
 
 const visibleFixtureProducts = async (page) => page.locator('li.product').evaluateAll((products) => products
   .map((product) => product.textContent.replace(/\s+/g, ' ').trim())
@@ -170,28 +177,30 @@ const addCurrentCardToCart = async (page, card, expectedVariationId, label) => {
   const responses = [];
   const requests = [];
   page.on('request', (request) => {
-    if (request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/add-item')) {
-      requests.push(request.postDataJSON());
-    }
+    if (/\/wc\/store\/v1\/(cart\/add-item|batch)/.test(request.url())) requests.push(...addOperations(request).map((operation) => operation.body));
   });
   page.on('response', async (response) => {
-    if (response.url().includes('/wc/store/v1/cart/add-item')) {
+    if (/\/wc\/store\/v1\/(cart\/add-item|batch)/.test(response.url()) && addOperations(response.request()).length) {
       responses.push(response);
     }
   });
 
   const [addResponse] = await Promise.all([
-    page.waitForResponse((response) => response.url().includes('/wc/store/v1/cart/add-item'), { timeout: 20000 }),
+    page.waitForResponse((response) => /\/wc\/store\/v1\/(cart\/add-item|batch)/.test(response.url()) && addOperations(response.request()).length > 0, { timeout: 20000 }),
     card.locator('[data-petshop-buy-now]').first().click(),
   ]);
   await page.waitForTimeout(800);
   const cart = await storeApiCart(page);
   const item = cart?.items?.find((candidate) => Number(candidate.variation_id || candidate.id) === expectedVariationId) || null;
   const miniAfter = await page.locator('.wc-block-mini-cart__button').first().getAttribute('aria-label').catch(() => '');
-  const responseBody = addResponse ? await addResponse.json().catch(() => ({})) : {};
+  const envelope = addResponse ? await addResponse.json().catch(() => ({})) : {};
+  const operationIndex = addResponse ? addOperations(addResponse.request())[0]?.index : 0;
+  const nestedResponse = envelope.responses?.[operationIndex];
+  const responseBody = nestedResponse?.body || envelope;
   const cartCount = cart?.items_count || cart?.items?.reduce((total, candidate) => total + Number(candidate.quantity || 0), 0) || 0;
 
   record(addResponse?.ok(), `${label}: add-item nao retornou sucesso`);
+  record(!nestedResponse || (nestedResponse.status >= 200 && nestedResponse.status < 300), `${label}: subresposta add-item falhou dentro do batch`);
   record(Number(requests.at(-1)?.id || 0) === expectedVariationId, `${label}: payload add-item enviou ${requests.at(-1)?.id}, esperado ${expectedVariationId}`);
   record(Boolean(item), `${label}: carrinho nao contem variation ID esperada ${expectedVariationId}`);
   record(cartCount > beforeCount, `${label}: contagem do carrinho nao incrementou`);
@@ -224,11 +233,7 @@ const verifyIncompleteSelection = async (page) => {
     });
   });
   const addRequests = [];
-  page.on('requestfinished', (request) => {
-    if (request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/add-item')) {
-      addRequests.push(request.url());
-    }
-  });
+  page.on('request', (request) => addRequests.push(...addOperations(request)));
   await card.locator('[data-petshop-buy-now]').first().click();
   await page.waitForTimeout(500);
   const active = await page.evaluate(() => ({
@@ -256,11 +261,7 @@ const verifySoldoutSelection = async (page) => {
     button.disabled || button.getAttribute('aria-disabled') === 'true' || button.classList.contains('is-disabled')
   ));
   const addResponses = [];
-  page.on('response', (response) => {
-    if (response.url().includes('/wc/store/v1/cart/add-item')) {
-      addResponses.push(response.status());
-    }
-  });
+  page.on('request', (request) => addResponses.push(...addOperations(request).map(() => 'attempt')));
   if (!buttonDisabled) {
     await card.locator('[data-petshop-buy-now]').first().click();
   }
@@ -285,11 +286,7 @@ const verifyPersonalizable = async (page) => {
   }
 
   const addRequests = [];
-  page.on('request', (request) => {
-    if (request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/add-item')) {
-      addRequests.push(request.url());
-    }
-  });
+  page.on('request', (request) => addRequests.push(...addOperations(request)));
   await Promise.all([
     page.waitForURL((url) => url.searchParams.get('petshop_personalize') === '1', { timeout: 20000 }),
     product.locator('[data-petshop-personalizable], a[href*="petshop_personalize=1"]').first().click(),

@@ -63,6 +63,16 @@ class Element {
     }
   }
 
+  prepend(...children) {
+    for (const child of children) child.parentElement = this;
+    this.children.unshift(...children);
+  }
+
+  replaceChildren(...children) {
+    this.children = [];
+    this.append(...children);
+  }
+
   setAttribute(name, value) {
     const stringValue = String(value);
     this.attributes.set(name, stringValue);
@@ -254,6 +264,7 @@ card.append(image, price, variableRoot, buyButton);
 
 const listeners = new Map();
 const document = {
+  createElement(tagName) { return new Element(tagName); },
   body: new Element('body'),
   addEventListener(type, listener) {
     listeners.set(type, [...(listeners.get(type) || []), listener]);
@@ -273,6 +284,12 @@ const context = createContext({
     },
     setTimeout(callback) {
       callback();
+    },
+    petshopCartOperations: {
+      async addItem(item) {
+        requests.push(JSON.parse(JSON.stringify({ id: Number(item.id), quantity: 1, ...(item.variation ? { variation: item.variation } : {}) })));
+        return { items: [] };
+      },
     },
   },
   document,

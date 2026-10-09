@@ -124,6 +124,7 @@ if (!is_dir($gateDir) && !wp_mkdir_p($gateDir)) {
     $written = file_put_contents(
         $gateDir . '/027.json',
         wp_json_encode([
+            'productId' => $product->get_id(),
             'productPath' => (string) wp_parse_url((string) get_permalink($product->get_id()), PHP_URL_PATH),
             'postcode' => $postcode,
             'labels' => $labels,

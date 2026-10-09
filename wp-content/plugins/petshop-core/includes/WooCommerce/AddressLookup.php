@@ -14,8 +14,19 @@ final class AddressLookup
     public static function bootstrap(): void
     {
         add_action('wp_enqueue_scripts', [self::class, 'enqueue']);
+        add_action('wp_enqueue_scripts', [self::class, 'disableDuplicateAutofill'], 100);
         add_action('wp_ajax_' . self::AJAX_ACTION, [self::class, 'ajaxLookup']);
         add_action('wp_ajax_nopriv_' . self::AJAX_ACTION, [self::class, 'ajaxLookup']);
+    }
+
+    /** The store owns address lookup; keep the carrier's shipping calculation intact. */
+    public static function disableDuplicateAutofill(): void
+    {
+        if (!is_checkout() && !is_account_page()) return;
+        $script = wp_scripts()->registered['virtuaria-correios-autofill'] ?? null;
+        if ($script && str_contains((string) $script->src, '/virtuaria-correios/public/js/autofill')) {
+            wp_dequeue_script('virtuaria-correios-autofill');
+        }
     }
 
     public static function enqueue(): void
@@ -30,7 +41,7 @@ final class AddressLookup
         wp_enqueue_script(
             'petshop-address-lookup',
             plugins_url($relative, PETSHOP_CORE_FILE),
-            [],
+            is_checkout() ? ['petshop-cart-operations'] : [],
             is_file($path) ? (string) filemtime($path) : '1.0.0',
             true
         );

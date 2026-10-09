@@ -99,6 +99,16 @@ run_eval_file validate-030.php
 run_eval_file validate-032-search.php
 run_eval_file validate-039-cart-qty.php
 run_eval_file validate-shipping-quote-destination.php
+run_eval_file validate-041-shipping-destination.php
+run_eval_file validate-041-shipping-preview.php
+"${COMPOSE[@]}" wp eval 'require "/var/www/html/scripts/validate-041-shipping-selection-cache.php";'
+run_eval_file validate-041-block-persistence.php
+run_eval_file validate-041-native-commerce.php
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-quote-preference.mjs
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-operations.mjs
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-request-coordinator.mjs
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-estimate.mjs
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-runner-cleanup.mjs
 run_eval_file validate-034-emails.php
 run_eval_file validate-035-menu-dropdown.php
 run_eval_file smoke-012-order-flow.php
@@ -129,11 +139,26 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
   esac
   original_siteurl="$(run_wp option get siteurl)"
   restore_urls() {
-    run_wp option update home "$original_home" >/dev/null
-    run_wp option update siteurl "$original_siteurl" >/dev/null
-    run_wp cache flush >/dev/null
+    local restore_status=0
+    run_wp option update home "$original_home" >/dev/null || restore_status=$?
+    run_wp option update siteurl "$original_siteurl" >/dev/null || restore_status=$?
+    run_wp cache flush >/dev/null || restore_status=$?
+    return "$restore_status"
   }
-  trap restore_urls EXIT
+  finish_browser_gate() {
+    local original_status=$?
+    local cleanup_status=0
+    local restore_status=0
+    trap - EXIT
+    if [[ "$#" -gt 0 ]]; then "$1" || cleanup_status=$?; fi
+    restore_urls || restore_status=$?
+    if [[ "$cleanup_status" -ne 0 ]]; then echo "Browser fixture cleanup failed: $cleanup_status" >&2; fi
+    if [[ "$restore_status" -ne 0 ]]; then echo "Browser URL restore failed: $restore_status" >&2; fi
+    if [[ "$original_status" -ne 0 ]]; then exit "$original_status"; fi
+    if [[ "$cleanup_status" -ne 0 ]]; then exit "$cleanup_status"; fi
+    exit "$restore_status"
+  }
+  trap finish_browser_gate EXIT
 
   run_wp option update home http://wordpress >/dev/null
   run_wp option update siteurl http://wordpress >/dev/null
@@ -141,6 +166,23 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
   if [[ "$RUN_BROWSER" -eq 1 ]]; then
     echo "==> browser gates (container)"
+    cleanup_plan041_fixture() {
+      local cleanup_status=0
+      run_eval_file cleanup-041-browser-customer.php || cleanup_status=$?
+      rm -f .local/041-browser-fixture.json || cleanup_status=$?
+      run_eval_file cleanup-041-editor-fixture.php || cleanup_status=$?
+      rm -f .local/041-editor-fixture.json || cleanup_status=$?
+      return "$cleanup_status"
+    }
+    trap 'finish_browser_gate cleanup_plan041_fixture' EXIT
+    mkdir -p .local
+    run_wp eval-file /var/www/html/scripts/setup-041-browser-customer.php > .local/041-browser-fixture.json
+    run_wp eval-file /var/www/html/scripts/setup-041-editor-fixture.php > .local/041-editor-fixture.json
+    for script041 in validate-041-product-quote-browser.mjs validate-041-address-races-browser.mjs validate-041-editor-browser.mjs validate-041-checkout-address-browser.mjs validate-041-cart-delivery-browser.mjs validate-041-cart-concurrency-browser.mjs validate-041-cart-performance-browser.mjs validate-041-delivery-performance-browser.mjs validate-041-cart-consistency-browser.mjs; do
+      docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script041"
+    done
+    cleanup_plan041_fixture
+    trap finish_browser_gate EXIT
     for script in validate-005-session-01-browser.mjs validate-005-session-02-browser.mjs validate-005-catalog-layout-browser.mjs validate-013-browser.mjs validate-016-product-grid-browser.mjs validate-018-commercial-pages-browser.mjs validate-012-personalizer-browser.mjs validate-023-footer-browser.mjs validate-024-home-campaigns-carousel-browser.mjs validate-025-account-registration-browser.mjs validate-030-order-received-browser.mjs validate-032-search-browser.mjs validate-037-cart-auto-update-browser.mjs validate-039-cart-qty-browser.mjs validate-035-menu-dropdown-browser.mjs validate-no-theme-hero-browser.mjs; do
       docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script"
     done
@@ -154,10 +196,10 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
 
     run_eval_file setup-031-product-card-fixture.php
     plan031_fixture_ready=1
-    trap 'cleanup_plan031_fixture; restore_urls' EXIT
+    trap 'finish_browser_gate cleanup_plan031_fixture' EXIT
     docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=localhost:8888 node node /workspace/scripts/validate-031-product-card-browser.mjs
     cleanup_plan031_fixture
-    trap restore_urls EXIT
+    trap finish_browser_gate EXIT
 
     docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-016-product-grid-editor.mjs
   fi

@@ -196,7 +196,7 @@ const routeRegistrationCepUnavailable = async (page) => {
     const request = route.request();
     const body = request.postData() || '';
     if (request.method() !== 'POST' || !body.includes('action=petshop_lookup_cep')) {
-      await route.continue();
+      await route.fallback();
       return;
     }
 
@@ -605,7 +605,7 @@ const routeViaCep = async (page) => {
     const request = route.request();
     const body = request.postData() || '';
     if (request.method() !== 'POST' || !body.includes('action=petshop_lookup_cep')) {
-      await route.continue();
+      await route.fallback();
       return;
     }
 
@@ -675,7 +675,8 @@ const assertViaCep = async (viaCepBrowser = browser) => {
       });
     }
     page.on('response', async (response) => {
-      if (response.url().includes('/wc/store/v1/cart/update-customer')) {
+      if (response.url().includes('/wc/store/v1/cart/update-customer')
+        || (response.url().includes('/wc/store/v1/batch') && response.request().postData()?.includes('/cart/update-customer'))) {
         updateResponses.push(response);
         if (DIAG_VIACEP) {
           console.log(`[026-VIACEP-RESPONSE] status=${response.status()}`);
@@ -687,7 +688,7 @@ const assertViaCep = async (viaCepBrowser = browser) => {
     const waitForUpdateCustomer = (cep) => page.waitForResponse(
       (response) => {
         const body = response.request().postData() || '';
-        return response.url().includes('/wc/store/v1/cart/update-customer')
+        return (response.url().includes('/wc/store/v1/cart/update-customer') || response.url().includes('/wc/store/v1/batch'))
           && response.ok()
           && body.includes(cep);
       },
@@ -827,9 +828,16 @@ const assertViaCep = async (viaCepBrowser = browser) => {
     await page.goto(`${baseUrl}/finalizar-compra/`, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
     await page.locator(postcodeSelectors.join(', ')).first().waitFor({ state: 'visible', timeout: ACTION_TIMEOUT });
     log('ViaCEP: checkout carregado');
+    if (process.env.PETSHOP_EXPECT_FORCED_BILLING === '1') {
+      recordFailure(await page.evaluate(() => window.wc?.wcSettings?.getSetting('forcedBillingAddress', false)) === true,
+        'Ensaio billing obrigatorio sem forcedBillingAddress ativo');
+    }
     let fields = await locateViaCepFields();
     let { postcode, number, address, complement, neighborhood, city, state } = fields;
     log('ViaCEP: campos encontrados');
+    await page.waitForFunction(() => window.wp.data.select('wc/store/cart').hasFinishedResolution('getCartData')
+      && !window.petshopCartOperations.busy());
+    await page.evaluate(() => window.petshopCartOperations.waitForIdle());
 
     recordFailure(await number.count() > 0, 'ViaCEP: campo numero ausente no checkout');
     recordFailure(await neighborhood.count() > 0, 'ViaCEP: campo bairro ausente no checkout');
@@ -862,6 +870,12 @@ const assertViaCep = async (viaCepBrowser = browser) => {
     const cartAfterFirstCep = await waitForCartPostcode('01001000');
     log('ViaCEP: estado Store API lido');
     const acceptedAddress = selectAcceptedAddress(cartAfterFirstCep);
+    if (process.env.PETSHOP_EXPECT_FORCED_BILLING === '1') {
+      for (const key of ['postcode', 'address_1', 'address_2', 'city', 'state', 'petshop/number', 'petshop/neighborhood']) {
+        recordFailure(cartAfterFirstCep.shipping_address?.[key] === cartAfterFirstCep.billing_address?.[key],
+          `Billing obrigatorio: shipping divergente em ${key}`);
+      }
+    }
     if (DIAG_VIACEP) {
       logAddressState('CART1-BILLING', cartAfterFirstCep.billing_address || {});
       logAddressState('CART1-SHIPPING', cartAfterFirstCep.shipping_address || {});

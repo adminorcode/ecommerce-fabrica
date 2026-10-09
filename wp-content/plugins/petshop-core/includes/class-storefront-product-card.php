@@ -53,7 +53,7 @@ final class StorefrontProductCard
         wp_enqueue_script(
             'petshop-product-card',
             plugins_url($scriptRelative, PETSHOP_CORE_FILE),
-            [],
+            ['petshop-cart-operations'],
             is_file($scriptPath) ? (string) filemtime($scriptPath) : '1.0.0',
             true
         );

@@ -4,9 +4,19 @@
     const digits = (value) => String(value || '').replace(/\D/g, '');
     const autoComplements = new Map();
     const generations = new WeakMap();
+    const controllers = new WeakMap();
     const revisionOf = (field) => Number(field?.dataset.petshopManualRevision || 0);
     const revisionSnapshot = (fields) => Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, revisionOf(field)]));
     const unchanged = (field, revisions, key) => revisionOf(field) === (revisions[key] || 0);
+    const applyBlockAddress = (type, values) => {
+        const actions = window.wp.data.dispatch('wc/store/cart');
+        actions[type === 'shipping' ? 'setShippingAddress' : 'setBillingAddress'](values);
+        if (type === 'shipping' && window.wp.data.select('wc/store/checkout').getUseShippingAsBilling?.()) {
+            actions.setBillingAddress(values);
+        } else if (type === 'billing' && window.wc?.wcSettings?.getSetting?.('forcedBillingAddress', false)) {
+            actions.setShippingAddress(values);
+        }
+    };
 
     const setNativeValue = (field, value) => {
         if (!field || value === undefined || value === null) {
@@ -224,9 +234,10 @@
     };
 
     const getMessageBox = (postcode) => {
-        const existing = postcode.parentElement?.querySelector(
-            '.petshop-cep-message'
-        );
+        const blockScope = postcode.closest('.wc-block-components-address-form');
+        const existing = blockScope
+            ? blockScope.querySelector(`[data-petshop-cep-for="${postcode.id}"]`)
+            : postcode.parentElement?.querySelector('.petshop-cep-message');
 
         if (existing) {
             return existing;
@@ -236,8 +247,12 @@
 
         box.className = 'petshop-cep-message';
         box.setAttribute('aria-live', 'polite');
-
-        postcode.insertAdjacentElement('afterend', box);
+        if (blockScope) {
+            box.dataset.petshopCepFor = postcode.id;
+            postcode.closest('.wc-block-components-text-input').insertAdjacentElement('afterend', box);
+        } else {
+            postcode.insertAdjacentElement('afterend', box);
+        }
 
         return box;
     };
@@ -249,10 +264,12 @@
         box.classList.toggle('is-error', error);
     };
 
-    const lookup = async (postcode) => {
+    const lookup = async (postcode, initial = false) => {
         const cep = digits(postcode.value);
+        if (cep.length === 8 && postcode.dataset.petshopLastCep === cep) return;
         const generation = (generations.get(postcode) || 0) + 1;
         generations.set(postcode, generation);
+        controllers.get(postcode)?.abort();
 
         if (cep.length !== 8) {
             return;
@@ -263,7 +280,13 @@
         }
 
         postcode.dataset.petshopLastCep = cep;
-        const lookupRevisions = revisionSnapshot(getAddressFields(postcode));
+        const initialFields = getAddressFields(postcode);
+        const lookupRevisions = revisionSnapshot(initialFields);
+        // Still consult a saved CEP, but preserve address details already saved
+        // by the customer. Only empty fields need hydration on entry.
+        if (initial) Object.entries(initialFields).forEach(([key, field]) => {
+            if (String(field?.value || '').trim()) lookupRevisions[key] = -1;
+        });
 
         const config = window.petshopAddressLookup || {};
 
@@ -281,6 +304,8 @@
         }
 
         try {
+            const controller = new AbortController();
+            controllers.set(postcode, controller);
             const body = new URLSearchParams({
                 action: config.action,
                 nonce: config.nonce,
@@ -296,7 +321,8 @@
                         Accept: 'application/json',
                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
                     },
-                    body: body.toString()
+                    body: body.toString(),
+                    signal: controller.signal
                 }
             );
 
@@ -330,8 +356,24 @@
                 '#shipping-number',
                 'input[name="petshop/number"]'
             ]);
-            applyLookupFields(fields, data, lookupRevisions);
-            if (numberBeforeLookup) {
+            if (postcode.closest('.wc-block-components-address-form') && window.wp?.data?.dispatch) {
+                const type = getAddressType(postcode);
+                const values = { postcode: cep };
+                for (const [key, addressKey, lookupKey] of [
+                    ['address', 'address_1', 'logradouro'], ['city', 'city', 'localidade'],
+                    ['state', 'state', 'uf'], ['neighborhood', 'petshop/neighborhood', 'bairro'],
+                    ['complement', 'address_2', 'complemento'],
+                ]) {
+                    if (unchanged(fields[key], lookupRevisions, key)
+                        && !(key === 'complement' && fields[key]?.dataset.petshopComplementDirty === '1')) {
+                        values[addressKey] = data[lookupKey] || '';
+                    }
+                }
+                applyBlockAddress(type, values);
+            } else {
+                applyLookupFields(fields, data, lookupRevisions);
+            }
+            if (numberBeforeLookup && !postcode.closest('.wc-block-components-address-form')) {
                 const numberField = findField(getScope(postcode), [
                     '#billing-petshop-number',
                     '#shipping-petshop-number',
@@ -350,6 +392,7 @@
                 config.found || 'Endereço encontrado pelo CEP.'
             );
         } catch (error) {
+            if (error?.name === 'AbortError') return;
             if (generations.get(postcode) !== generation || digits(postcode.value) !== cep) return;
             delete postcode.dataset.petshopLastCep;
 
@@ -379,6 +422,8 @@
             if (cep.length === 8) {
                 lookup(postcode);
             } else {
+                generations.set(postcode, (generations.get(postcode) || 0) + 1);
+                controllers.get(postcode)?.abort();
                 delete postcode.dataset.petshopLastCep;
             }
         });
@@ -398,6 +443,20 @@
 
             field.dataset.petshopComplementDirty = '1';
             field.dataset.petshopManualRevision = String(revisionOf(field) + 1);
+        });
+    };
+
+    // A hydrated React value does not dispatch a native input event. Wait for
+    // cart resolution, then resolve each session CEP once without requiring blur.
+    const lookupSessionPostcodes = () => {
+        if (!document.querySelector('.wc-block-checkout') || !window.wp?.data?.select) return;
+        if (window.petshopQuotePreference?.read()) return;
+        const store = window.wp.data.select('wc/store/cart');
+        if (!store.hasFinishedResolution('getCartData')) return;
+        document.querySelectorAll('#shipping-postcode, #billing-postcode').forEach((postcode) => {
+            if (postcode.dataset.petshopSessionCepInitialized === '1' || digits(postcode.value).length !== 8) return;
+            postcode.dataset.petshopSessionCepInitialized = '1';
+            void lookup(postcode, true);
         });
     };
 
@@ -468,6 +527,12 @@
     };
 
     const initialize = () => {
+        // WC 10.9.4 forwards the registered lowercase autocomplete attribute
+        // as a React prop. Use a supported data attribute and the native DOM API.
+        document.querySelectorAll('input[data-petshop-autocomplete]').forEach((field) => {
+            const value = field.dataset.petshopAutocomplete;
+            if (field.autocomplete !== value) field.autocomplete = value;
+        });
         const postcodeSelectors = [
             '#billing_postcode',
             '#shipping_postcode',
@@ -520,6 +585,50 @@
             .forEach(bindPhone);
     };
 
+    let preferenceStarted = false;
+    let addressEdited = false;
+    document.addEventListener('input', (event) => {
+        if (event.isTrusted && event.target.closest('.wc-block-components-address-form')) addressEdited = true;
+    }, true);
+    const consumeQuotePreferenceAtCheckout = async () => {
+        if (preferenceStarted || addressEdited || !document.querySelector('.wc-block-checkout') || !window.petshopCartOperations) return;
+        const preference = window.petshopQuotePreference?.read();
+        if (!preference) return;
+        let postcode = document.querySelector('#shipping-postcode, #billing-postcode');
+        if (!(postcode instanceof HTMLInputElement)) return;
+        preferenceStarted = true;
+        try {
+            const updated = await window.petshopCartOperations.setQuoteDestination(preference.postcode, () => !addressEdited);
+            if (addressEdited) return;
+            if (digits(updated.shippingAddress?.postcode) === preference.postcode
+                && updated.shippingAddress?.address_1 && updated.shippingAddress?.city) {
+                window.petshopQuotePreference.consume(preference.queryId);
+                lookupSessionPostcodes();
+                return;
+            }
+            postcode = document.querySelector('#shipping-postcode, #billing-postcode');
+            if (!(postcode instanceof HTMLInputElement)) throw new Error('petshop_address_unavailable');
+            const type = getAddressType(postcode);
+            applyBlockAddress(type, { postcode: preference.postcode, city: '', address_1: '', address_2: '' });
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            postcode = document.querySelector('#shipping-postcode, #billing-postcode');
+            if (!(postcode instanceof HTMLInputElement)) throw new Error('petshop_address_unavailable');
+            window.petshopQuotePreference.consume(preference.queryId);
+            await lookup(postcode);
+        } catch (_error) {
+            if (addressEdited) return;
+            showMessage(postcode, window.petshopAddressLookup.unavailable, true);
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.textContent = window.wp?.i18n?.__('Tentar novamente', 'petshop-core') || 'Tentar novamente';
+            retry.addEventListener('click', () => {
+                retry.remove();
+                preferenceStarted = false;
+                consumeQuotePreferenceAtCheckout();
+            }, { once: true });
+            getMessageBox(postcode).append(retry);
+        }
+    };
     const debounce = (fn, wait) => {
         let timer = 0;
 
@@ -530,8 +639,13 @@
     };
 
     initialize();
+    consumeQuotePreferenceAtCheckout();
+    lookupSessionPostcodes();
+    if (window.wp?.data?.subscribe && document.querySelector('.wc-block-checkout')) {
+        window.wp.data.subscribe(lookupSessionPostcodes, 'wc/store/cart');
+    }
 
-    const observer = new MutationObserver(debounce(initialize, 300));
+    const observer = new MutationObserver(debounce(() => { initialize(); consumeQuotePreferenceAtCheckout(); lookupSessionPostcodes(); }, 300));
     const observerRoot = document.querySelector(
         '.wc-block-checkout, .woocommerce-checkout, .woocommerce-account, form.woocommerce-address-form'
     ) || document.body;

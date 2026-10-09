@@ -144,6 +144,9 @@ $forceUnavailable = static function ($preempt, array $args, string $url) {
 };
 add_filter('pre_http_request', $forceUnavailable, 10, 3);
 try {
+    $cacheKey = 'petshop_viacep_' . md5('01001000');
+    $cachedLookup = get_transient($cacheKey);
+    delete_transient($cacheKey);
     $unavailable = AddressLookup::lookupCep('01001000');
     $record(
         is_wp_error($unavailable)
@@ -153,6 +156,7 @@ try {
         'Falha do ViaCEP deveria retornar aviso em pt-BR e permitir preenchimento manual'
     );
 } finally {
+    if (isset($cachedLookup) && $cachedLookup !== false) set_transient($cacheKey, $cachedLookup, DAY_IN_SECONDS);
     remove_filter('pre_http_request', $forceUnavailable, 10);
 }
 

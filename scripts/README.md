@@ -77,11 +77,30 @@ Gera `outputs/deploy-cpanel/<stamp>/` com `wp-content/` copiável (tema e plugin
 | `validate-024-home-campaigns-carousel-browser.mjs` | 024 | Browser: overlay de setas/indicadores, 44px, 1440/1024/768/390 |
 | `validate-026-checkout.php` | 026 | Checkout: dados salvos da conta, ponte para campos BR, ViaCEP unico e PDP sem ViaCEP |
 | `validate-026-checkout-browser.mjs` | 026 | Browser: prefill PF/PJ, visitante sem vazamento, ViaCEP, Store API, erro e viewports 1440×900/390×844 |
-| `validate-027-shipping-hub.php` | 027 | Calculadora PDP como hub WooCommerce: taxas ativas sem filtro, preço sem entidades, prazo e CEP persistente |
+| `validate-027-shipping-hub.php` | 027 | Calculadora PDP como hub WooCommerce: taxas ativas sem filtro, preço sem entidades, prazo e preview sem persistir destino |
 | `validate-027-shipping-hub-browser.mjs` | 027 | Browser: uma UI de frete na PDP, widgets extras ocultos em PDP/carrinho/checkout e CEP no checkout |
 | `validate-036-versioned-shipping-dependencies.php` | 036 | Melhor Envio e base brasileira versionados: plugins ativos, vendors presentes e aviso de dependencia ausente |
 | `validate-039-cart-qty.php` | 039 | Carrinho: JS do plugin brasileiro ausente e CEP proprio presente |
 | `validate-039-cart-qty-browser.mjs` | 039 | Browser: quantidade persiste depois do CEP no carrinho |
+| `validate-041-shipping-destination.php` | 041 | Cotação por CEP, recarga autenticada, edição parcial/limpeza, conta preservada e autofill único |
+| `validate-041-shipping-preview.php` | 041 | Prévia isolada, quantidade e limiar nativo de frete grátis; taxas sintéticas |
+| `validate-041-shipping-selection-cache.php` | 041 | Via `wp eval` com require: cache pago preservado após sessão tardia, ofertas grátis antigas descartadas, regras ativas e restauração do callback |
+| `validate-041-delivery-performance-browser.mjs` | 041 | Três trocas reais no carrinho/checkout, duração Store API/UI e avisos React; ViaCEP induzido, cotações reais |
+| `validate-041-block-persistence.php` | 041 | Migração idempotente de inner block e preservação de texto/remoção pelo cliente |
+| `validate-041-checkout-address-browser.mjs` | 041 | Layout da referência, campos únicos, ViaCEP de sessão/digitação/reload, preservação de endereço salvo, cobrança independente e remontagem sem erros React; respostas induzidas em 1440/390 |
+| `validate-041-cart-delivery-browser.mjs` | 041 | CEP na coluna de totais, métodos reais iguais à PDP, preços exibidos, teclado, seleção, falha/retry e reload em desktop/mobile |
+| `validate-041-cart-concurrency-browser.mjs` | 041 | Uma requisição física, resposta antiga descartada, quantidade/CEP recentes, retorno 1→3→1 e 1→3→1→3; visitante/autenticado em 1440/390, GET financeiro independente |
+| `validate-041-cart-request-coordinator.mjs` | 041 | Abort nativo sem liberar escrita anterior, fila abortada descartada, erros/nonce obsoletos, retry antigo, retorno de intenção e checkout fora do escopo |
+| `validate-041-cart-estimate.mjs` | 041 | Estimativa em unidades monetárias inteiras, overflow, moeda/precisão, zero e preservação dos totais oficiais |
+| `validate-041-cart-performance-browser.mjs` | 041 | Cinco cliques geram uma escrita; operação lenta seguida apenas do desejo final; estimativa em até100ms, preço legível e GET financeiro independente. Teclado sem blur, CTA imediato, foco/loading/reduced-motion, clamp/estoque, sold-individually, cupom,503/retry e remoção; desktop/mobile visitante/autenticado. Baseline controlada via PETSHOP_041_BASELINE=1 |
+| `validate-041-cart-consistency-browser.mjs` | 041 | Quantidade/CEP sob latência, duas linhas, visitante/autenticado em desktop/mobile; GET independente |
+| `validate-041-address-races-browser.mjs` | 041 | Respostas ViaCEP induzidas fora de ordem, edição manual, erro/retry e CEP incompleto |
+| `validate-041-quote-preference.mjs` | 041 | Consumo único, resposta antiga, expiração, logout, subdiretório, storage bloqueado e identificador em HTTP |
+| `validate-041-product-quote-browser.mjs` | 041 | Quantidades 1/2/3, resposta antiga, taxa vazia e erros 429/503/nonce/offline/timeout; transporte induzido no harness |
+| `validate-041-cart-operations.mjs` | 041 | Contrato isolado do adaptador público: timeout pendente, geração antiga, erro propagado, retry e serialização; não substitui consistência browser |
+| `validate-041-editor-browser.mjs` | 041 | Editor sintético: texto, troca de mídia/alt, reordenação, remoção e persistência após salvar/recarregar; cleanup de página, mídia e conta |
+| `validate-041-native-commerce.php` | 041 | Cupons fixo/percentual, impostos incl/excl, totais oficiais, dois pacotes com entrega/retirada zero, estoque e vendido individualmente; métodos sintéticos isolados |
+| `validate-041-runner-cleanup.mjs` | 041 | Funções reais dos runners: erro original, falhas de cleanup/restauração Bash e provisionamento parcial JS; chamadas externas simuladas |
 | `validate-035-menu-dropdown.php` | 035 | Menu comercial: markup de dropdown, dois pais com filhos, persistência e rodapé depth 1 |
 | `validate-035-menu-dropdown-browser.mjs` | 035 | Browser: hover 1440, accordion 390, segundo pai e item sem filhos |
 | `validate-037-cart-auto-update-browser.mjs` | 037 | Browser: `/carrinho` e mini-cart atualizam quantidade e valores finais sem refresh, com Store API como fonte oficial |

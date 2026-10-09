@@ -48,6 +48,7 @@ final class Plugin
         AccountPrivacy::bootstrap();
         AddressLookup::bootstrap();
         CartQuantityStability::bootstrap();
+        \Petshop\Core\WooCommerce\ShippingRateSelection::bootstrap();
         ShippingQuoteCartExtension::bootstrap();
         CartBlocksIntegration::bootstrap();
         OrderTracking::bootstrap();

@@ -18,11 +18,58 @@ final class ShippingQuotes
      */
     public static function quote(\WC_Product $product, string $postcode, int $quantity = 1): array
     {
+        $originalCart = WC()->cart;
+        $originalCustomer = WC()->customer;
+        $originalSession = WC()->session;
+        $shipping = WC()->shipping();
+        $originalMethods = $shipping->shipping_methods;
+        $originalPackages = $shipping->packages;
+        $carrierSession = class_exists('\MelhorEnvio\Helpers\SessionHelper');
+        $carrierCache = null;
+        $hadCarrierCache = false;
+        WC()->cart = clone $originalCart;
+        WC()->customer = clone $originalCustomer;
+        WC()->session = new class extends \WC_Session {};
+        try {
+            // Price and tax helpers must see the preview destination first.
+            foreach (['shipping', 'billing'] as $group) {
+                foreach (self::destinationFor($postcode) as $field => $value) {
+                    $setter = 'set_' . $group . '_' . ($field === 'address' ? 'address_1' : $field);
+                    WC()->customer->{$setter}($value);
+                }
+            }
+            if ($carrierSession) {
+                \MelhorEnvio\Helpers\SessionHelper::initIfNotExists();
+                $hadCarrierCache = array_key_exists('quotation-melhor-envio', $_SESSION ?? []);
+                $carrierCache = $_SESSION['quotation-melhor-envio'] ?? null;
+                $_SESSION['quotation-melhor-envio'] = $_SESSION['petshop-preview-quotation-melhor-envio'] ?? [];
+            }
+            return self::quoteInContext(clone $product, $postcode, $quantity);
+        } finally {
+            if ($carrierSession) {
+                $_SESSION['petshop-preview-quotation-melhor-envio'] = $_SESSION['quotation-melhor-envio'] ?? [];
+                if ($hadCarrierCache) $_SESSION['quotation-melhor-envio'] = $carrierCache;
+                else unset($_SESSION['quotation-melhor-envio']);
+            }
+            WC()->cart = $originalCart;
+            WC()->customer = $originalCustomer;
+            WC()->session = $originalSession;
+            $shipping->shipping_methods = $originalMethods;
+            $shipping->packages = $originalPackages;
+        }
+    }
+    private static function quoteInContext(\WC_Product $product, string $postcode, int $quantity): array
+    {
         $postcode = BrazilianPostcode::normalize($postcode);
         $quantity = max(1, $quantity);
 
-        $price = (float) wc_get_price_to_display($product);
+        $price = (float) wc_get_price_excluding_tax($product);
+        $inclusivePrice = (float) wc_get_price_including_tax($product);
         $content = [
+            'key' => 'petshop_preview',
+            'product_id' => $product->is_type('variation') ? $product->get_parent_id() : $product->get_id(),
+            'variation_id' => $product->is_type('variation') ? $product->get_id() : 0,
+            'variation' => $product->is_type('variation') ? $product->get_variation_attributes() : [],
             'data' => $product,
             'quantity' => $quantity,
             'line_total' => $price * $quantity,
@@ -45,17 +92,29 @@ final class ShippingQuotes
 
         self::$quoteTimeoutDepth++;
         add_filter('http_request_args', [self::class, 'limitMelhorEnvioQuoteTimeout'], 10, 2);
+        $previewCart = WC()->cart;
+        $previewCart->set_cart_contents(['petshop_preview' => $content]);
+        $previewCart->set_removed_cart_contents([]);
+        $previewCart->set_applied_coupons([]);
+        $previewCart->set_coupon_discount_totals([]);
+        $previewCart->set_coupon_discount_tax_totals([]);
+        $previewCart->set_totals([]);
+        $previewCart->set_subtotal($price * $quantity);
+        $previewCart->set_subtotal_tax(($inclusivePrice - $price) * $quantity);
+        $previewCart->set_cart_contents_total($price * $quantity);
+        $previewCart->set_cart_contents_tax(($inclusivePrice - $price) * $quantity);
         try {
             // A named package key prevents WooCommerce from sharing the cart's
             // `shipping_for_package_0` session cache with this PDP-only preview.
-            $packages = WC()->shipping()->calculate_shipping(['petshop_preview' => $package]);
+            $preview = $product->needs_shipping()
+                ? WC()->shipping()->calculate_shipping_for_package($package, 'petshop_preview') : [];
         } finally {
             remove_filter('http_request_args', [self::class, 'limitMelhorEnvioQuoteTimeout'], 10);
             self::$quoteTimeoutDepth = max(0, self::$quoteTimeoutDepth - 1);
         }
         $rates = [];
 
-        foreach (($packages['petshop_preview']['rates'] ?? []) as $rate) {
+        foreach (($preview['rates'] ?? []) as $rate) {
             if (!$rate instanceof \WC_Shipping_Rate) continue;
             $cost = self::rateCost($rate);
             $label = self::plainText($rate->get_label());
@@ -101,7 +160,8 @@ final class ShippingQuotes
 
         $host = strtolower((string) wp_parse_url($url, PHP_URL_HOST));
         $path = (string) wp_parse_url($url, PHP_URL_PATH);
-        if (str_contains($host, 'melhorenvio.com.br') && str_contains($path, '/shipment/calculate')) {
+        if (in_array($host, ['api.melhorenvio.com', 'sandbox.melhorenvio.com.br'], true)
+            && in_array(rtrim($path, '/'), ['/v2/me/shipment/calculate', '/api/v2/me/shipment/calculate'], true)) {
             $args['timeout'] = 10;
         }
 

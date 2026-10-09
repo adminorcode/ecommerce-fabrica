@@ -8,6 +8,5 @@
   "textdomain": "petshop-core",
   "parent": ["woocommerce/cart-totals-block"],
   "editorScript": "file:./editor.js",
-  "viewScript": "file:./view.js",
   "supports": { "html": false, "multiple": false }
 }

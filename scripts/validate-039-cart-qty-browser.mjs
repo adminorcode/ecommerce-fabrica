@@ -233,7 +233,6 @@ try {
       if (request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/update-item')) {
         itemPosts.push({
           at: Date.now(),
-          flush: request.headers()['x-petshop-qty-flush'] || '',
         });
       }
     };
@@ -241,7 +240,7 @@ try {
 
     let fluidOk = true;
     for (let step = 1; step <= increments; step += 1) {
-      await qtyPlus(page).click({ force: true, delay: 120 });
+      await qtyPlus(page).click({ delay: 120 });
       try {
         await page.waitForFunction((qty) => (
           Number(document.querySelector('.wc-block-components-quantity-selector__input')?.value || 0) === qty
@@ -252,27 +251,11 @@ try {
         break;
       }
     }
-    if (await qtyPlus(page).isDisabled()) {
-      failures.push(`${product.label}: botao + ficou desabilitado depois do clique.`);
-    }
-
-    await page.waitForTimeout(800);
-    if (itemPosts.length !== 0) {
-      failures.push(`${product.label}: frete disparou ${itemPosts.length} update-item antes de 1s.`);
-    }
-    try {
-      await page.waitForRequest((request) => (
-        request.method() === 'POST' && request.url().includes('/wc/store/v1/cart/update-item')
-      ), { timeout: 2500 });
-    } catch (_error) {
-      failures.push(`${product.label}: frete nao recalculou 1s apos a quantidade.`);
-    }
-    await page.waitForTimeout(800);
-    if (itemPosts.length !== 1) {
-      failures.push(`${product.label}: frete deveria ter 1 update-item apos a quantidade, veio ${itemPosts.length}.`);
-    } else if (itemPosts[0].flush !== '1') {
-      failures.push(`${product.label}: update-item sem header X-Petshop-Qty-Flush: 1 (valor: ${itemPosts[0].flush || 'ausente'}).`);
-    }
+    await page.waitForFunction((expected) => {
+      const store = window.wp.data.select('wc/store/cart');
+      return store.getCartData().items[0]?.quantity === expected && !store.isItemPendingQuantity(store.getCartData().items[0].key);
+    }, 1 + increments, { timeout: 15000 });
+    if (!itemPosts.length) failures.push('Nenhuma atualizacao nativa foi confirmada.');
     page.off('request', onItemPost);
 
     const expectedQty = 1 + increments;

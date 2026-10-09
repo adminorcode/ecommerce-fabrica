@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -109,6 +109,10 @@ const lintChangedFiles = (files) => {
 };
 
 const runFocusedProvision = (suites) => {
+    if (suites.has('shipping-integrity-041') && !skipProvision) {
+        const fixture = dockerCliOutput('eval-file', '/var/www/html/scripts/setup-041-browser-customer.php');
+        writeFileSync(join(root, '.local', '041-browser-fixture.json'), fixture);
+    }
     if (skipProvision) {
         return false;
     }
@@ -136,8 +140,16 @@ const runFocusedProvision = (suites) => {
 };
 
 const runFocusedCleanup = (suites) => {
-    if (suites.has('product-card-031')) {
-        evalFile('cleanup-031-product-card-fixture.php');
+    try {
+        if (suites.has('shipping-integrity-041')) {
+            try { evalFile('cleanup-041-browser-customer.php'); }
+            finally {
+                const fixturePath = join(root, '.local', '041-browser-fixture.json');
+                if (existsSync(fixturePath)) unlinkSync(fixturePath);
+            }
+        }
+    } finally {
+        if (suites.has('product-card-031')) evalFile('cleanup-031-product-card-fixture.php');
     }
 };
 
@@ -335,18 +347,48 @@ const classifySuites = (files) => {
             || file.includes('AddressLookup')
             || file.includes('address-lookup')
             || file.includes('validate-026-checkout')
+            || file.includes('validate-041-checkout-address')
         ) {
             suites.add('checkout-026');
             browserScripts.add('validate-026-checkout-browser.mjs');
+            browserScripts.add('validate-041-checkout-address-browser.mjs');
         }
         if (
             file.includes('041-integridade-frete-carrinho-checkout')
             || file.includes('ShippingQuoteCartExtension')
             || file.includes('CartBlocksIntegration')
+            || file.includes('CartShippingQuoteBlocksIntegration')
             || file.includes('validate-041-shipping-destination')
+            || file.includes('validate-041-shipping-preview')
+            || file.includes('validate-041-cart-consistency')
+            || file.includes('validate-041-cart-delivery')
+            || file.includes('validate-041-delivery-performance')
+            || file.includes('validate-041-shipping-selection-cache')
+            || file.includes('ShippingRateSelection')
+            || file.includes('validate-041-address-races')
+            || file.includes('validate-041-product-quote')
+            || file.includes('validate-041-quote-preference')
+            || file.includes('validate-041-cart-operations')
+            || file.includes('validate-041-cart-request-coordinator')
+            || file.includes('validate-041-cart-estimate')
+            || file.includes('validate-041-cart-performance')
+            || file.includes('validate-041-cart-concurrency')
+            || file.includes('validate-041-native-commerce')
+            || file.includes('validate-041-runner-cleanup')
+            || file.includes('041-editor')
+            || file.startsWith('wp-content/plugins/petshop-core/assets/src/shared/')
+            || file.includes('cart-shipping-quote-block')
             || file.startsWith('wp-content/plugins/petshop-core/assets/src/cart-shipping-quote/')
         ) {
             suites.add('shipping-integrity-041');
+            browserScripts.add('validate-041-cart-consistency-browser.mjs');
+            browserScripts.add('validate-041-address-races-browser.mjs');
+            browserScripts.add('validate-041-product-quote-browser.mjs');
+            browserScripts.add('validate-041-editor-browser.mjs');
+            browserScripts.add('validate-041-cart-delivery-browser.mjs');
+            browserScripts.add('validate-041-cart-concurrency-browser.mjs');
+            browserScripts.add('validate-041-cart-performance-browser.mjs');
+            browserScripts.add('validate-041-delivery-performance-browser.mjs');
         }
         if (
             file.includes('ShippingQuoteDestination')
@@ -450,6 +492,15 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('shipping-integrity-041')) {
         evalFile('validate-041-shipping-destination.php');
+        evalFile('validate-041-shipping-preview.php');
+        dockerCli('eval', 'require "/var/www/html/scripts/validate-041-shipping-selection-cache.php";');
+        evalFile('validate-041-block-persistence.php');
+        evalFile('validate-041-native-commerce.php');
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', 'node', 'node', '/workspace/scripts/validate-041-quote-preference.mjs']);
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', 'node', 'node', '/workspace/scripts/validate-041-cart-operations.mjs']);
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', 'node', 'node', '/workspace/scripts/validate-041-cart-request-coordinator.mjs']);
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', 'node', 'node', '/workspace/scripts/validate-041-cart-estimate.mjs']);
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', 'node', 'node', '/workspace/scripts/validate-041-runner-cleanup.mjs']);
     }
     if (suites.has('shipping-dependencies-036')) {
         evalFile('validate-036-versioned-shipping-dependencies.php');
@@ -499,13 +550,27 @@ const runBrowserScripts = (browserScripts) => {
         dockerCli('option', 'update', 'siteurl', 'http://wordpress');
         dockerCli('cache', 'flush');
 
+        if (browserScripts.has('validate-041-editor-browser.mjs')) {
+            const fixture = dockerCliOutput('eval-file', '/var/www/html/scripts/setup-041-editor-fixture.php');
+            writeFileSync(join(root, '.local', '041-editor-fixture.json'), fixture);
+        }
         for (const script of browserScripts) {
             run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=wordpress', 'node', 'node', `/workspace/scripts/${script}`]);
         }
     } finally {
-        dockerCli('option', 'update', 'home', restoreHome);
-        dockerCli('option', 'update', 'siteurl', restoreSiteUrl);
-        dockerCli('cache', 'flush');
+        try {
+            if (browserScripts.has('validate-041-editor-browser.mjs')) {
+                evalFile('cleanup-041-editor-fixture.php');
+                const fixturePath = join(root, '.local', '041-editor-fixture.json');
+                if (existsSync(fixturePath)) unlinkSync(fixturePath);
+            }
+        } finally {
+            try { dockerCli('option', 'update', 'home', restoreHome); }
+            finally {
+                try { dockerCli('option', 'update', 'siteurl', restoreSiteUrl); }
+                finally { dockerCli('cache', 'flush'); }
+            }
+        }
     }
 };
 
@@ -523,7 +588,9 @@ const runChangedValidation = () => {
     const { suites, browserScripts } = classifySuites(files);
     let focusedProvisionRan = false;
     try {
-        focusedProvisionRan = runFocusedProvision(suites);
+        // Provision may create a fixture before a later step or JSON write fails.
+        focusedProvisionRan = !skipProvision;
+        runFocusedProvision(suites);
         runFocusedSuites(suites);
         runBrowserScripts(browserScripts);
     } finally {

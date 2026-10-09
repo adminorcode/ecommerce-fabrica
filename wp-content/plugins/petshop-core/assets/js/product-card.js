@@ -336,20 +336,6 @@
     syncVariableCard(root);
   };
 
-  const refreshCartUis = (cart) => {
-    document.body.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', {
-      bubbles: true,
-      detail: {
-        preserveCartData: false,
-        cart,
-      },
-    }));
-
-    if (window.jQuery) {
-      window.jQuery(document.body).trigger('wc_fragment_refresh');
-    }
-  };
-
   const addToCart = async (button, cartItem) => {
     if (!config.endpoint) {
       throw new Error('Store API endpoint unavailable.');
@@ -370,28 +356,7 @@
     setLabel(i18n.adding || 'Adicionando…');
 
     try {
-      const response = await fetch(config.endpoint, {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-          'Nonce': config.nonce || '',
-        },
-        body: JSON.stringify({
-          id: Number(cartItem.id),
-          quantity: 1,
-          ...(cartItem.variation ? { variation: cartItem.variation } : {}),
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(payload?.message || i18n.error || 'Não foi possível adicionar ao carrinho.');
-      }
-
-      refreshCartUis(payload);
+      const payload = await window.petshopCartOperations.addItem(cartItem);
       button.classList.add('is-added');
       setLabel(i18n.added || 'Adicionado ao carrinho.');
 

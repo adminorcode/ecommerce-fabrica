@@ -13,10 +13,14 @@ final class CheckoutCustomerData
 
     public static function bootstrap(): void
     {
+        add_action('woocommerce_init', [self::class, 'disableDuplicateBlockFields'], 1);
+        add_filter('woocommerce_get_country_locale', [self::class, 'postcodeFirstLocale'], 100);
+        add_filter('woocommerce_get_country_locale_default', [self::class, 'postcodeFirstDefaults'], 100);
         add_action('woocommerce_init', [self::class, 'registerCheckoutBlockFields']);
         add_action('template_redirect', [self::class, 'hydrateCheckoutPage'], 5);
         add_filter('rest_request_before_callbacks', [self::class, 'hydrateStoreApiRequest'], 5, 3);
         add_action('wp_logout', [self::class, 'clearTaggedSessionData']);
+        add_action('woocommerce_save_account_details', [self::class, 'syncSavedAccountContact'], 20);
         add_action('woocommerce_set_additional_field_value', [self::class, 'syncAdditionalFieldValue'], 10, 4);
         add_filter('woocommerce_get_default_value_for_petshop/number', [self::class, 'defaultNumber'], 10, 3);
         add_filter('woocommerce_get_default_value_for_petshop/neighborhood', [self::class, 'defaultNeighborhood'], 10, 3);
@@ -37,7 +41,7 @@ final class CheckoutCustomerData
             'type' => 'text',
             'required' => true,
             'attributes' => [
-                'autocomplete' => 'off',
+                'data-petshop-autocomplete' => 'off',
                 'maxLength' => 20,
             ],
             'sanitize_callback' => [self::class, 'sanitizeShortText'],
@@ -50,7 +54,7 @@ final class CheckoutCustomerData
             'type' => 'text',
             'required' => true,
             'attributes' => [
-                'autocomplete' => 'address-level3',
+                'data-petshop-autocomplete' => 'address-level3',
                 'maxLength' => 80,
             ],
             'sanitize_callback' => [self::class, 'sanitizeShortText'],
@@ -82,7 +86,7 @@ final class CheckoutCustomerData
             'type' => 'text',
             'required' => true,
             'attributes' => [
-                'autocomplete' => 'off',
+                'data-petshop-autocomplete' => 'off',
                 'maxLength' => 18,
             ],
             'sanitize_callback' => [self::class, 'sanitizeDocument'],
@@ -140,62 +144,6 @@ final class CheckoutCustomerData
         return $response;
     }
 
-    /**
-     * @param mixed $response
-     * @param array<mixed> $handler
-     * @return mixed
-     */
-    public static function filterStoreApiCartResponse($response, array $handler, \WP_REST_Request $request)
-    {
-        unset($handler);
-
-        if (!str_starts_with($request->get_route(), '/wc/store/v1/cart')) {
-            return $response;
-        }
-
-        if (str_ends_with($request->get_route(), '/cart/update-customer')) {
-            return $response;
-        }
-
-        if (!is_user_logged_in()) {
-            self::clearTaggedSessionData();
-            return $response;
-        }
-
-        $userId = (int) get_current_user_id();
-
-        if (self::sessionAlreadyHydrated($userId)) {
-            if (!$response instanceof \WP_REST_Response) {
-                return $response;
-            }
-
-            $data = $response->get_data();
-
-            if (is_array($data)) {
-                self::hydrateCartResponseData($data, false);
-                $response->set_data($data);
-            }
-
-            return $response;
-        }
-
-        if (!$response instanceof \WP_REST_Response) {
-            return $response;
-        }
-
-        $data = $response->get_data();
-
-        if (!is_array($data)) {
-            return $response;
-        }
-
-        self::hydrateCartResponseData($data, true);
-        $response->set_data($data);
-        self::markSessionHydrated($userId);
-
-        return $response;
-    }
-
     public static function hydrateCurrentCustomer(): void
     {
         if (!function_exists('WC')) {
@@ -215,16 +163,22 @@ final class CheckoutCustomerData
 
         $userId = (int) get_current_user_id();
 
+        if (self::sessionAlreadyHydrated($userId)) {
+            return;
+        }
         self::hydrateBillingAddress($customer, $userId);
         self::hydrateShippingAddress($customer, $userId);
         self::hydrateBrazilianCheckoutSession($userId);
+        self::markSessionHydrated($userId);
     }
 
     private static function hydrateBillingAddress(\WC_Customer $customer, int $userId): bool
     {
         $changed = false;
+        $hasGeography = self::hasGeography($customer, 'billing');
 
         foreach (self::billingFields() as $field) {
+            if ($hasGeography && in_array($field, ['country', 'state', 'postcode', 'city', 'address_1', 'address_2'], true)) continue;
             $value = (string) get_user_meta($userId, 'billing_' . $field, true);
 
             if ($field === 'email' && $value === '') {
@@ -246,20 +200,93 @@ final class CheckoutCustomerData
     private static function hydrateShippingAddress(\WC_Customer $customer, int $userId): bool
     {
         $changed = false;
+        $hasGeography = self::hasGeography($customer, 'shipping')
+            || WC()->session?->get('petshop_shipping_destination_origin', '') === 'quote';
+        $source = trim((string) get_user_meta($userId, 'shipping_postcode', true)) !== '' ? 'shipping' : 'billing';
 
         foreach (self::shippingFields() as $field) {
-            $shippingValue = (string) get_user_meta($userId, 'shipping_' . $field, true);
-            $billingValue = (string) get_user_meta($userId, 'billing_' . $field, true);
+            if ($hasGeography && in_array($field, ['country', 'state', 'postcode', 'city', 'address_1', 'address_2'], true)) continue;
+            $value = (string) get_user_meta($userId, $source . '_' . $field, true);
 
             $changed = self::setCustomerFieldIfEmpty(
                 $customer,
                 'shipping',
                 $field,
-                $shippingValue !== '' ? $shippingValue : $billingValue
+                $value
             ) || $changed;
         }
 
         return $changed;
+    }
+
+    /** The store owns these fields; retain the carrier's calculation and legacy metadata hooks. */
+    public static function disableDuplicateBlockFields(): void
+    {
+        global $wp_filter;
+        $hook = $wp_filter['woocommerce_init'] ?? null;
+        if (!$hook instanceof \WP_Hook) return;
+        foreach ($hook->callbacks as $priority => $callbacks) {
+            foreach ($callbacks as $callback) {
+                $function = $callback['function'];
+                if (is_array($function) && is_object($function[0])
+                    && get_class($function[0]) === 'Virtuaria_Correios_Front_Fields'
+                    && $function[1] === 'add_checkout_blocks_fields') {
+                    remove_action('woocommerce_init', $function, $priority);
+                }
+            }
+        }
+    }
+
+    public static function postcodeFirstDefaults(array $fields): array
+    {
+        // Public locale ordering keeps the visual and keyboard sequence identical.
+        foreach (['first_name', 'last_name', 'country', 'postcode', 'address_1', 'petshop/number',
+            'address_2', 'petshop/neighborhood', 'city', 'state', 'phone'] as $position => $key) {
+            $index = ($position + 1) * 10;
+            $fields[$key] = array_merge($fields[$key] ?? [], ['priority' => $index, 'index' => $index]);
+        }
+        $fields['postcode']['label'] = __('CEP', 'petshop-core');
+        $fields['address_1']['label'] = __('Rua / Logradouro', 'petshop-core');
+        $fields['address_2']['label'] = __('Complemento', 'petshop-core');
+        $fields['address_2']['optionalLabel'] = __('Complemento (opcional)', 'petshop-core');
+        return $fields;
+    }
+
+    public static function postcodeFirstLocale(array $locales): array
+    {
+        $locales['BR'] = self::postcodeFirstDefaults($locales['BR'] ?? []);
+        return $locales;
+    }
+
+    /** Reconcile registered fields only after the customer's validated profile submission. */
+    public static function syncSavedAccountContact(int $customerId): void
+    {
+        if (!isset($_POST['petshop_person_type'], $_POST['petshop_document'])) return;
+        $type = self::sanitizePersonType(wp_unslash($_POST['petshop_person_type']));
+        $document = self::sanitizeDocument(wp_unslash($_POST['petshop_document']));
+        $customer = new \WC_Customer($customerId);
+        $customer->update_meta_data('petshop_person_type', $type);
+        $customer->update_meta_data('petshop_document', $document);
+        $customer->update_meta_data('billing_persontype', self::normalizePersonType($type));
+        self::setCheckoutFieldValue('petshop/person-type', $type, 'other', $customer);
+        self::setCheckoutFieldValue('petshop/document', $document, 'other', $customer);
+        $customer->save_meta_data();
+        // The runtime customer may predate the profile save in this request.
+        if (WC()->customer instanceof \WC_Customer && WC()->customer->get_id() === $customerId) {
+            foreach (['petshop_person_type', 'petshop_document', 'billing_persontype',
+                '_wc_other/petshop/person-type', '_wc_other/petshop/document', 'billing_cpf', 'billing_cnpj'] as $key) {
+                WC()->customer->update_meta_data($key, $customer->get_meta($key));
+            }
+        }
+    }
+
+    private static function hasGeography(\WC_Customer $customer, string $group): bool
+    {
+        foreach (['postcode', 'city', 'address_1', 'address_2'] as $field) {
+            $getter = 'get_' . $group . '_' . $field;
+            if (trim((string) $customer->{$getter}()) !== '') return true;
+        }
+        return false;
     }
 
     private static function hydrateBrazilianCheckoutSession(int $userId): void
@@ -280,6 +307,9 @@ final class CheckoutCustomerData
         $shippingNumber = (string) get_user_meta($userId, 'shipping_number', true);
         $billingNeighborhood = (string) get_user_meta($userId, 'billing_neighborhood', true);
         $shippingNeighborhood = (string) get_user_meta($userId, 'shipping_neighborhood', true);
+        $quote = $session->get('petshop_shipping_destination_origin', '') === 'quote';
+        $shippingFromBilling = trim((string) get_user_meta($userId, 'shipping_postcode', true)) === '';
+        if ($quote) $shippingNeighborhood = '';
         $personType = self::normalizePersonType((string) get_user_meta($userId, 'petshop_person_type', true));
         $document = (string) get_user_meta($userId, 'petshop_document', true);
         $cpf = (string) get_user_meta($userId, 'billing_cpf', true);
@@ -295,9 +325,9 @@ final class CheckoutCustomerData
 
         foreach ([
             'billing_number' => $billingNumber,
-            'shipping_number' => $shippingNumber !== '' ? $shippingNumber : $billingNumber,
+            'shipping_number' => $shippingFromBilling ? $billingNumber : $shippingNumber,
             'billing_neighborhood' => $billingNeighborhood,
-            'shipping_neighborhood' => $shippingNeighborhood !== '' ? $shippingNeighborhood : $billingNeighborhood,
+            'shipping_neighborhood' => $quote ? '' : ($shippingFromBilling ? $billingNeighborhood : $shippingNeighborhood),
             'billing_persontype' => $personType,
             'billing_document' => $document,
             'billing_cpf' => $cpf,
@@ -312,187 +342,6 @@ final class CheckoutCustomerData
     /**
      * @param array<string, mixed> $data
      */
-    private static function hydrateCartResponseData(array &$data, bool $fromAccount): void
-    {
-        $session = function_exists('WC') ? (WC()->session ?? null) : null;
-        $userId = is_user_logged_in() ? (int) get_current_user_id() : 0;
-
-        foreach (['billing', 'shipping'] as $group) {
-            $addressKey = $group . '_address';
-            $data[$addressKey] = self::normalizeCartAddress($data[$addressKey] ?? null);
-            if ($fromAccount) {
-                self::mergeNativeAddressIntoResponse($data[$addressKey], $group, $userId);
-                self::mergeAdditionalAddressIntoResponse($data[$addressKey], $group, $userId, $session);
-            }
-        }
-
-        self::inheritBillingResponseWhenShippingEmpty($data);
-
-        foreach (['billing', 'shipping'] as $group) {
-            $addressKey = $group . '_address';
-            if (is_array($data[$addressKey] ?? null)) {
-                self::ensureNativeAddressKeys($data[$addressKey], $group);
-            }
-        }
-
-        if ($fromAccount) {
-            self::mergeContactAdditionalFieldsIntoResponse($data, $userId, $session);
-        }
-    }
-
-    /**
-     * WooCommerce pode devolver o endereço como objeto. Lista vazia não é endereço.
-     *
-     * @return array<string, mixed>
-     */
-    private static function normalizeCartAddress(mixed $address): array
-    {
-        if (is_object($address)) {
-            $address = get_object_vars($address);
-        }
-
-        if (!is_array($address) || ($address !== [] && array_is_list($address))) {
-            return [];
-        }
-
-        return $address;
-    }
-
-    /**
-     * O Checkout Block chama toUpperCase em state e country. Chave ausente quebra o bloco.
-     *
-     * @param array<string, mixed> $address
-     */
-    private static function ensureNativeAddressKeys(array &$address, string $group): void
-    {
-        foreach (self::addressFieldsForResponse($group) as $field) {
-            $value = $address[$field] ?? '';
-            $address[$field] = is_scalar($value) ? (string) $value : '';
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $address
-     */
-    private static function mergeNativeAddressIntoResponse(array &$address, string $group, int $userId): void
-    {
-        if ($userId <= 0) {
-            return;
-        }
-
-        foreach (self::addressFieldsForResponse($group) as $field) {
-            if ((string) ($address[$field] ?? '') !== '') {
-                continue;
-            }
-
-            $value = (string) get_user_meta($userId, $group . '_' . $field, true);
-
-            if ($group === 'shipping' && $value === '') {
-                $value = (string) get_user_meta($userId, 'billing_' . $field, true);
-            }
-
-            if ($field === 'email' && $value === '') {
-                $user = get_userdata($userId);
-                $value = $user instanceof \WP_User ? (string) $user->user_email : '';
-            }
-
-            if ($value !== '') {
-                $address[$field] = $value;
-            }
-        }
-
-        if ((string) ($address['country'] ?? '') === '') {
-            $address['country'] = 'BR';
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $address
-     */
-    private static function mergeAdditionalAddressIntoResponse(array &$address, string $group, int $userId, ?object $session): void
-    {
-        foreach (['number', 'neighborhood'] as $field) {
-            $key = 'petshop/' . $field;
-
-            if ((string) ($address[$key] ?? '') !== '') {
-                continue;
-            }
-
-            $value = self::sessionValue($session, $group . '_' . $field);
-
-            if ($value === '' && $group === 'shipping') {
-                $value = self::sessionValue($session, 'billing_' . $field);
-            }
-
-            if ($value === '' && $userId > 0) {
-                $value = (string) get_user_meta($userId, $group . '_' . $field, true);
-            }
-
-            if ($value === '' && $group === 'shipping' && $userId > 0) {
-                $value = (string) get_user_meta($userId, 'billing_' . $field, true);
-            }
-
-            if ($value !== '') {
-                $address[$key] = $value;
-            }
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private static function inheritBillingResponseWhenShippingEmpty(array &$data): void
-    {
-        $billing = is_array($data['billing_address'] ?? null) ? $data['billing_address'] : [];
-        $shipping = is_array($data['shipping_address'] ?? null) ? $data['shipping_address'] : [];
-
-        foreach (['first_name', 'last_name', 'company', 'country', 'address_1', 'address_2', 'city', 'state', 'postcode', 'phone', 'petshop/number', 'petshop/neighborhood'] as $field) {
-            if ((string) ($shipping[$field] ?? '') === '' && (string) ($billing[$field] ?? '') !== '') {
-                $shipping[$field] = $billing[$field];
-            }
-        }
-
-        $data['shipping_address'] = $shipping;
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private static function mergeContactAdditionalFieldsIntoResponse(array &$data, int $userId, ?object $session): void
-    {
-        $data['additional_fields'] = is_array($data['additional_fields'] ?? null) ? $data['additional_fields'] : [];
-
-        $personType = self::sanitizePersonType(self::sessionValue($session, 'billing_persontype'));
-
-        if ($personType === '' && $userId > 0) {
-            $personType = self::sanitizePersonType((string) get_user_meta($userId, 'petshop_person_type', true));
-        }
-
-        $document = self::sessionValue($session, 'billing_document');
-
-        if ($document === '' && $userId > 0) {
-            $document = (string) get_user_meta($userId, 'petshop_document', true);
-        }
-
-        if ($document === '' && $userId > 0) {
-            $document = $personType === 'PJ'
-                ? (string) get_user_meta($userId, 'billing_cnpj', true)
-                : (string) get_user_meta($userId, 'billing_cpf', true);
-        }
-
-        if ((string) ($data['additional_fields']['petshop/person-type'] ?? '') === '' && $personType !== '') {
-            $data['additional_fields']['petshop/person-type'] = $personType;
-        }
-
-        if ((string) ($data['additional_fields']['petshop/document'] ?? '') === '' && $document !== '') {
-            $data['additional_fields']['petshop/document'] = $document;
-        }
-    }
-
-    /**
-     * @param mixed $value
-     * @param mixed $wcObject
-     */
     public static function syncAdditionalFieldValue(string $key, $value, string $group, $wcObject): void
     {
         if (!is_object($wcObject) || !method_exists($wcObject, 'update_meta_data')) {
@@ -503,13 +352,11 @@ final class CheckoutCustomerData
 
         if ($key === 'petshop/number' && in_array($group, ['billing', 'shipping'], true)) {
             $wcObject->update_meta_data(self::legacyAddressMetaKey($wcObject, $group, 'number'), sanitize_text_field($value), true);
-            self::setCheckoutFieldValue($key, $value, $group, $wcObject);
             return;
         }
 
         if ($key === 'petshop/neighborhood' && in_array($group, ['billing', 'shipping'], true)) {
             $wcObject->update_meta_data(self::legacyAddressMetaKey($wcObject, $group, 'neighborhood'), sanitize_text_field($value), true);
-            self::setCheckoutFieldValue($key, $value, $group, $wcObject);
             return;
         }
 
@@ -521,14 +368,13 @@ final class CheckoutCustomerData
             $personType = self::sanitizePersonType($value);
             $wcObject->update_meta_data('petshop_person_type', $personType, true);
             $wcObject->update_meta_data('billing_persontype', self::normalizePersonType($personType), true);
-            self::setCheckoutFieldValue($key, $personType, $group, $wcObject);
+            if ($wcObject instanceof \WC_Order) self::syncCarrierOrderDocument($wcObject);
             return;
         }
 
         if ($key === 'petshop/document') {
             $document = self::sanitizeDocument($value);
             $wcObject->update_meta_data('petshop_document', $document, true);
-            self::setCheckoutFieldValue($key, $document, $group, $wcObject);
             $personType = (string) $wcObject->get_meta('petshop_person_type');
             if (self::normalizePersonType($personType) === '2') {
                 $wcObject->update_meta_data('billing_cnpj', $document, true);
@@ -537,7 +383,21 @@ final class CheckoutCustomerData
                 $wcObject->update_meta_data('billing_cpf', $document, true);
                 $wcObject->update_meta_data('billing_cnpj', '', true);
             }
+            if ($wcObject instanceof \WC_Order) self::syncCarrierOrderDocument($wcObject);
         }
+    }
+
+    /** Keep supplier consumers compatible with the single canonical checkout field. */
+    private static function syncCarrierOrderDocument(\WC_Order $order): void
+    {
+        $company = self::normalizePersonType((string) $order->get_meta('petshop_person_type')) === '2';
+        $document = self::sanitizeDocument((string) $order->get_meta('petshop_document'));
+        if (strlen($document) !== ($company ? 14 : 11)) $document = '';
+        foreach (['billing_person_type', '_billing_person_type'] as $key) {
+            $order->update_meta_data($key, $company ? 'pj' : 'pf', true);
+        }
+        foreach (['billing_cpf', '_billing_cpf'] as $key) $order->update_meta_data($key, $company ? '' : $document, true);
+        foreach (['billing_cnpj', '_billing_cnpj'] as $key) $order->update_meta_data($key, $company ? $document : '', true);
     }
 
     /**
@@ -563,6 +423,10 @@ final class CheckoutCustomerData
      */
     public static function defaultNeighborhood($value, string $group, $wcObject): string
     {
+        if ($group === 'shipping' && $wcObject instanceof \WC_Customer
+            && WC()->session?->get('petshop_shipping_destination_origin', '') === 'quote') {
+            return is_scalar($value) ? (string) $value : '';
+        }
         unset($value);
 
         $neighborhood = self::checkoutFieldDefault('petshop/neighborhood', $group, $wcObject);
@@ -571,7 +435,10 @@ final class CheckoutCustomerData
             $neighborhood = self::metaDefault($wcObject, $group . '_neighborhood', $group . '_neighborhood');
         }
 
-        return $neighborhood !== '' || $group !== 'shipping' ? $neighborhood : self::metaDefault($wcObject, 'billing_neighborhood', 'billing_neighborhood');
+        if ($neighborhood !== '' || $group !== 'shipping') return $neighborhood;
+        $shippingPostcode = $wcObject instanceof \WC_Customer ? BrazilianPostcode::normalize((string) $wcObject->get_shipping_postcode()) : '';
+        $billingPostcode = $wcObject instanceof \WC_Customer ? BrazilianPostcode::normalize((string) $wcObject->get_billing_postcode()) : '';
+        return $shippingPostcode === $billingPostcode ? self::metaDefault($wcObject, 'billing_neighborhood', 'billing_neighborhood') : '';
     }
 
     /**
@@ -732,31 +599,6 @@ final class CheckoutCustomerData
         return $userId > 0 && $userMetaKey !== null ? (string) get_user_meta($userId, $userMetaKey, true) : '';
     }
 
-    /**
-     * @return list<string>
-     */
-    private static function addressFieldsForResponse(string $group): array
-    {
-        $fields = [
-            'first_name',
-            'last_name',
-            'company',
-            'country',
-            'address_1',
-            'address_2',
-            'city',
-            'state',
-            'postcode',
-            'phone',
-        ];
-
-        if ($group === 'billing') {
-            $fields[] = 'email';
-        }
-
-        return $fields;
-    }
-
     private static function sessionValue(?object $session, string $key): string
     {
         if (!is_object($session) || !method_exists($session, 'get')) {
@@ -771,7 +613,7 @@ final class CheckoutCustomerData
     private static function checkoutFieldsService(): ?object
     {
         $package = '\Automattic\WooCommerce\Blocks\Package';
-        $checkoutFields = '\Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields';
+        $checkoutFields = \Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class;
 
         if (!class_exists($package) || !class_exists($checkoutFields) || !method_exists($package, 'container')) {
             return null;
@@ -783,7 +625,7 @@ final class CheckoutCustomerData
             return null;
         }
 
-        if (!is_object($container) || !method_exists($container, 'get')) {
+        if (!is_object($container) || !is_callable([$container, 'get'])) {
             return null;
         }
 
@@ -798,14 +640,9 @@ final class CheckoutCustomerData
 
     private static function checkoutFieldDefault(string $key, string $group, $wcObject): string
     {
-        $checkoutFields = self::checkoutFieldsService();
-
-        if (!is_object($checkoutFields) || !method_exists($checkoutFields, 'get_field_from_object')) {
-            return '';
-        }
-
-        $value = $checkoutFields->get_field_from_object($key, $wcObject, $group);
-
+        // This is itself a default-value filter: calling get_field_from_object
+        // here would invoke the same filter recursively for an unset field.
+        $value = $wcObject instanceof \WC_Data ? $wcObject->get_meta('_wc_' . $group . '/' . $key) : '';
         return is_scalar($value) ? (string) $value : '';
     }
 
@@ -817,13 +654,8 @@ final class CheckoutCustomerData
             return;
         }
 
-        if (method_exists($checkoutFields, 'set_field_for_object')) {
-            $checkoutFields->set_field_for_object($key, sanitize_text_field($value), $wcObject, $group);
-            return;
-        }
-
-        if (method_exists($checkoutFields, 'set_field_from_object')) {
-            $checkoutFields->set_field_from_object($key, sanitize_text_field($value), $wcObject, $group);
+        if ($wcObject instanceof \WC_Customer && method_exists($checkoutFields, 'persist_field_for_customer')) {
+            $checkoutFields->persist_field_for_customer($key, sanitize_text_field($value), $wcObject, $group);
         }
     }
 
@@ -892,6 +724,9 @@ final class CheckoutCustomerData
             'billing_cnpj',
             self::SESSION_USER_KEY,
             self::SESSION_HYDRATED_KEY,
+            'petshop_shipping_destination_origin',
+            'petshop_shipping_destination_postcode',
+            'petshop_shipping_destination_address',
         ] as $key) {
             $session->set($key, '');
         }

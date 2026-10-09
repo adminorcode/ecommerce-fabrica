@@ -27,6 +27,8 @@ try {
   recordFailure(await page.locator('text=Calcular entrega').count() >= 1, 'Titulo/botao Calcular entrega ausente.');
   recordFailure(await page.locator('#shipping-calc:visible, #woocommerce-correios-calculo-de-frete-na-pagina-do-produto:visible, #melhor-envio-shortcode:visible, .containerCalculator:visible').count() === 0, 'Widget extra de frete visivel na PDP.');
 
+  const beforeQuote = await (await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`)).json();
+
   await page.locator('[data-petshop-shipping-form] input[name="postcode"]').fill(fixture.postcode);
   await page.locator('[data-petshop-shipping-form] button[type="submit"]').click();
   await page.waitForFunction(() => {
@@ -40,15 +42,28 @@ try {
   recordFailure(!/&#\d+;|&#|&nbsp;/.test(resultHtml), 'HTML do resultado contem entidade numerica ou nbsp.');
   recordFailure(resultText.includes('R$'), 'Resultado calculado nao mostrou preco em real brasileiro.');
 
+  const afterQuote = await (await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`)).json();
+  recordFailure(JSON.stringify(beforeQuote.items) === JSON.stringify(afterQuote.items), 'Preview alterou itens do carrinho.');
+  recordFailure(JSON.stringify(beforeQuote.shipping_address) === JSON.stringify(afterQuote.shipping_address), 'Preview persistiu destino na sessao.');
+  recordFailure(await page.evaluate((postcode) => window.petshopQuotePreference.read()?.postcode === postcode, fixture.postcode), 'Preferencia transitória da PDP nao armazenada.');
+  const probe = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/cart`);
+  const added = await page.request.post(`${baseUrl}/wp-json/wc/store/v1/cart/add-item`, {
+    headers: { Nonce: probe.headers().nonce }, data: { id: fixture.productId, quantity: 1 },
+  });
+  recordFailure(added.ok(), `Produto de teste nao adicionado: HTTP ${added.status()}`);
+
   await page.goto(`${baseUrl}/carrinho/`, { waitUntil: 'networkidle', timeout: 30000 });
+  await page.waitForFunction((postcode) => window.wp?.data?.select('wc/store/cart').getCartData().shippingAddress?.postcode?.replace(/\D/g, '') === postcode
+    && window.petshopQuotePreference.read() === null, fixture.postcode, { timeout: 20000 });
   recordFailure(await page.locator('#shipping-calc:visible, #woocommerce-correios-calculo-de-frete-na-pagina-do-produto:visible, #melhor-envio-shortcode:visible, .containerCalculator:visible').count() === 0, 'Widget extra de frete visivel no carrinho.');
 
   await page.goto(`${baseUrl}/finalizar-compra/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await page.waitForFunction(() => window.wp?.data?.select('wc/store/cart').hasFinishedResolution('getCartData') && !window.petshopCartOperations.busy());
   const persistedPostcode = await page.evaluate(async () => {
     const cart = await (await fetch('/wp-json/wc/store/v1/cart')).json();
     return cart.shipping_address?.postcode || '';
   });
-  recordFailure(persistedPostcode === fixture.postcode, `Store API nao preservou CEP da PDP no checkout (${persistedPostcode}).`);
+  recordFailure(persistedPostcode.replace(/\D/g, '') === fixture.postcode, `Store API nao preservou preferencia consumida no checkout (${persistedPostcode}).`);
   recordFailure(await page.locator('#shipping-calc:visible, #woocommerce-correios-calculo-de-frete-na-pagina-do-produto:visible, #melhor-envio-shortcode:visible, .containerCalculator:visible').count() === 0, 'Widget extra de frete visivel no checkout.');
 
   await page.screenshot({ path: path.join(evidenceDir, 'shipping-hub-checkout.png'), fullPage: true });

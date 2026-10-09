@@ -64,7 +64,6 @@ if (class_exists('\MelhorEnvio\Services\CheckHealthService')) {
 
 $expectedOptions = [
     'woo_better_calc_enable_product_page' => 'no',
-    'woo_better_calc_enable_cart_page' => 'no',
     'woo_better_calc_enable_auto_address_fill' => 'no',
 ];
 
@@ -74,6 +73,16 @@ foreach ($expectedOptions as $optionName => $expectedValue) {
         $failures[] = "{$optionName} deve ser {$expectedValue}; encontrado {$actualValue}";
     }
 }
+
+// Plan 041 preserves administrative settings and disables the conflicting
+// cart integration by public enqueue hooks on the Cart Block surface.
+add_filter('woocommerce_is_cart', '__return_true');
+foreach (['woo-better-cart-custom-postcode', 'wc-better-shipping-calculator-for-brazil-frontend', 'wc-better-shipping-calculator-for-brazil-progress-bar'] as $handle) {
+    wp_enqueue_script($handle, '/fixture-only.js');
+    \Petshop\Core\WooCommerce\CartQuantityStability::dequeueConflictingScripts();
+    if (wp_script_is($handle, 'enqueued')) $failures[] = 'Widget conflitante permaneceu no carrinho: ' . $handle;
+}
+remove_filter('woocommerce_is_cart', '__return_true');
 
 $noticeOption = get_option('wp_option_notices_melhor_envio', []);
 $noticeText = is_array($noticeOption) ? implode("\n", array_map('strval', $noticeOption)) : (string) $noticeOption;

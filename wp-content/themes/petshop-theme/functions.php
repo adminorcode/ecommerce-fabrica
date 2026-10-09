@@ -283,6 +283,14 @@ add_action(
             $version,
             true
         );
+        if (function_exists('is_checkout') && is_checkout() && !is_order_received_page() && !is_checkout_pay_page()) {
+            wp_enqueue_script('petshop-checkout-address-layout',
+                get_stylesheet_directory_uri() . '/assets/js/checkout-address-layout.js', [], $version, true);
+            wp_add_inline_script('petshop-checkout-address-layout', 'window.petshopAddressLayout=' . wp_json_encode([
+                'recipient' => __('Destinatário', 'petshop-theme'),
+                'address' => __('Endereço', 'petshop-theme'),
+            ]) . ';', 'before');
+        }
     }
 );
 

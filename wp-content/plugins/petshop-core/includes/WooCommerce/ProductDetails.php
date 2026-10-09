@@ -212,13 +212,14 @@ final class ProductDetails
     {
         if (!is_product()) return;
         $path = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/product-experience.js';
-        wp_enqueue_script('petshop-product-experience', plugins_url('assets/js/product-experience.js', PETSHOP_CORE_FILE), ['jquery', 'wc-add-to-cart-variation'], is_file($path) ? (string) filemtime($path) : '1.0.0', true);
+        wp_enqueue_script('petshop-product-experience', plugins_url('assets/js/product-experience.js', PETSHOP_CORE_FILE), ['jquery', 'wc-add-to-cart-variation', 'petshop-quote-preference'], is_file($path) ? (string) filemtime($path) : '1.0.0', true);
         wp_add_inline_script('petshop-product-experience', 'window.petshopProductConfig=' . wp_json_encode([
             'ajaxUrl' => wp_make_link_relative(admin_url('admin-ajax.php')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'calculating' => __('Calculando opções de entrega…', 'petshop-core'),
             'invalidPostcode' => __('Informe um CEP brasileiro com 8 números.', 'petshop-core'),
             'genericError' => __('Não foi possível calcular agora. Revise o CEP e tente novamente.', 'petshop-core'),
+            'noRates' => __('Nenhuma opção foi retornada para esta estimativa. Complete o endereço no checkout para confirmar a entrega.', 'petshop-core'),
             'selectVariation' => __('Escolha as opções obrigatórias antes de adicionar ao carrinho.', 'petshop-core'),
             'deliveryTo' => __('Entrega para', 'petshop-core'),
             'receiveIn' => __('Receba em', 'petshop-core'),
@@ -253,7 +254,6 @@ final class ProductDetails
         }
 
         $quotes = ShippingQuotes::quote($product, $postcode, $quantity);
-        if ($quotes['rates'] === []) wp_send_json_error(['message' => __('Não há opção de entrega para este CEP. Confira o endereço ou fale com o atendimento.', 'petshop-core')], 404);
         wp_send_json_success($quotes);
     }
 

@@ -12,8 +12,12 @@
   const quantityTotalValue = document.querySelector('[data-petshop-quantity-total-value]');
   const cartForm = document.querySelector('form.cart');
   let shippingQuoteGeneration = 0;
+  let shippingController;
   const invalidateShippingQuote = () => {
     shippingQuoteGeneration += 1;
+    shippingController?.abort();
+    const button = shippingForm?.querySelector('button[type="submit"]');
+    if (button) button.disabled = false;
     if (result) result.replaceChildren();
   };
   const formatPostcode = (postcode) => postcode.replace(/^(\d{5})(\d{3})$/, '$1-$2');
@@ -200,21 +204,21 @@
     result.textContent = config.calculating;
     const button = shippingForm.querySelector('button[type="submit"]');
     button.disabled = true;
+    shippingController?.abort();
+    const controller = new AbortController();
+    shippingController = controller;
+    const timeout = setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch(config.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: data });
+      const response = await fetch(config.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: data, signal: controller.signal });
       const payload = await response.json();
       if (!response.ok || !payload.success) throw new Error(payload.data?.message || config.genericError);
       if (request !== shippingQuoteGeneration) return;
-      try {
-        window.sessionStorage.setItem('petshop.shipping-quote-preference.v1', JSON.stringify({
-          version: 1,
-          postcode,
-          createdAt: Date.now(),
-        }));
-      } catch (_error) {
-        // Storage is a convenience only; quoting and buying stay available.
-      }
+      window.petshopQuotePreference?.remember(postcode);
       result.replaceChildren();
+      if (!payload.data.rates.length) {
+        result.textContent = config.noRates;
+        return;
+      }
       const destination = document.createElement('p');
       destination.className = 'petshop-shipping-calculator__destination';
       destination.textContent = `${config.deliveryTo} ${formatPostcode(postcode)}`;
@@ -270,8 +274,9 @@
       note.textContent = payload.data.transportNote;
       result.append(note);
     } catch (error) {
-      result.textContent = error.message || config.genericError;
+      if (request === shippingQuoteGeneration) result.textContent = error.name === 'AbortError' ? config.genericError : error.message || config.genericError;
     } finally {
+      clearTimeout(timeout);
       if (request === shippingQuoteGeneration) button.disabled = false;
     }
   });

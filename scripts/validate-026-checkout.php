@@ -23,7 +23,7 @@ $record = static function (bool $condition, string $message) use (&$failures): v
 
 $record(has_action('template_redirect', [CheckoutCustomerData::class, 'hydrateCheckoutPage']) !== false, 'Hook frontend template_redirect nao registrado');
 $record(has_filter('rest_request_before_callbacks', [CheckoutCustomerData::class, 'hydrateStoreApiRequest']) !== false, 'Hook REST antes dos callbacks da Store API nao registrado');
-$record(has_filter('rest_request_after_callbacks', [CheckoutCustomerData::class, 'filterStoreApiCartResponse']) !== false, 'Hook REST depois dos callbacks da Store API nao registrado');
+$record(has_filter('rest_request_after_callbacks', [CheckoutCustomerData::class, 'filterStoreApiCartResponse']) === false, 'Prefill nao pode alterar a resposta da Store API depois dos callbacks');
 $record(has_action('wp_logout', [CheckoutCustomerData::class, 'clearTaggedSessionData']) !== false, 'Hook de limpeza de sessao apos logout nao registrado');
 $record(has_action('woocommerce_init', [CheckoutCustomerData::class, 'registerCheckoutBlockFields']) !== false, 'Campos adicionais do Checkout Block nao registrados em woocommerce_init');
 $record(has_action('woocommerce_set_additional_field_value', [CheckoutCustomerData::class, 'syncAdditionalFieldValue']) !== false, 'Compatibilidade de salvamento dos campos adicionais nao registrada');
@@ -33,6 +33,44 @@ $record(has_filter('woocommerce_get_default_value_for_petshop/person-type', [Che
 $record(has_filter('woocommerce_get_default_value_for_petshop/document', [CheckoutCustomerData::class, 'defaultDocument']) !== false, 'Default do campo CPF/CNPJ nao registrado');
 $record(has_action('wp_enqueue_scripts', [AddressLookup::class, 'enqueue']) !== false, 'Lookup ViaCEP unico do petshop-core nao registrado');
 
+$checkoutFields = \Automattic\WooCommerce\Blocks\Package::container()->get(\Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class);
+$registered = array_keys($checkoutFields->get_additional_fields());
+$record(in_array('petshop/number', $registered, true) && in_array('petshop/neighborhood', $registered, true), 'Campos canônicos de endereço ausentes');
+$record(count(array_filter($registered, static fn($id) => str_starts_with($id, 'virtuaria-correios/'))) === 0, 'Campos duplicados do transportador registrados');
+$locale = \Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::get_country_data()['BR']['locale'];
+$previousIndex = -1;
+foreach (['first_name', 'last_name', 'country', 'postcode', 'address_1', 'petshop/number', 'address_2', 'petshop/neighborhood', 'city', 'state', 'phone'] as $fieldKey) {
+    $index = $locale[$fieldKey]['index'] ?? -1;
+    $record($index > $previousIndex, 'Ordem da referência inválida para ' . $fieldKey);
+    $previousIndex = $index;
+}
+// A draft fixture never submits payment; exercise the public additional-field
+// lifecycle and reload the persisted order, including a change of person type.
+$orderFixture = new WC_Order();
+$orderFixture->set_status('checkout-draft');
+$orderFixture->set_created_via('petshop-026-validation');
+try {
+    foreach (['PF' => '12345678909', 'PJ' => '11222333000181', 'PF-again' => '98765432100'] as $kind => $document) {
+        $company = $kind === 'PJ';
+        $checkoutFields->persist_field_for_order('petshop/person-type', $company ? 'PJ' : 'PF', $orderFixture, 'other', false);
+        if ($orderFixture->get_id()) {
+            $record($orderFixture->get_meta($company ? '_billing_cpf' : '_billing_cnpj') === '', 'Troca de tipo manteve documento incompatível do transportador');
+        }
+        $checkoutFields->persist_field_for_order('petshop/document', $document, $orderFixture, 'other', false);
+        $orderFixture->save();
+        $orderFixture = wc_get_order($orderFixture->get_id());
+        foreach (['billing_person_type', '_billing_person_type'] as $metaKey) {
+            $record($orderFixture->get_meta($metaKey) === ($company ? 'pj' : 'pf'), 'Tipo de pessoa do transportador divergente após reload');
+        }
+        foreach (['billing_cpf', '_billing_cpf', 'billing_cnpj', '_billing_cnpj'] as $metaKey) {
+            $active = str_ends_with($metaKey, $company ? 'cnpj' : 'cpf');
+            $record($orderFixture->get_meta($metaKey) === ($active ? $document : ''), 'Documento do transportador divergente após reload: ' . $metaKey);
+        }
+        $record($orderFixture->get_meta('billing_persontype') === ($company ? '2' : '1'), 'Tipo numérico legado próprio perdido');
+    }
+} finally {
+    if ($orderFixture && $orderFixture->get_id()) $orderFixture->delete(true);
+}
 $cepFixture = static function ($preempt, string $cep) {
     if ($cep === '01001000') {
         return [
@@ -102,15 +140,13 @@ $assetPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/address-lookup.js';
 $assetSource = is_file($assetPath) ? (string) file_get_contents($assetPath) : '';
 $addressLookupPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'includes/WooCommerce/AddressLookup.php';
 $addressLookupSource = is_file($addressLookupPath) ? (string) file_get_contents($addressLookupPath) : '';
-$record(str_contains($addressLookupSource, "rest_url('wc/store/v1/cart')"), 'PHP nao localiza URL do cart Store API via rest_url');
-$record(str_contains($addressLookupSource, "rest_url('wc/store/v1/cart/update-customer')"), 'PHP nao localiza URL update-customer via rest_url');
-$record(!str_contains($assetSource, "window.location.origin") && !str_contains($assetSource, "'/wp-json/"), 'JS nao deve hardcodar /wp-json nem window.location.origin para Store API');
-$record(str_contains($assetSource, 'storeApiUpdateCustomerUrl'), 'JS de ViaCEP nao usa URL localizada do update-customer');
+$record(!str_contains($assetSource, "window.location.origin") && !str_contains($assetSource, "'/wp-json/") && !str_contains($assetSource, 'update-customer'), 'ViaCEP nao deve hardcodar Store API nem postar update-customer paralelo');
 $record(str_contains($assetSource, 'address-line2'), 'JS de ViaCEP nao contempla complemento');
 $record(str_contains($assetSource, 'petshopAutoComplement'), 'JS nao diferencia complemento automatico de complemento manual');
 $record(str_contains($assetSource, 'petshop/number'), 'JS nao sincroniza numero adicional com Store API');
 $record(str_contains($assetSource, 'petshop/neighborhood'), 'JS nao sincroniza bairro adicional com Store API');
 $record(str_contains($assetSource, 'aria-live'), 'Mensagem de CEP nao anuncia resultado para leitores de tela');
+$record(str_contains($assetSource, 'AbortController') && str_contains($assetSource, 'generations'), 'Lookup ViaCEP deve cancelar e descartar respostas antigas');
 $record(str_contains($assetSource, 'window.petshopAddressLookup'), 'JS deve ler petshopAddressLookup a partir de window');
 $record(!str_contains($assetSource, 'box.style.marginTop') && !str_contains($assetSource, 'box.style.fontSize'), 'Mensagem de CEP nao deve usar estilo inline');
 
@@ -118,11 +154,11 @@ $checkoutDataPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'includes/WooCommerce/C
 $checkoutDataSource = is_file($checkoutDataPath) ? (string) file_get_contents($checkoutDataPath) : '';
 $record(
     str_contains($checkoutDataSource, "'id' => 'petshop/number'")
-    && str_contains($checkoutDataSource, "'autocomplete' => 'off'")
+    && str_contains($checkoutDataSource, "'data-petshop-autocomplete' => 'off'")
     && !str_contains($checkoutDataSource, "'autocomplete' => 'address-line2'"),
     'Campo numero do checkout nao deve usar autocomplete address-line2'
 );
-$record(str_contains($checkoutDataSource, 'rest_request_after_callbacks'), 'Prefill deve filtrar a resposta da Store API');
+$record(!str_contains($checkoutDataSource, "add_filter('rest_request_after_callbacks'"), 'Prefill nao pode filtrar a resposta da Store API tardiamente');
 $record(str_contains($checkoutDataSource, 'SESSION_HYDRATED_KEY'), 'Prefill deve hidratar so na primeira carga da sessao');
 $record(str_contains($addressLookupSource, 'preencha o endereço manualmente'), 'Mensagem de CEP inexistente deve orientar preenchimento manual');
 
@@ -256,6 +292,24 @@ try {
         $userId = $createUser($kind);
         $createdUsers[] = $userId;
         $customer = new WC_Customer($userId);
+        $previousPost = $_POST;
+        try {
+            // A previously registered PF value must not undo a validated PJ profile save.
+            update_user_meta($userId, '_wc_other/petshop/person-type', 'PF');
+            $_POST['petshop_person_type'] = $kind;
+            $_POST['petshop_document'] = $kind === 'PF' ? '12345678909' : '11222333000181';
+            $runtimeCustomer = new WC_Customer($userId, true);
+            $runtimeCustomer->update_meta_data('petshop_gate_session_sentinel', 'preserve-session');
+            WC()->customer = $runtimeCustomer;
+            CheckoutCustomerData::syncSavedAccountContact($userId);
+            $customer = new WC_Customer($userId);
+            $record($customer->get_meta('_wc_other/petshop/person-type') === $kind, 'Registered profile type not reconciled after save');
+            $record($runtimeCustomer->get_meta('_wc_other/petshop/person-type') === $kind, 'Runtime profile type not reconciled after save');
+            $record($runtimeCustomer->get_meta('petshop_gate_session_sentinel') === 'preserve-session', 'Profile save must preserve unrelated runtime metadata');
+            $record($customer->get_meta('petshop_gate_session_sentinel') === '', 'Profile save must not persist unrelated runtime metadata');
+        } finally {
+            $_POST = $previousPost;
+        }
         $session = $makeSession();
         $email = (string) get_userdata($userId)->user_email;
 
@@ -299,96 +353,16 @@ try {
     WC()->customer = $stableCustomer;
     $clearCustomerAddress($stableCustomer);
 
-    $firstCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
-        new WP_REST_Response([
-            'billing_address' => [
-                'first_name' => '',
-                'address_1' => '',
-                'postcode' => '',
-            ],
-            'shipping_address' => [],
-            'additional_fields' => [],
-        ]),
-        [],
-        new WP_REST_Request('GET', '/wc/store/v1/cart')
-    );
-    $firstCartData = $firstCartResponse instanceof WP_REST_Response ? $firstCartResponse->get_data() : [];
-    $record(($firstCartData['billing_address']['first_name'] ?? '') === 'Cliente', 'primeira resposta do cart deveria hidratar nome');
-    $record(($firstCartData['billing_address']['address_1'] ?? '') === 'Praca da Se', 'primeira resposta do cart deveria hidratar rua');
-    $record(($firstCartData['billing_address']['petshop/number'] ?? '') === '123', 'primeira resposta do cart deveria hidratar numero');
-    $record(($firstCartData['billing_address']['petshop/neighborhood'] ?? '') === 'Se', 'primeira resposta do cart deveria hidratar bairro');
-    $record(($firstCartData['additional_fields']['petshop/person-type'] ?? '') === 'PF', 'primeira resposta do cart deveria hidratar PF/PJ');
-    $record(($firstCartData['additional_fields']['petshop/document'] ?? '') === '12345678909', 'primeira resposta do cart deveria hidratar documento');
-
-    $secondCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
-        new WP_REST_Response([
-            'billing_address' => [
-                'first_name' => '',
-                'address_1' => '',
-                'postcode' => '',
-            ],
-            'shipping_address' => [],
-            'additional_fields' => [],
-        ]),
-        [],
-        new WP_REST_Request('GET', '/wc/store/v1/cart')
-    );
-    $secondCartData = $secondCartResponse instanceof WP_REST_Response ? $secondCartResponse->get_data() : [];
-    $record(($secondCartData['billing_address']['first_name'] ?? '') === '', 'segunda resposta do cart nao deve repor nome da conta');
-    $record(($secondCartData['billing_address']['address_1'] ?? '') === '', 'segunda resposta do cart nao deve repor rua da conta');
-    $record(($secondCartData['billing_address']['petshop/number'] ?? '') === '', 'segunda resposta do cart nao deve repor numero da conta');
-    $record(($secondCartData['billing_address']['petshop/neighborhood'] ?? '') === '', 'segunda resposta do cart nao deve repor bairro da conta');
-    $record(($secondCartData['additional_fields']['petshop/person-type'] ?? '') === '', 'segunda resposta do cart nao deve repor PF/PJ da conta');
-    $record(($secondCartData['additional_fields']['petshop/document'] ?? '') === '', 'segunda resposta do cart nao deve repor documento da conta');
-    $record(is_string($secondCartData['shipping_address']['state'] ?? null), 'shipping sem estado nao pode omitir a chave state');
-    $record(is_string($secondCartData['billing_address']['state'] ?? null), 'billing sem estado nao pode omitir a chave state');
-    $record(is_string($secondCartData['shipping_address']['country'] ?? null), 'shipping sem pais nao pode omitir a chave country');
-
-    $objectCartResponse = CheckoutCustomerData::filterStoreApiCartResponse(
-        new WP_REST_Response([
-            'billing_address' => (object) [
-                'first_name' => 'Objeto',
-                'country' => 'BR',
-                'state' => 'SP',
-            ],
-            'shipping_address' => (object) [
-                'first_name' => 'Entrega',
-                'country' => 'BR',
-                'state' => 'RJ',
-            ],
-            'additional_fields' => [],
-        ]),
-        [],
-        new WP_REST_Request('GET', '/wc/store/v1/cart')
-    );
-    $objectCartData = $objectCartResponse instanceof WP_REST_Response ? $objectCartResponse->get_data() : [];
-    $record(($objectCartData['shipping_address']['state'] ?? '') === 'RJ', 'endereco objeto nao pode perder o estado');
-    $record(($objectCartData['shipping_address']['country'] ?? '') === 'BR', 'endereco objeto nao pode perder o pais');
-    $record(($objectCartData['billing_address']['first_name'] ?? '') === 'Objeto', 'endereco objeto nao pode ser descartado');
-    $record(is_string($objectCartData['shipping_address']['city'] ?? null), 'endereco objeto deve completar cidade ausente com string');
-
-    $inheritAfterHydration = CheckoutCustomerData::filterStoreApiCartResponse(
-        new WP_REST_Response([
-            'billing_address' => [
-                'first_name' => 'Outro',
-                'address_1' => 'Rua Nova',
-                'postcode' => '01310930',
-            ],
-            'shipping_address' => [
-                'first_name' => '',
-                'address_1' => '',
-                'postcode' => '',
-            ],
-            'additional_fields' => [],
-        ]),
-        [],
-        new WP_REST_Request('GET', '/wc/store/v1/cart')
-    );
-    $inheritData = $inheritAfterHydration instanceof WP_REST_Response ? $inheritAfterHydration->get_data() : [];
-    $record(($inheritData['billing_address']['first_name'] ?? '') === 'Outro', 'depois da hidratacao, billing da resposta nao deve voltar ao nome da conta');
-    $record(($inheritData['shipping_address']['first_name'] ?? '') === 'Outro', 'depois da hidratacao, shipping vazio deve herdar o billing da mesma resposta');
-    $record(($inheritData['shipping_address']['address_1'] ?? '') === 'Rua Nova', 'depois da hidratacao, shipping vazio deve herdar a rua do billing da resposta');
-
+    CheckoutCustomerData::hydrateCurrentCustomer();
+    $record($stableCustomer->get_billing_address_1() === 'Praca da Se', 'Hidratacao inicial deve usar o endereco salvo antes do calculo');
+    $stableCustomer->set_shipping_postcode('91210320');
+    $stableCustomer->set_shipping_state('RS');
+    $stableCustomer->set_shipping_city('');
+    $stableCustomer->set_shipping_address_1('');
+    $stableSession->set('petshop_shipping_destination_origin', 'quote');
+    CheckoutCustomerData::hydrateCurrentCustomer();
+    $record($stableCustomer->get_shipping_city() === '' && $stableCustomer->get_shipping_address_1() === '', 'Cotacao RS nao pode receber geografia da conta SP');
+    $record($stableCustomer->get_shipping_postcode() === '91210320', 'Hidratacao nao pode substituir intencao recente');
     $clearedAfterHydration = new WC_Customer($pfUser);
     $clearCustomerAddress($clearedAfterHydration);
     WC()->customer = $clearedAfterHydration;

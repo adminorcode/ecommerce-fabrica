@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.28
+Version: 0.6.34
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -843,10 +843,6 @@ a:hover { color: var(--color-brand-orange-dark); }
   display: none;
 }
 
-.wc-block-cart table.wc-block-cart-items .wc-block-cart-item__prices:not(:has(del)) {
-  display: none;
-}
-
 .petshop-cart-shipping {
   margin: 0 0 var(--space-3);
   padding: var(--space-3);
@@ -871,7 +867,9 @@ a:hover { color: var(--color-brand-orange-dark); }
   gap: var(--space-2);
 }
 
-.petshop-cart-shipping input {
+.petshop-cart-shipping input[name="postcode"] {
+  width: 100%;
+  min-width: 0;
   min-height: 44px;
   border: 2px solid var(--color-neutral-border);
   border-radius: var(--radius-sm);
@@ -892,6 +890,10 @@ a:hover { color: var(--color-brand-orange-dark); }
   margin: var(--space-2) 0 0;
   color: var(--color-muted);
   font-size: .94rem;
+}
+
+.petshop-cart-shipping__status:empty {
+  display: none;
 }
 
 .wc-block-cart [data-petshop-cart-shipping-spinner] {
@@ -3239,6 +3241,84 @@ html.petshop-reduced-motion .petshop-home-campaigns__next:hover {
   color: var(--color-error);
 }
 
+.wc-block-components-address-form > .petshop-cep-message {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+/* Checkout address composition: recipient, geography and billing choice. */
+.wc-block-checkout .petshop-address-step {
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px;
+  padding: 16px !important;
+}
+.wc-block-checkout .petshop-address-step .wc-block-components-checkout-step__heading {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+.wc-block-checkout .wc-block-checkout__use-address-for-billing {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  margin-top: 20px;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 12px;
+  padding: 0;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > * {
+  grid-column: span 2;
+  width: auto !important;
+  min-width: 0;
+  margin: 0 !important;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .petshop-address-heading,
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .petshop-cep-message,
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__address_2,
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__company {
+  grid-column: 1 / -1;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__address_1 {
+  grid-column: span 3;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__petshop-number {
+  grid-column: span 1;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) .petshop-address-heading {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding-top: 4px;
+  color: var(--color-ink);
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) [data-petshop-address-heading="address"] {
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) .petshop-cep-message {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) .wc-blocks-components-select {
+  margin: 0 !important;
+}
+@media (max-width: 480px) {
+  .wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0;
+    gap: 14px 10px;
+  }
+  .wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > * {
+    grid-column: 1 / -1;
+  }
+  .wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__address_1,
+  .wc-block-checkout .wc-block-components-address-form:is(#shipping, #billing) > .wc-block-components-address-form__petshop-number {
+    grid-column: 1 / -1;
+  }
+}
+
 .petshop-product-details {
   display: grid;
   gap: var(--space-3);
@@ -4929,3 +5009,27 @@ footer.ct-footer .ct-footer-copyright {
     gap: 0.4rem;
   }
 }
+
+/* Pending products and delivery have separate feedback; unit prices stay readable. */
+.wp-block-woocommerce-cart .wc-block-cart-item__total:has([data-petshop-line-value]) .wc-block-cart-item__total-price-and-sale-badge-wrapper > :first-child,
+.wp-block-woocommerce-cart .wc-block-cart-item__total:has([data-petshop-line-estimate]) .wc-block-cart-item__total-price-and-sale-badge-wrapper,
+.wp-block-woocommerce-cart .wp-block-woocommerce-cart-order-summary-subtotal-block:has([data-petshop-subtotal-estimate]) .wc-block-components-totals-item__value,
+.wp-block-woocommerce-cart:is(.petshop-cart-updating, .petshop-cart-draft, :has([data-pending="true"])) .wc-block-components-totals-footer-item .wc-block-components-totals-item__value,
+.wp-block-woocommerce-cart:is(.petshop-cart-updating, .petshop-cart-draft, :has([data-pending="true"])) .wc-block-components-totals-shipping .wc-block-components-totals-item__value,
+.wp-block-woocommerce-cart:is(.petshop-cart-updating, .petshop-cart-draft, :has([data-pending="true"])) .petshop-cart-shipping .wc-block-components-radio-control__secondary-label {
+  visibility: hidden;
+}
+
+.wp-block-woocommerce-cart .wc-block-cart-item__total,
+.wp-block-woocommerce-cart .wp-block-woocommerce-cart-order-summary-subtotal-block { position: relative; }
+.wp-block-woocommerce-cart .wp-block-woocommerce-cart-order-summary-subtotal-block { min-height: 3.5rem; }
+.petshop-cart-estimate { display: block; font-weight: 600; }
+.petshop-cart-estimate small { display: block; font-weight: 400; font-size: 0.75rem; line-height: 1.35; }
+[data-petshop-line-mount] { display: block; }
+.wc-block-cart-item__total:has([data-petshop-line-value]) [data-petshop-line-mount] { position: absolute; top: 0; right: 0; }
+.petshop-cart-line-value { font-weight: 600; }
+.wp-block-woocommerce-cart-order-summary-subtotal-block:has([data-petshop-subtotal-estimate]) [data-petshop-subtotal-mount] { display: block; position: absolute; right: 0; top: 0; max-width: 70%; text-align: right; }
+.petshop-cart-estimate button { min-height: 44px; margin-top: 0.25rem; }
+.wp-block-woocommerce-cart .wc-block-components-totals-footer-item { position: relative; }
+.petshop-cart-order-status { position: absolute; right: 0; top: 0; font-size: 0.875rem; font-weight: 400; }
+.wp-block-woocommerce-cart:is(.petshop-cart-updating, .petshop-cart-draft) .wc-block-cart__submit-button { opacity: 0.65; cursor: progress; }
