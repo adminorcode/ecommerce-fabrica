@@ -1,0 +1,18 @@
+---
+description: CEP de endereço sempre consulta ViaCEP; calculadora de frete é a única exceção
+alwaysApply: true
+---
+
+# ViaCEP em campos de endereço
+
+Sempre que um CEP existir para **preencher endereço**, a loja consulta a ViaCEP e completa logradouro, bairro, cidade e UF.
+
+- Vale em cadastro, Minha conta → Endereços, checkout, e qualquer formulário novo de endereço.
+- CEP com 8 dígitos; consulta pelo `petshop-core` (nonce, resposta sanitizada). Sem token no repositório.
+- Número do imóvel é do cliente. Complemento vem da API quando ela devolver valor.
+- CEP inválido ou API fora: aviso em pt-BR; não inventar endereço; o cliente completa na mão.
+- Um único módulo de lookup no plugin; não copiar integração por tela.
+
+**Exceção:** calculadora de frete (PDP ou campo que só calcula taxa). Aí o CEP serve para cotação, não para montar endereço, e não usa ViaCEP.
+
+Ticket ou plano que peça CEP de endereço sem ViaCEP está incompleto.

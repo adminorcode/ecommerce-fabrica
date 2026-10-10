@@ -38,6 +38,12 @@ if (-not $SkipProvision) {
     Invoke-WpCli eval 'Petshop\Core\StorefrontExperience::maybeEnsureStorefront();'
     Write-Host '==> fixtures administraveis do Plano 013'
     Invoke-EvalFile 'seed-013-catalog-samples.php'
+    Write-Host '==> fixtures personalizáveis do Plano 012'
+    Invoke-EvalFile 'seed-012-personalizable-products.php'
+    Write-Host '==> produtos Animal Republik autorizados'
+    Invoke-EvalFile 'seed-animal-republik-launches.php'
+    Write-Host '==> vitrines comerciais com Ver tudo'
+    Invoke-EvalFile 'sync-commercial-page-catalog-links.php'
 }
 
 Invoke-EvalFile 'validate-storefront.php'
@@ -49,8 +55,37 @@ Invoke-EvalFile 'test-005-session-02-persistence.php'
 Invoke-EvalFile 'test-013-persistence.php'
 Invoke-EvalFile 'validate-013-hpos.php'
 Invoke-EvalFile 'validate-013-security.php'
+Invoke-EvalFile 'validate-025-account-registration.php'
 Invoke-EvalFile 'validate-014-identity-campaigns.php'
+Invoke-EvalFile 'validate-015-support-section.php'
 Invoke-EvalFile 'validate-016-product-grid.php'
+Invoke-EvalFile 'validate-018-commercial-pages.php'
+Invoke-EvalFile 'validate-animal-republik-products.php'
+Invoke-EvalFile 'validate-012-personalization.php'
+Invoke-EvalFile 'validate-023-footer.php'
+Invoke-EvalFile 'validate-024-home-campaigns-carousel.php'
+Invoke-EvalFile 'validate-030.php'
+Invoke-EvalFile 'validate-032-search.php'
+Invoke-EvalFile 'validate-039-cart-qty.php'
+Invoke-EvalFile 'validate-shipping-quote-destination.php'
+Invoke-EvalFile 'validate-041-shipping-destination.php'
+Invoke-EvalFile 'validate-041-shipping-preview.php'
+Invoke-WpCli eval 'require "/var/www/html/scripts/validate-041-shipping-selection-cache.php";'
+Invoke-EvalFile 'validate-041-block-persistence.php'
+Invoke-EvalFile 'validate-041-native-commerce.php'
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-quote-preference.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-041-quote-preference falhou' }
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-operations.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-041-cart-operations falhou' }
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-request-coordinator.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-041-cart-request-coordinator falhou' }
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-cart-estimate.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-041-cart-estimate falhou' }
+docker compose --profile tools run --rm node node /workspace/scripts/validate-041-runner-cleanup.mjs
+if ($LASTEXITCODE -ne 0) { throw 'validate-041-runner-cleanup falhou' }
+Invoke-EvalFile 'validate-034-emails.php'
+Invoke-EvalFile 'validate-035-menu-dropdown.php'
+Invoke-EvalFile 'smoke-012-order-flow.php'
 
 if ($ContentAudit) {
     Invoke-EvalFile 'validate-004b.php'
@@ -84,27 +119,61 @@ if ($Browser -or $Pdp -or $Cart) {
 
         if ($Browser) {
             Write-Host '==> browser gates (container)'
-            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs')) {
-                docker compose --profile tools run --rm node node "/workspace/scripts/$script"
+            try {
+                $plan041Fixture = docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/setup-041-browser-customer.php
+                if ($LASTEXITCODE -ne 0) { throw 'fixture Plano 041 falhou' }
+                New-Item -ItemType Directory -Force .local | Out-Null
+                [System.IO.File]::WriteAllText((Join-Path (Get-Location) '.local/041-browser-fixture.json'), ($plan041Fixture -join "`n"))
+                $editor041Fixture = docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/setup-041-editor-fixture.php
+                if ($LASTEXITCODE -ne 0) { throw 'fixture editor Plano 041 falhou' }
+                [System.IO.File]::WriteAllText((Join-Path (Get-Location) '.local/041-editor-fixture.json'), ($editor041Fixture -join "`n"))
+                foreach ($script041 in @('validate-041-product-quote-browser.mjs', 'validate-041-address-races-browser.mjs', 'validate-041-editor-browser.mjs', 'validate-041-checkout-address-browser.mjs', 'validate-041-cart-delivery-browser.mjs', 'validate-041-cart-concurrency-browser.mjs', 'validate-041-cart-performance-browser.mjs', 'validate-041-cart-failures-browser.mjs', 'validate-041-delivery-performance-browser.mjs', 'validate-041-cart-consistency-browser.mjs')) {
+                    docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script041"
+                    if ($LASTEXITCODE -ne 0) { throw "browser gate $script041 falhou" }
+                }
+            } finally {
+                try { Invoke-EvalFile 'cleanup-041-browser-customer.php' }
+                finally {
+                    Remove-Item -LiteralPath '.local/041-browser-fixture.json' -ErrorAction SilentlyContinue
+                    try { Invoke-EvalFile 'cleanup-041-editor-fixture.php' }
+                    finally { Remove-Item -LiteralPath '.local/041-editor-fixture.json' -ErrorAction SilentlyContinue }
+                }
+            }
+            foreach ($script in @('validate-005-session-01-browser.mjs', 'validate-005-session-02-browser.mjs', 'validate-005-catalog-layout-browser.mjs', 'validate-013-browser.mjs', 'validate-016-product-grid-browser.mjs', 'validate-018-commercial-pages-browser.mjs', 'validate-012-personalizer-browser.mjs', 'validate-023-footer-browser.mjs', 'validate-024-home-campaigns-carousel-browser.mjs', 'validate-025-account-registration-browser.mjs', 'validate-030-order-received-browser.mjs', 'validate-032-search-browser.mjs', 'validate-037-cart-auto-update-browser.mjs', 'validate-039-cart-qty-browser.mjs', 'validate-035-menu-dropdown-browser.mjs', 'validate-no-theme-hero-browser.mjs')) {
+                docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script"
                 if ($LASTEXITCODE -ne 0) { throw "browser gate $script falhou" }
             }
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-016-product-grid-editor.mjs
+            $plan031FixtureReady = $false
+            try {
+                Invoke-EvalFile 'setup-031-product-card-fixture.php'
+                $plan031FixtureReady = $true
+                docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=localhost:8888 node node /workspace/scripts/validate-031-product-card-browser.mjs
+                if ($LASTEXITCODE -ne 0) { throw 'browser gate Plano 031 falhou' }
+            } finally {
+                if ($plan031FixtureReady) {
+                    Invoke-EvalFile 'cleanup-031-product-card-fixture.php'
+                }
+            }
+
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-016-product-grid-editor.mjs
             if ($LASTEXITCODE -ne 0) { throw 'editor gate Plano 016 falhou' }
         }
 
         if ($Pdp -or $Browser) {
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-pdp-browser.mjs
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-pdp-browser.mjs
             if ($LASTEXITCODE -ne 0) { throw 'browser gate PDP falhou' }
         }
 
         if ($Cart -or $Browser) {
-            docker compose --profile tools run --rm node node /workspace/scripts/validate-005-cart-browser.mjs
+            docker compose --profile tools run --rm -e PETSHOP_CANONICAL_HOST=wordpress node node /workspace/scripts/validate-005-cart-browser.mjs
             if ($LASTEXITCODE -ne 0) { throw 'browser gate carrinho falhou' }
         }
     } finally {
-        Invoke-WpCli option update home $originalHome
-        Invoke-WpCli option update siteurl $originalSiteUrl
-        Invoke-WpCli cache flush
+        try { Invoke-WpCli option update home $originalHome }
+        finally {
+            try { Invoke-WpCli option update siteurl $originalSiteUrl }
+            finally { Invoke-WpCli cache flush }
+        }
     }
 }
 

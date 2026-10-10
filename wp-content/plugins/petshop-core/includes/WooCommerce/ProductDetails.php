@@ -31,6 +31,7 @@ final class ProductDetails
         add_action('created_pa_color', [self::class, 'saveColorField']);
         add_action('edited_pa_color', [self::class, 'saveColorField']);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductionAndSizeGuide'], 24);
+        add_action('woocommerce_single_product_summary', [self::class, 'renderQuantityTotal'], 11);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderShippingCalculator'], 8);
         add_action('woocommerce_after_add_to_cart_form', [self::class, 'renderPersonalizationSlot'], 20);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAssets']);
@@ -187,6 +188,20 @@ final class ProductDetails
         echo '<div class="petshop-shipping-calculator__result" data-petshop-shipping-result aria-live="polite"></div></section>';
     }
 
+    public static function renderQuantityTotal(): void
+    {
+        global $product;
+        if (!$product instanceof \WC_Product || !$product->is_purchasable()) return;
+
+        $price = $product->is_type('variable') ? null : (float) wc_get_price_to_display($product);
+
+        echo '<p class="petshop-product-quantity-total" data-petshop-quantity-total hidden'
+            . ' data-unit-price="' . esc_attr($price === null ? '' : wc_format_decimal($price, wc_get_price_decimals())) . '">'
+            . '<span class="petshop-product-quantity-total__label" data-petshop-quantity-total-label></span>'
+            . '<strong class="petshop-product-quantity-total__value" data-petshop-quantity-total-value aria-live="polite"></strong>'
+            . '</p>';
+    }
+
     public static function renderPersonalizationSlot(): void
     {
         global $product;
@@ -197,14 +212,20 @@ final class ProductDetails
     {
         if (!is_product()) return;
         $path = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/product-experience.js';
-        wp_enqueue_script('petshop-product-experience', plugins_url('assets/js/product-experience.js', PETSHOP_CORE_FILE), ['jquery', 'wc-add-to-cart-variation'], is_file($path) ? (string) filemtime($path) : '1.0.0', true);
+        wp_enqueue_script('petshop-product-experience', plugins_url('assets/js/product-experience.js', PETSHOP_CORE_FILE), ['jquery', 'wc-add-to-cart-variation', 'petshop-quote-preference'], is_file($path) ? (string) filemtime($path) : '1.0.0', true);
         wp_add_inline_script('petshop-product-experience', 'window.petshopProductConfig=' . wp_json_encode([
             'ajaxUrl' => wp_make_link_relative(admin_url('admin-ajax.php')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'calculating' => __('Calculando opções de entrega…', 'petshop-core'),
             'invalidPostcode' => __('Informe um CEP brasileiro com 8 números.', 'petshop-core'),
             'genericError' => __('Não foi possível calcular agora. Revise o CEP e tente novamente.', 'petshop-core'),
+            'noRates' => __('Nenhuma opção foi retornada para esta estimativa. Complete o endereço no checkout para confirmar a entrega.', 'petshop-core'),
             'selectVariation' => __('Escolha as opções obrigatórias antes de adicionar ao carrinho.', 'petshop-core'),
+            'deliveryTo' => __('Entrega para', 'petshop-core'),
+            'receiveIn' => __('Receba em', 'petshop-core'),
+            'deliveryAtCheckout' => __('Prazo confirmado no carrinho', 'petshop-core'),
+            'productionLabel' => __('Produção', 'petshop-core'),
+            'priceFormat' => self::priceFormatConfig(),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
     }
 
@@ -212,30 +233,28 @@ final class ProductDetails
     {
         check_ajax_referer(self::NONCE_ACTION, 'nonce');
         $postcode = isset($_POST['postcode']) && is_scalar($_POST['postcode']) ? preg_replace('/\D+/', '', wp_unslash((string) $_POST['postcode'])) : '';
-        $productId = isset($_POST['variation_id']) && absint($_POST['variation_id']) > 0 ? absint($_POST['variation_id']) : absint($_POST['product_id'] ?? 0);
-        if (!is_string($postcode) || strlen($postcode) !== 8 || $productId <= 0) wp_send_json_error(['message' => __('Informe um CEP e um produto válidos.', 'petshop-core')], 400);
+        $parentId = absint($_POST['product_id'] ?? 0);
+        $variationId = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
+        $productId = $variationId > 0 ? $variationId : $parentId;
+        $rawQuantity = isset($_POST['quantity']) && is_scalar($_POST['quantity']) ? (string) wp_unslash($_POST['quantity']) : '1';
+        if (!ctype_digit($rawQuantity) || (int) $rawQuantity < 1) wp_send_json_error(['message' => __('Informe uma quantidade inteira válida.', 'petshop-core')], 400);
+        $quantity = (int) $rawQuantity;
+        if (!is_string($postcode) || BrazilianPostcode::stateFromPostcode($postcode) === '' || $productId <= 0) wp_send_json_error(['message' => __('Informe um CEP e um produto válidos.', 'petshop-core')], 400);
         $product = wc_get_product($productId);
         if (!$product instanceof \WC_Product || !$product->is_purchasable()) wp_send_json_error(['message' => __('Produto indisponível para cálculo.', 'petshop-core')], 400);
-
-        $package = [
-            'contents' => [['data' => $product, 'quantity' => 1, 'line_total' => (float) wc_get_price_to_display($product)]],
-            'contents_cost' => (float) wc_get_price_to_display($product),
-            'applied_coupons' => [],
-            'user' => ['ID' => get_current_user_id()],
-            'destination' => ['country' => 'BR', 'state' => '', 'postcode' => $postcode, 'city' => '', 'address' => '', 'address_2' => ''],
-            'cart_subtotal' => (float) wc_get_price_to_display($product),
-        ];
-        $packages = WC()->shipping()->calculate_shipping([$package]);
-        $rates = [];
-        foreach (($packages[0]['rates'] ?? []) as $rate) {
-            if (!$rate instanceof \WC_Shipping_Rate) continue;
-            $taxes = array_sum(array_map('floatval', $rate->get_taxes()));
-            $cost = (float) $rate->get_cost() + (get_option('woocommerce_tax_display_cart') === 'incl' ? $taxes : 0.0);
-            $rates[] = ['id' => $rate->get_id(), 'label' => $rate->get_label(), 'cost' => wp_strip_all_tags(wc_price($cost))];
+        if ($product->is_type('variable')) {
+            wp_send_json_error(['message' => __('Selecione uma variação para calcular a entrega.', 'petshop-core')], 400);
         }
-        if ($rates === []) wp_send_json_error(['message' => __('Não há opção de entrega para este CEP. Confira o endereço ou fale com o atendimento.', 'petshop-core')], 404);
-        $lead = trim((string) $product->get_meta('_petshop_production_lead', true));
-        wp_send_json_success(['rates' => $rates, 'productionLead' => $lead, 'transportNote' => __('O prazo de transporte é confirmado pelo método escolhido no carrinho e no checkout.', 'petshop-core')]);
+        if ($variationId > 0 && (!$product->is_type('variation') || (int) $product->get_parent_id() !== $parentId)) {
+            wp_send_json_error(['message' => __('A variação informada não corresponde ao produto.', 'petshop-core')], 400);
+        }
+        $maximum = $product->get_max_purchase_quantity();
+        if (!$product->has_enough_stock($quantity) || ($maximum >= 0 && $quantity > $maximum)) {
+            wp_send_json_error(['message' => __('A quantidade informada não está disponível para cálculo.', 'petshop-core')], 400);
+        }
+
+        $quotes = ShippingQuotes::quote($product, $postcode, $quantity);
+        wp_send_json_success($quotes);
     }
 
     /** @return array<int, string> */
@@ -244,5 +263,17 @@ final class ProductDetails
         $options = [0 => __('Nenhum guia selecionado', 'petshop-core')];
         foreach (get_pages(['sort_column' => 'post_title']) as $page) $options[(int) $page->ID] = $page->post_title;
         return $options;
+    }
+
+    /** @return array{currencySymbol: string, decimalSeparator: string, thousandSeparator: string, decimals: int, priceFormat: string} */
+    private static function priceFormatConfig(): array
+    {
+        return [
+            'currencySymbol' => html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, get_bloginfo('charset') ?: 'UTF-8'),
+            'decimalSeparator' => wc_get_price_decimal_separator(),
+            'thousandSeparator' => wc_get_price_thousand_separator(),
+            'decimals' => wc_get_price_decimals(),
+            'priceFormat' => html_entity_decode(get_woocommerce_price_format(), ENT_QUOTES | ENT_HTML5, get_bloginfo('charset') ?: 'UTF-8'),
+        ];
     }
 }

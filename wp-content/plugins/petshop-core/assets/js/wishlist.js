@@ -31,12 +31,45 @@
     button.setAttribute('aria-label', isActive ? config.labels.remove : config.labels.add);
   };
 
+  const syncHeaderCount = () => {
+    const count = activeIds().length;
+    document.querySelectorAll('[data-petshop-wishlist-count]').forEach((badge) => {
+      badge.textContent = String(count);
+      badge.hidden = count === 0;
+    });
+  };
+
   const syncAllButtons = () => {
     const ids = activeIds();
     document.querySelectorAll('.petshop-wishlist-toggle[data-product-id]').forEach((button) => {
       const productId = Number(button.getAttribute('data-product-id'));
       syncButton(button, ids.includes(productId));
     });
+    syncHeaderCount();
+  };
+
+  const syncProductButtons = (productId, isActive) => {
+    document.querySelectorAll(`.petshop-wishlist-toggle[data-product-id="${productId}"]`).forEach((button) => {
+      syncButton(button, isActive);
+    });
+    syncHeaderCount();
+  };
+
+  const showButtonFeedback = (button, message) => {
+    let status = button.querySelector('.petshop-wishlist-toggle__status');
+    if (!status) {
+      status = document.createElement('span');
+      status.className = 'petshop-wishlist-toggle__status';
+      status.setAttribute('aria-hidden', 'true');
+      button.append(status);
+    }
+
+    status.textContent = message;
+    button.classList.add('has-feedback');
+    window.clearTimeout(button.petshopWishlistFeedbackTimer);
+    button.petshopWishlistFeedbackTimer = window.setTimeout(() => {
+      button.classList.remove('has-feedback');
+    }, 1200);
   };
 
   const toggleLocal = (productId) => {
@@ -139,9 +172,12 @@
     const ids = activeIds();
     const willActivate = !ids.includes(productId);
     toggleLocal(productId);
-    syncButton(button, willActivate);
+    button.classList.add('is-updating');
+    syncProductButtons(productId, willActivate);
+    showButtonFeedback(button, willActivate ? config.labels.saved : config.labels.removed);
 
     if (!config.loggedIn) {
+      button.classList.remove('is-updating');
       return;
     }
 
@@ -157,6 +193,9 @@
       })
       .catch(() => {
         syncAllButtons();
+      })
+      .finally(() => {
+        button.classList.remove('is-updating');
       });
   });
 

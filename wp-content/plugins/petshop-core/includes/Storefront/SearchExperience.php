@@ -13,6 +13,7 @@ final class SearchExperience
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAssets']);
         add_action('woocommerce_no_products_found', [self::class, 'renderNoResults'], 20);
         add_filter('get_the_archive_title', [self::class, 'filterSearchTitle']);
+        add_filter('woocommerce_page_title', [self::class, 'filterSearchTitle']);
         add_filter('document_title_parts', [self::class, 'filterDocumentTitle']);
     }
 

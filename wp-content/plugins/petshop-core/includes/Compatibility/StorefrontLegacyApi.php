@@ -115,6 +115,11 @@ trait StorefrontLegacyApi
         return \Petshop\Core\Storefront\CatalogFilter::filterExactSkuSearch($searchSql, $query);
     }
 
+    public static function allowSingleSearchResultRedirect(bool $redirect): bool
+    {
+        return \Petshop\Core\Storefront\CatalogFilter::allowSingleSearchResultRedirect($redirect);
+    }
+
     public static function renderCategoryGrid(array $attributes = []): string
     {
         return \Petshop\Core\Storefront\CategoryGrid::renderCategoryGrid($attributes);

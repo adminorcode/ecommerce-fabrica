@@ -8,7 +8,7 @@ const read = (path) => readFileSync(join(root, path), 'utf8');
 const themeCss = read('wp-content/themes/petshop-theme/style.css').toLowerCase();
 const functionsPhp = read('wp-content/themes/petshop-theme/functions.php');
 const homeGuide = read('docs/guia-edicao-home.md');
-const identityGuidePath = join(root, 'docs/guia-identidade-visual-autelle.md');
+const identityGuidePath = join(root, 'docs/guia-identidade-visual-autelie.md');
 
 const tokens = [
   '--brand-teal-900: #004f50',
@@ -40,7 +40,7 @@ if (!functionsPhp.includes('enqueue_block_editor_assets')) {
 }
 
 if (!existsSync(identityGuidePath)) {
-  failures.push('docs/guia-identidade-visual-autelle.md nao existe.');
+  failures.push('docs/guia-identidade-visual-autelie.md nao existe.');
 }
 
 for (const term of ['Campanha editorial', 'Arte final', 'Texto alternativo', 'CTA']) {

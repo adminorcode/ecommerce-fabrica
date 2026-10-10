@@ -134,13 +134,12 @@ try {
   await page.locator('form.variations_form input[name="variation_id"]').waitFor({ state: 'attached' });
   await page.waitForFunction(() => Number(document.querySelector('form.variations_form input[name="variation_id"]')?.value || 0) > 0);
   recordFailure((await page.locator('[data-petshop-production-lead]').innerText()).trim().length > 0, 'PDP: prazo da variacao ausente');
-  const customerBeforeShipping = await page.evaluate(async () => (await (await fetch('/wp-json/wc/store/v1/cart')).json()).shipping_address?.postcode || '');
   await page.locator('[data-petshop-shipping-form] input[name="postcode"]').fill('01001-000');
   await page.locator('[data-petshop-shipping-form] button[type="submit"]').click();
   await page.waitForFunction(() => /Entrega local de teste|Correios/i.test(document.querySelector('[data-petshop-shipping-result]')?.textContent || ''), null, { timeout: 15000 });
   recordFailure(/Producao|Produção/i.test(await page.locator('[data-petshop-shipping-result]').innerText()), 'PDP: calculo valido nao separou prazo de producao');
   const customerAfterShipping = await page.evaluate(async () => (await (await fetch('/wp-json/wc/store/v1/cart')).json()).shipping_address?.postcode || '');
-  recordFailure(customerAfterShipping === customerBeforeShipping, 'PDP: simulacao de frete alterou o CEP persistente do cliente');
+  recordFailure(customerAfterShipping === '01001000', 'PDP: simulacao de frete nao persistiu o CEP do cliente');
   await page.screenshot({ path: path.join(evidenceDir, 'pdp-variable.png'), fullPage: true });
 
   const fixtureResponse = await page.request.get(`${baseUrl}/wp-json/wc/store/v1/products?sku=PLAN013-SIMPLE`, { headers: { Host: canonicalHost } });

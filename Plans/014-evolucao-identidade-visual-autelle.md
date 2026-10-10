@@ -81,7 +81,7 @@ As imagens devem ser enviadas pela Biblioteca de mídia em WebP como formato pre
 | Plugin | `wp-content/plugins/petshop-core/blocks/home-campaign/` | Atributos, UI do editor, serialização estável, deprecações e preview da variante editorial. |
 | Plugin | `wp-content/plugins/petshop-core/includes/class-home-campaign-blocks.php` | Renderização segura de atributos, mídia e CTA, se a implementação continuar dinâmica. |
 | Documentação | `docs/guia-edicao-home.md` | Como escolher arte final ou campanha editorial e editar cada item. |
-| Documentação | `docs/guia-identidade-visual-autelle.md` | Cópia versionada do guia oficial aprovado, com tokens e regras de uso. |
+| Documentação | `docs/guia-identidade-visual-autelie.md` | Cópia versionada do guia oficial aprovado, com tokens e regras de uso. |
 | Validação | `scripts/validate-014-*.php`, `scripts/validate-014-*-browser.mjs` | Contraste, tokens, serialização, persistência e regressão visual. |
 
 ## 6. Sessões de implementação
