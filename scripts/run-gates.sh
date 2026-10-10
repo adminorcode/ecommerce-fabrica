@@ -178,7 +178,7 @@ if [[ "$RUN_BROWSER" -eq 1 || "$RUN_PDP" -eq 1 || "$RUN_CART" -eq 1 ]]; then
     mkdir -p .local
     run_wp eval-file /var/www/html/scripts/setup-041-browser-customer.php > .local/041-browser-fixture.json
     run_wp eval-file /var/www/html/scripts/setup-041-editor-fixture.php > .local/041-editor-fixture.json
-    for script041 in validate-041-product-quote-browser.mjs validate-041-address-races-browser.mjs validate-041-editor-browser.mjs validate-041-checkout-address-browser.mjs validate-041-cart-delivery-browser.mjs validate-041-cart-concurrency-browser.mjs validate-041-cart-performance-browser.mjs validate-041-delivery-performance-browser.mjs validate-041-cart-consistency-browser.mjs; do
+    for script041 in validate-041-product-quote-browser.mjs validate-041-address-races-browser.mjs validate-041-editor-browser.mjs validate-041-checkout-address-browser.mjs validate-041-cart-delivery-browser.mjs validate-041-cart-concurrency-browser.mjs validate-041-cart-performance-browser.mjs validate-041-cart-failures-browser.mjs validate-041-delivery-performance-browser.mjs validate-041-cart-consistency-browser.mjs; do
       docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script041"
     done
     cleanup_plan041_fixture

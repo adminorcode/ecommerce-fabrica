@@ -5,6 +5,8 @@
 **Plano:** [041 — Frete e carrinho consistentes em toda a loja](../Plans/041-integridade-frete-carrinho-checkout.md).
 **Situação:** em andamento. Há correções implementadas e verificadas localmente, mas a branch ainda não tem aceite integral.
 
+**Decisão posterior — 09/10/2026:** por solicitação do usuário, a investigação/correção da divergência financeira de 44 kg fica fora da continuação imediata. O [plano de continuação no §17 do Plano 041](../Plans/041-integridade-frete-carrinho-checkout.md#17-plano-de-continuação--confiabilidade-segurança-e-operação) detalha as demais frentes, sua ordem, cobertura e critérios de aceite. O caso fica identificado como ADIADA-44KG; os demais testes financeiros permanecem obrigatórios. Esta decisão permite avançar, sem aprovar o defeito conhecido ou autorizar publicação. Os resultados históricos abaixo permanecem preservados.
+
 Este relatório consolida a auditoria, os relatos do usuário e os problemas encontrados durante a implementação. O histórico detalhado e as tentativas estão nos §§10–16 do plano. Alterações locais anteriores foram preservadas; o conjunto de diferenças da branch não corresponde exclusivamente à última sessão.
 
 ## 1. Resumo do estado atual

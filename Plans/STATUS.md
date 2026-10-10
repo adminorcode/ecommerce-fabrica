@@ -1,5 +1,7 @@
 # Status dos planos
 
+**Continuação 041 — 09/10/2026:** roteiro detalhado registrado no [§17 do plano](./041-integridade-frete-carrinho-checkout.md#17-plano-de-continuação--confiabilidade-segurança-e-operação), com etapas de confiabilidade, segurança, pedido/pagamento, acessibilidade, CI e recuperação operacional. Por solicitação do usuário, a investigação/correção do pacote de 44 kg fica adiada (ADIADA-44KG), sem bloquear o avanço das demais etapas. Nenhum novo teste foi executado ao elaborar o roteiro; o aceite integral e a publicação não foram concedidos. Revisão estática de segurança da branch registrada no [§18](./041-integridade-frete-carrinho-checkout.md#18-security-review-da-branch--09102026): nenhum achado crítico, alto ou médio no escopo coberto; a Sessão D permanece aberta. Fatia da Sessão A no [§19](./041-integridade-frete-carrinho-checkout.md#19-resposta-perdida-e-falha-antes-da-gravação--09102026): resposta perdida relê o carrinho e não repete a escrita; a sessão continua aberta. A linha do 041 e os checkpoints abaixo preservam o histórico técnico.
+
 | Plano | Status | Observação |
 |---|---|---|
 | [000-bootstrap-woocommerce-local.md](./000-bootstrap-woocommerce-local.md) | Concluído | Ambiente, versões, plugins, tema, loja e painel validados em runtime |

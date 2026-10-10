@@ -9,6 +9,8 @@
     const desires = new Map();
     const failures = new Set();
     const rechecking = new Set();
+    const uncertain = new Set();
+    const lostResponses = [];
     let revalidationRequired = false;
     let revalidationPending = false;
     let revision = 0;
@@ -37,6 +39,15 @@
     const pending = () => Boolean(active || queue.length || deferredQuantityCancellations.length || revalidationRequired || revalidationPending);
     const notify = () => listeners.forEach((listener) => listener(pending()));
     const cancelled = () => new DOMException('Superseded cart operation', 'AbortError');
+    const serverAnswered = (error) => {
+        if (!error || error.code === 'offline_error' || error.code === 'fetch_error') return false;
+        if (error instanceof Response) return true;
+        if (Number.isInteger(error.data?.status) || Number.isInteger(error.status)) return true;
+        return typeof error.code === 'string';
+    };
+    // A dropped connection has no HTTP status. The write may already exist, so
+    // recover from the official cart instead of repeating add, remove or purchase.
+    const outcomeUnknown = (error) => Boolean(error) && error.name !== 'AbortError' && !serverAnswered(error);
     const cancelQueued = (job) => {
         if (isQuantity(job.options)) deferredQuantityCancellations.push(() => job.reject(cancelled()));
         else job.reject(cancelled());
@@ -64,6 +75,8 @@
             revalidationRequired = false;
             revalidationPending = true;
             const keys = [...rechecking];
+            const uncertainKeys = [...uncertain];
+            const jobs = lostResponses.splice(0);
             const dispatch = window.wp.data.dispatch('wc/store/cart');
             void dispatch.syncCartWithIAPIStore({}).then(() => {
                 const cart = window.wp.data.select('wc/store/cart');
@@ -75,9 +88,25 @@
                     rechecking.delete(key);
                     failures.delete(key);
                 }
+                for (const key of uncertainKeys) {
+                    if (!uncertain.has(key)) continue;
+                    const official = cart.getCartItem(key)?.quantity;
+                    uncertain.delete(key);
+                    if (Number.isInteger(official) && official === desires.get(key)) failures.delete(key);
+                    else if (desires.has(key)) failures.add(key);
+                }
+                const snapshot = cart.getCartData?.();
+                jobs.forEach((job) => job.resolve(snapshot));
             }).catch((error) => {
-                if (error.name === 'AbortError') revalidationRequired = keys.some((key) => rechecking.has(key));
-                else { keys.filter((key) => rechecking.has(key)).forEach((key) => failures.add(key)); dispatch.receiveError(error); }
+                if (error.name === 'AbortError') {
+                    jobs.forEach((job) => lostResponses.push(job));
+                    revalidationRequired = keys.some((key) => rechecking.has(key)) || uncertainKeys.some((key) => uncertain.has(key)) || lostResponses.length > 0;
+                } else {
+                    keys.filter((key) => rechecking.has(key)).forEach((key) => failures.add(key));
+                    uncertainKeys.forEach((key) => { uncertain.delete(key); if (desires.has(key)) failures.add(key); });
+                    jobs.forEach((job) => job.reject(job.lostError || error));
+                    if (keys.length) dispatch.receiveError(error);
+                }
             }).finally(() => { revalidationPending = false; setTimeout(settle, 0); });
         }
         if (!active && !queue.length && !revalidationPending) deferredQuantityCancellations.splice(0).forEach((reject) => reject());
@@ -120,13 +149,25 @@
             // A newer edit of another line makes a successful snapshot old,
             // but must not hide this line's current stock/nonce/network error.
             const obsolete = job.stale || job.options.signal?.aborted || (!isQuantity(job.options) && job.discard);
-            if (!obsolete && error.name !== 'AbortError' && isQuantity(job.options)) {
+            if (!obsolete && error.name !== 'AbortError' && !outcomeUnknown(error) && isQuantity(job.options)) {
                 // apiFetch(parse:false) rejects non-2xx with a raw Response.
                 // Read a clone so Woo can still parse its original error body.
                 const detail = error instanceof Response ? await error.clone().json().catch(() => ({})) : error;
                 recordFailure(job, detail);
             }
-            if ((obsolete || (error.name === 'AbortError' && job.discard)) && isQuantity(job.options) && queue.length) {
+            if (!obsolete && outcomeUnknown(error) && !isCartRead(job.options)) {
+                job.lostError = error;
+                if (isQuantity(job.options)) operations(job.options).forEach((request) => {
+                    const body = request.data || request.body;
+                    const key = body?.key;
+                    if (!key) return;
+                    const quantity = Number(body.quantity);
+                    if (!desires.has(key) && Number.isInteger(quantity) && quantity > 0) desires.set(key, quantity);
+                    uncertain.add(key);
+                });
+                lostResponses.push(job);
+                revalidationRequired = true;
+            } else if ((obsolete || (error.name === 'AbortError' && job.discard)) && isQuantity(job.options) && queue.length) {
                 // Keep the native quantity hook pending until the latest full
                 // result is applied; otherwise it resets the input to old data.
                 deferredQuantityCancellations.push(() => job.reject(cancelled()));

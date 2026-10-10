@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -108,9 +108,14 @@ const lintChangedFiles = (files) => {
     }
 };
 
+const ensureLocalDir = () => {
+    mkdirSync(join(root, '.local'), { recursive: true });
+};
+
 const runFocusedProvision = (suites) => {
     if (suites.has('shipping-integrity-041') && !skipProvision) {
         const fixture = dockerCliOutput('eval-file', '/var/www/html/scripts/setup-041-browser-customer.php');
+        ensureLocalDir();
         writeFileSync(join(root, '.local', '041-browser-fixture.json'), fixture);
     }
     if (skipProvision) {
@@ -388,6 +393,7 @@ const classifySuites = (files) => {
             browserScripts.add('validate-041-cart-delivery-browser.mjs');
             browserScripts.add('validate-041-cart-concurrency-browser.mjs');
             browserScripts.add('validate-041-cart-performance-browser.mjs');
+            browserScripts.add('validate-041-cart-failures-browser.mjs');
             browserScripts.add('validate-041-delivery-performance-browser.mjs');
         }
         if (
@@ -552,6 +558,7 @@ const runBrowserScripts = (browserScripts) => {
 
         if (browserScripts.has('validate-041-editor-browser.mjs')) {
             const fixture = dockerCliOutput('eval-file', '/var/www/html/scripts/setup-041-editor-fixture.php');
+            ensureLocalDir();
             writeFileSync(join(root, '.local', '041-editor-fixture.json'), fixture);
         }
         for (const script of browserScripts) {

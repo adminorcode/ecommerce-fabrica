@@ -68,4 +68,6 @@ await assert.rejects(operations.selectShippingRate('old', 7), /petshop_shipping_
 ignoreSelection = false;
 await operations.selectShippingRate('old', 7);
 assert.equal(snapshot.shippingRates[1].shipping_rates[0].selected, true);
+await assert.rejects(operations.selectShippingRate('same-id', 0, () => false), /petshop_quote_changed/);
+assert.equal(snapshot.shippingRates[0].shipping_rates[0].selected, true, 'A CEP change must stop a stale selection before it is sent');
 console.log('041 cart adapter: pending timeout, stale intent, public errors, explicit retry, queue and package-scoped selection passed (isolated public-contract test; browser consistency remains separate)');

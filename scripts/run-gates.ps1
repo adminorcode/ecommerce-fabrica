@@ -127,7 +127,7 @@ if ($Browser -or $Pdp -or $Cart) {
                 $editor041Fixture = docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/setup-041-editor-fixture.php
                 if ($LASTEXITCODE -ne 0) { throw 'fixture editor Plano 041 falhou' }
                 [System.IO.File]::WriteAllText((Join-Path (Get-Location) '.local/041-editor-fixture.json'), ($editor041Fixture -join "`n"))
-                foreach ($script041 in @('validate-041-product-quote-browser.mjs', 'validate-041-address-races-browser.mjs', 'validate-041-editor-browser.mjs', 'validate-041-checkout-address-browser.mjs', 'validate-041-cart-delivery-browser.mjs', 'validate-041-cart-concurrency-browser.mjs', 'validate-041-cart-performance-browser.mjs', 'validate-041-delivery-performance-browser.mjs', 'validate-041-cart-consistency-browser.mjs')) {
+                foreach ($script041 in @('validate-041-product-quote-browser.mjs', 'validate-041-address-races-browser.mjs', 'validate-041-editor-browser.mjs', 'validate-041-checkout-address-browser.mjs', 'validate-041-cart-delivery-browser.mjs', 'validate-041-cart-concurrency-browser.mjs', 'validate-041-cart-performance-browser.mjs', 'validate-041-cart-failures-browser.mjs', 'validate-041-delivery-performance-browser.mjs', 'validate-041-cart-consistency-browser.mjs')) {
                     docker compose --profile tools run --rm -e PETSHOP_BASE_URL=http://wordpress -e PETSHOP_CANONICAL_HOST=wordpress node node "/workspace/scripts/$script041"
                     if ($LASTEXITCODE -ne 0) { throw "browser gate $script041 falhou" }
                 }

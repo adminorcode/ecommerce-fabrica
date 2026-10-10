@@ -47,6 +47,11 @@
                     () => mounted.current && revision.current === generation);
                 if (preference) window.petshopQuotePreference.consume(preference.queryId);
                 if (!mounted.current || revision.current !== generation) return;
+                if (digits(updated.shippingAddress?.postcode) !== normalized) {
+                    setDestinationUnconfirmed(true);
+                    setStatus(t('Não foi possível calcular a entrega. Tente novamente.', 'petshop-core'));
+                    return;
+                }
                 setDestinationUnconfirmed(false);
                 const requiresAddress = updated.extensions?.['petshop-shipping-quote']?.requires_address;
                 const rates = (updated.shippingRates || []).flatMap((pack) => pack.shipping_rates || []);
@@ -84,17 +89,21 @@
             void run(digits(postcode), revision.current);
         };
         const selectRate = async (rateId, packageId) => {
-            if (pending) return;
+            if (pending || transportPending || nativePending || quantityDraft) return;
+            const generation = revision.current;
             setPending(true);
             setStatus(t('Atualizando opções de entrega…', 'petshop-core'));
             try {
-                await window.petshopCartOperations.selectShippingRate(rateId, packageId);
-                if (mounted.current) setStatus('');
+                await window.petshopCartOperations.selectShippingRate(rateId, packageId,
+                    () => mounted.current && revision.current === generation);
+                if (!mounted.current || revision.current !== generation) return;
+                setStatus('');
             } catch (error) {
-                if (mounted.current) setStatus(error.message && !error.message.startsWith('petshop_')
+                if (!mounted.current || revision.current !== generation || error?.name === 'AbortError' || error?.message === 'petshop_quote_changed') return;
+                setStatus(error.message && !error.message.startsWith('petshop_')
                     ? error.message : t('Não foi possível selecionar a entrega. Tente novamente.', 'petshop-core'));
             } finally {
-                if (mounted.current) setPending(false);
+                if (mounted.current && revision.current === generation) setPending(false);
             }
         };
         const packages = digits(postcode) === digits(cart.shippingAddress?.postcode) ? cart.shippingRates || [] : [];

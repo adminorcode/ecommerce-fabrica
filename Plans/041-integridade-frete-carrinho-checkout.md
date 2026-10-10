@@ -9,6 +9,8 @@
 **Dependências:** Planos [026](./026-checkout-dados-salvos-viacep.md), [027](./027-calculadora-frete-hub.md), [036](./036-dependencias-frete-checkout-versionadas.md), [037](./037-atualizacao-automatica-valores-carrinho.md), [038](./038-total-quantidade-pagina-produto.md) e [039](./039-quantidade-carrinho-apos-frete.md).
 **Baseline examinada:** `bdf6632` com alterações locais preexistentes; WordPress 7.0.2 / WooCommerce 10.9.4 no Docker. Produção não foi inspecionada diretamente.
 
+**Continuação vigente (09/10/2026):** executar o §17. Por solicitação do usuário, a investigação/correção da divergência financeira dos 44 kg fica adiada. Essa exclusão não dispensa os demais testes financeiros, de segurança, pedido e operação; não representa aprovação do cenário adiado nem autorização de publicação. A revisão estática de segurança da branch está no §18; ela não aprova a Sessão D.
+
 ## Por quê
 
 **Continuação autorizada e implementada:** reduzir a latência visual da atualização de quantidade e separar produtos, entrega e total do pedido. Implementação e validação ampliada no §16; aceite integral ainda pendente. A coordenação do §15 é o baseline de desempenho. Resumo consolidado: [problemas, correções e pendências da branch](../docs/relatorio-branch-041-problemas-correcoes-pendencias.md).
@@ -577,3 +579,222 @@ Rodada de desempenho ampliada reprovou retry503: focusout capturava valor restau
 Métricas finais: máximo físico1; burst de cinco cliques150ms envia somente6; sequência durante operação ativa envia2 e7; estimativas14,7–58,5ms; pintura89,4–106,2ms após resposta. Confirmação completa do burst5,49–5,83s, incluindo atraso controlado900ms, interação, debounce e cálculo/cotação; não confundir tempo visual com SLA externo. Baseline visitante já tinha uma escrita no burst; não declarar redução medida5→1 nem baseline pesada/autenticada completa.
 
 SHA-256 de sete arquivos próprios de produção confere com runtime. Sintaxe do delta e diff check aprovados; home/siteurllocalhost:8888 restaurados, opções de fixtures041 ausentes, credenciais temporárias e probe removidos. Relatório solicitado pelo usuário criado em [docs/relatorio-branch-041-problemas-correcoes-pendencias.md](../docs/relatorio-branch-041-problemas-correcoes-pendencias.md), com problemas iniciais, regressões, falhas de implementação/harness, evidências e próximos passos. Regressão browser conjunta após todo§16, critério financeiro pesado, impostos/preço por quantidade no browser, staging e pedido permanecem abertos. Nenhum commit/push/publicação.
+
+## 17. Plano de continuação — confiabilidade, segurança e operação
+
+**Registrado em:** 09/10/2026. **Status:** planejado; nenhuma aprovação de teste é concedida por esta seção.
+
+### 17.1 Por quê e decisão de escopo
+
+Concluir a validação integrada da compra e corrigir os defeitos encontrados, cobrindo sessão, endereço, totais, pagamento, proteção de dados e recuperação operacional. Os checkpoints anteriores são contexto, não prova de que a revisão final passou em todos os fluxos.
+
+O usuário autorizou deixar o ponto 1 da análise fora por hora: investigar/corrigir a divergência de transportadora do pacote autenticado de 44 kg. Ela permanece registrada como **ADIADA-44KG**, com causa e tarifa correta ainda não demonstradas. Não investigar essa causa nesta continuação nem exigir sua resolução para avançar nas sessões abaixo. Não mascarar suas falhas, apagar seu teste, reduzir tolerância financeira ou classificá-la como corrigida.
+
+O escopo restante é global para as superfícies de compra existentes: Home, loja, busca, categoria, PDP, minicarrinho, carrinho, checkout, confirmação, conta e endpoints próprios associados. Produtos personalizados entram na regressão do fluxo já implementado; construir o editor e a fila ainda pendentes do Plano 012 está fora de escopo.
+
+Todos os itens abaixo são obrigatórios. Permanecem fora: redesenho visual, novos meios de pagamento/transportadoras, funcionalidades comerciais dos planos 028/040, substituição de fornecedores, alterações no Core/vendor, cobrança real, commit/push/PR/merge/publicação sem solicitação própria. A validação do retorno existente do Mercado Pago entra no escopo, sem presumir que o status documental do Plano 029 prova ausência de implementação.
+
+**Regra de conclusão:** pode-se concluir a execução deste §17 com ADIADA-44KG explicitamente registrada; isso não conclui automaticamente o plano 041 integral nem libera publicação. O status integral continua Em andamento enquanto o requisito original adiado não for resolvido ou seu escopo formalmente revisto. Uma falha em outro pacote é um novo defeito, não herda a exclusão dos 44 kg.
+
+### 17.2 Pré-requisitos, baseline e evidências
+
+- [ ] Registrar branch/HEAD, alterações existentes, versões reais de WordPress/WooCommerce/PHP/plugins e hashes dos assets fonte/runtime. Reutilizar a branch 041; preservar alterações alheias.
+- [ ] Ler regras, este plano, relatório consolidado e operação 041. Conferir quais gates existentes cobrem cada cenário antes de ampliar testes.
+- [ ] Confirmar Docker e serviços saudáveis; usar a stack canônica. Executar uma baseline focada de coordenador, estimativa, operações e smoke de compra local, sem repetir toda a suíte nesta fase.
+- [ ] Inventariar staging: URL HTTPS, versões, gateway sandbox, credenciais de transportadoras, SMTP de teste, configuração de cache/proxy e acesso a logs/backup. Registrar o que estiver indisponível; prosseguir nas etapas locais independentes. Credenciais não entram no plano, Git ou evidências.
+- [ ] Criar fixtures isoladas: visitante, dois clientes A/B, gestor e usuário sem privilégio; simples, promocional, variável, virtual, estoque limitado, vendido individualmente, duas linhas do mesmo produto com metadados distintos, cupons, preço por quantidade e dois pacotes. Usar mecanismo real instalado para desconto por quantidade e fixture isolada apenas no ensaio determinístico.
+- [ ] Cada fixture registra IDs criados e valores anteriores; cleanup em finally tenta todas as restaurações, preserva o erro original e confirma remoção. Não usar contas, pedidos ou produtos reais de compradores.
+
+Evidências em `.local/evidence/041-continuacao/`, por sessão e execução; resumo sanitizado versionado em `docs/operacao-frete-plano-041.md` e ledger §17.12. Cada execução registra cenário, revisão/hashes, versões, contexto, comando, resultado esperado/obtido e artefatos. Estados: aprovado, reprovado, bloqueado por pré-requisito, não executado ou ADIADA-44KG. Falha externa não vira aprovação.
+
+**Gate:** ambiente e fixtures reproduzíveis, baseline registrada e dependências externas discriminadas. Não expor cookies, chaves de pedido, documentos, tokens ou endereços pessoais nas evidências compartilháveis.
+
+### 17.3 Sessão A — falhas integradas e entrega (T03–T05/T16)
+
+- [ ] Ampliar os gates browser de carrinho/entrega com nonce expirado, 429, 503, timeout e interrupção de conexão. Cobrir POST direto e erro interno em batch HTTP 200.
+- [ ] Distinguir falha antes de o servidor aceitar a operação de resposta perdida após a gravação. Recuperar por leitura oficial; não repetir automaticamente adição, remoção ou compra de resultado desconhecido.
+- [ ] Testar quantidade falhando seguida de CEP novo; erro antigo chegando após intenção nova; duas linhas em que uma falha e outra confirma; remoção de linha ainda pendente.
+- [ ] Testar CEP com cobertura → sem cobertura, desaparecimento do método selecionado, mudança de seleção durante cálculo e retorno de cobertura. Separar ausência válida de taxa de falha técnica.
+- [ ] Confirmar mensagem/retry utilizáveis, intenção vigente preservada, total antigo não anunciado como confirmado e CTA bloqueado enquanto houver alteração própria não confirmada. Recuperação deve liberar o CTA sem spinner permanente.
+
+**Gate:** todos os negativos terminam em confirmação oficial coerente ou erro explícito recuperável; nenhuma operação recebe sucesso fictício, nenhuma taxa inválida é mantida e nenhum erro de uma linha é apagado pela outra.
+
+### 17.4 Sessão B — endereço, hidratação e sessão (T06–T08/T10/T15)
+
+- [ ] Cobrir visitante/autenticado, endereço completo salvo, endereço incompleto, cobrança=entrega, cobrança independente, destino de frete por cobrança e configuração que exige endereço completo.
+- [ ] Trocar CEP entre UFs; atrasar a resposta antiga do ViaCEP; editar manualmente rua, número, bairro e complemento enquanto a consulta está em voo; salvar/recarregar conta e checkout.
+- [ ] Confirmar consulta ViaCEP nos campos de endereço, incluindo CEP hidratado, sem lookup na calculadora de frete. CEP inválido/serviço indisponível permite preenchimento manual; não fabrica cidade/endereço.
+- [ ] Confirmar que campos exigidos seguem validação do checkout; complemento aceita vazio como dado válido. Não confundir campo de valor vazio permitido com entrega facultativa.
+- [ ] Testar preferência PDP expirada, logout, troca entre contas A/B, storage bloqueado e entrada direta no checkout; edição atual prevalece e nenhum dado de A aparece para B.
+- [ ] Testar duas abas da mesma sessão: modificar item/CEP/entrega na aba A, retornar à aba B com checkout aberto e finalizar apenas após reconciliação. Registrar comportamento nativo, corrigir perdas comprovadas sem prometer mutex entre dispositivos.
+- [ ] Testar preview concorrente com edição real e reload: itens, endereço, seleção, total e caches do carrinho permanecem coerentes; preview não restaura snapshot antigo da sessão.
+
+**Gate:** formulário, sessão recarregada e dados preparados para o pedido têm a mesma origem vigente; nenhuma hidratação tardia apaga edição, mistura endereços ou cruza contas.
+
+### 17.5 Sessão C — superfícies e valores (T01/T02/T09/T11–T15)
+
+- [ ] Percorrer Home, loja, busca e categoria: adicionar simples/variável, conferir minicarrinho e navegar para carrinho/checkout; abrir minicarrinho sobre o carrinho e alterar/remover itens sem listeners cruzados.
+- [ ] Cobrir PDP promocional, variação ausente/inválida/trocada em voo, quantidade 1/2/3, virtual sem entrega, estoque e vendido individualmente. Linhas personalizadas distintas preservam suas chaves e dados.
+- [ ] No navegador, testar cupom fixo/percentual, desconto por quantidade, impostos incl/excl, arredondamento, limiar de frete grátis, taxa zero, retirada e dois pacotes com seleção independente.
+- [ ] Comparar totais oficiais por linha, descontos, impostos, frete por pacote e total com sessão recarregada. Usar valores em unidades monetárias inteiras; nenhuma tolerância nova para esconder divergência e nenhuma multiplicação linear como oráculo para preço não linear.
+- [ ] Confirmar distinção entre estimativa antes dos descontos e valor confirmado, manutenção do preço unitário e ausência de total antigo apresentado como definitivo durante atualização.
+
+**Cobertura mínima:** 1440/390 px, visitante/autenticado nos fluxos de quantidade, CEP, falha/recuperação e navegação; ambos os perfis nos casos financeiros, desktop e ao menos um percurso financeiro completo mobile por perfil. Testes PHP complementam, mas não substituem esses ensaios browser. ADIADA-44KG é a única exclusão financeira desta continuação.
+
+**Gate:** todas as superfícies convergem para o servidor, limites de compra são respeitados e os cenários financeiros incluídos coincidem após reload.
+
+### 17.6 Sessão D — segurança de aplicação e dados
+
+- [ ] Inventariar rotas REST/AJAX, uploads/downloads, retorno de pagamento, cadastro e alterações de conta. Registrar para cada uma autenticação esperada, autorização, nonce, entrada/saída e dado protegido; não classificar endpoint público legítimo como falha por ser público.
+- [ ] Testar cliente A, cliente B, visitante e gestor: leitura/alteração de pedido/endereço, preview e arquivo original/produção, tokens de sessão/pedido inválidos ou de outro proprietário. Exigir recusa sem conteúdo privado para acessos indevidos.
+- [ ] Revisar/testar validação e escape nos parâmetros dessas rotas; rejeitar estruturas/tipos inválidos de forma controlada. Cobrir manipulação de IDs, variação de outro produto e quantidade inválida.
+- [ ] Testar limites de bytes/dimensões, MIME/conteúdo inválido e acesso HTTP direto ao armazenamento privado de uploads. Confirmar ausência de execução e preservação da autorização após logout/expiração.
+- [ ] Verificar proteção contra abuso em checkout, cadastro, ViaCEP, cotação e upload. Medir primeiro em staging isolado; documentar camada, chave de limitação, janela, limite e comportamento 429. Definir limites com base na carga legítima medida, validar burst normal e abuso controlado e implementar proteção onde não houver cobertura. Nonce não é limitador de frequência.
+- [ ] Verificar cache de página/CDN/proxy com clientes A/B: carrinho, checkout, conta, retornos e arquivos privados não podem compartilhar resposta personalizada. Confirmar configuração real de HTTPS e proxy antes de testar identificação por IP.
+- [ ] Inventariar versões instaladas e dependências de produção, consultar avisos oficiais/fontes de vulnerabilidade e registrar aplicabilidade. Corrigir ou mitigar achados críticos/altos aplicáveis com regressão; não atualizar tudo indiscriminadamente nem confundir dependência apenas de teste com código publicado.
+- [ ] Conferir menor privilégio administrativo, exposição de debug, segredos no diff/pacote e redação de logs/artefatos. Toda correção precisa de teste negativo que reproduza o acesso/entrada indevido.
+
+**Gate:** nenhum achado crítico/alto aplicável aberto no escopo auditado; acessos cruzados negados, arquivos protegidos e limites compatíveis com compras legítimas. Registrar limites da auditoria; não declarar certificação de segurança.
+
+### 17.7 Sessão E — pedido, pagamento, estoque e comunicação (T19/T20)
+
+**Pré-requisito:** staging isolado, métodos reais configurados e gateway em sandbox; sem cobrança real. Ausência de acesso bloqueia esta sessão, não as anteriores.
+
+- [ ] Validar transportadoras reais com pacotes normais, origem/destino conhecidos e credencial válida/erro controlado. Conferir prazo na origem e sua apresentação; não inventar prazo nem fixar tarifa comercial como constante de teste.
+- [ ] Criar pedidos de teste visitante/autenticado, com endereços iguais/distintos, registrando o último total confirmado antes da submissão e o pedido recarregado via API WooCommerce compatível com HPOS.
+- [ ] Conferir itens/variações/personalização, quantidade, desconto, imposto, pacote/método, frete, total, documento e endereço persistidos. Endereço incompleto bloqueia o pedido.
+- [ ] Exercitar Pix/cartão sandbox aprovado, pendente e recusado; retorno interrompido, refresh/voltar e duplo clique. Confirmar orientação correta e ausência de cobrança/pedido efetivo duplicado pelo mesmo envio.
+- [ ] Reentregar notificação legítima do gateway e variar ordem/atraso de notificações usando os recursos suportados do sandbox. Notificação inválida não altera pedido; duplicata não duplica baixa de estoque/e-mail de mudança de status. Retorno de navegador, sozinho, não confirma pagamento.
+- [ ] Testar duas compras concorrentes da última unidade e cancelamento/expiração: reserva, baixa e liberação seguem configuração nativa, sem venda além do permitido ou reposição duplicada.
+- [ ] Conferir confirmação, Minha conta e acesso do visitante, retorno do Mercado Pago, e-mails efetivamente recebidos em caixa de teste e processamento das tarefas agendadas. Conteúdo reflete status e totais do pedido, com links autorizados.
+
+**Gate:** ciclo checkout → pedido → pagamento → estoque → e-mail → consulta coerente, sem duplicação ou vazamento. Registrar IDs sintéticos e cleanup; não usar smoke antigo de personalização como substituto.
+
+### 17.8 Sessão F — acessibilidade, conteúdo e desempenho
+
+- [ ] Executar percurso completo por teclado em 1440/390, árvore acessível, leitor NVDA e VoiceOver: variações, quantidade, CEP, entrega, erro/retry e checkout. Registrar ambiente/operador; automação de árvore não comprova teste manual de leitor.
+- [ ] Confirmar labels, foco após erro, anúncios de atualização/conclusão, reduced-motion e bloqueios de CTA compreensíveis. Corrigir bloqueios de compra encontrados.
+- [ ] Validar o inventário editorial abaixo com edição, salvar/reload e atualização/reprovisionamento: texto, imagem/alt e reordenação/remoção persistem sem duplicação do bloco.
+- [ ] Medir em revisão final resposta visual, requisições, espera nativa, cálculo PHP e tempo externo separadamente, em pacote normal, visitante/autenticado. Fazer 10 repetições por contexto desktop/mobile e registrar mediana/p95, ambiente e erros; não comparar contra baseline incompatível.
+- [ ] Preservar os contratos já medidos: máximo de uma operação física coordenada de carrinho, só intenção final ainda na fila, estimativa até 100 ms, pintura até 200 ms após resposta e aviso de pendência a partir de 300 ms nos cenários controlados. Regressão precisa ser explicada/corrigida, não ocultada por timeout maior.
+- [ ] Conferir deadline e recuperação de cotação sem inventar SLA externo; cache só pode ser otimizado após prova de equivalência de pacote/destino/regras. A baseline histórica pesada permanece não capturada, sem fabricação retrospectiva.
+
+| Superfície | Textos e imagens próprios | Origem de edição / persistência |
+|---|---|---|
+| Home e páginas comerciais | Títulos, campanhas, imagens/alt, links e vitrines | Gutenberg e Biblioteca de mídia; preservar composição salva |
+| Loja/busca/categoria/PDP/minicarrinho | Nome, foto/alt, atributos e conteúdo de produto | Produtos/categorias WooCommerce e mídia; preços/estoque são dados dinâmicos |
+| Carrinho | Conteúdo de página, posição/presença do CEP | Gutenberg; remoção/reordenação não são desfeitas pela migração |
+| Checkout/conta/confirmação | Conteúdo de página e mensagem comercial existente | Gutenberg e configuração global já existente; dados pessoais via formulários autorizados |
+| Header/rodapé/e-mails | Logo, atendimento, textos globais e mensagens comerciais | Configuração administrativa existente; traduções/extensibilidade oficial para textos da plataforma |
+| Erros, retry e estados novos | Mensagens estritamente funcionais | Tradução `petshop-core`; nenhuma nova imagem/copy comercial fixa |
+
+**Gate:** compra utilizável sem mouse, conteúdo editável e persistente, responsividade preservada e métricas externas separadas das internas.
+
+### 17.9 Sessão G — CI e manutenção
+
+- [ ] Tornar os testes browser determinísticos críticos automáticos em PR: quantidade/CEP, falha/retry, seleção, endereço e convergência financeira com taxas isoladas. Manter staging/transportadora/pagamento como gates de integração separados, sem depender de credenciais em PR de forks.
+- [ ] Preservar gates PHP e PHPUnit; executar o workflow em branch/PR de teste quando houver autorização de publicação da branch. Validar localmente os comandos antes disso.
+- [ ] Separar seleção de ensaios para ADIADA-44KG sem apagar/desabilitar seu caso original. O relatório da suíte deve expor teste adiado e resultado integral; a suíte completa que falhar nesse caso não recebe rótulo de aprovada.
+- [ ] Publicar evidências sanitizadas de falha no CI com retenção definida; testar redação/cleanup antes de habilitar upload de novos artefatos.
+- [ ] Documentar nomes dos checks a exigir para integração e verificar proteção de branch no remoto. Aplicar exigência quando houver acesso/autorização de administração; enquanto isso, registrar pendência operacional, sem alegar bloqueio automático já ativo.
+- [ ] Documentar matriz obrigatória após atualização de WooCommerce e transportadoras: temporização de endereço, campos adicionais, seleção/cache e retorno de pagamento. Retestar contratos vinculados à versão 10.9.4, sem editar fornecedor.
+
+**Gate:** comandos reproduzíveis e workflow automático configurado; execução remota e proteção têm evidência própria ou pendência explícita. Nenhum teste com fornecedor simulado é apresentado como integração real.
+
+### 17.10 Sessão H — pacote, recuperação e fechamento
+
+- [ ] Executar revisão do conjunto de mudanças: escopo, dados sensíveis, hooks tardios, patches globais, acessos privados e compatibilidade HPOS/Blocks. Corrigir achados e repetir apenas gates afetados antes do fechamento.
+- [ ] Rebuild/recreate final conforme bootstrap; conferir assets e dependências do runtime contra fonte e repetir validação completa PHP/Unit/browser no mesmo estado final. Registrar falha de gate fora do escopo como falha, sem desabilitá-lo para obter verde.
+- [ ] Validar instalação real em subdiretório: URLs REST/AJAX/retorno, assets, cookies, nonce e fluxo de compra sintético; teste de chave de storage isolado não encerra este item.
+- [ ] Preparar pacote HostGator/cPanel com a skill `preparar-deploy`, sem publicar. Verificar autoload de produção, dependências, ausência de segredos/fixtures e instalação limpa do pacote em staging.
+- [ ] Restaurar backup em destino isolado, incluindo banco, uploads, configurações e arquivos privados. Medir tempo de recuperação e ponto restaurado; confirmar leitura de pedidos e compra de teste depois da restauração.
+- [ ] Escrever e ensaiar rollback: código/assets, migrações e configuração. Não restaurar banco antigo sobre pedidos novos; definir preservação/reconciliação dos pedidos posteriores e demonstrar com pedidos sintéticos em staging.
+- [ ] Configurar/verificar alertas de indisponibilidade, falhas de checkout/cotação, webhook e tarefas agendadas; simular falha controlada, comprovar alerta e registrar responsável/canal operacional sem enviar mensagens a terceiros nesta execução sem autorização.
+- [ ] Atualizar relatório, operação e STATUS com resultados por cenário, pendências reais e ADIADA-44KG. Gerar parecer de prontidão discriminando execução local, staging e operação; não declarar loja sem bugs.
+
+**Gate:** pacote e recuperação demonstrados, regressão final documentada e decisão de publicação separada. Não publicar automaticamente ao terminar esta sessão.
+
+### 17.11 Ordem de execução e critérios de aceite da continuação
+
+Ordem: baseline → A → B → C → D → E → F → G → H. Ausência de staging permite continuar F/G e revisão local de H; testes dependentes continuam bloqueados. Corrigir defeito junto ao teste que o reproduz; não acumular correções sem revalidar o fluxo afetado.
+
+- [ ] A/B/C aprovadas com a cobertura definida e sem divergências financeiras novas nos cenários incluídos.
+- [ ] D aprovada, com controles testados e nenhum achado crítico/alto aplicável aberto.
+- [ ] E aprovada em staging, com pedido/pagamento/estoque/e-mail e acesso do cliente comprovados.
+- [ ] F aprovada, incluindo leitores de tela, persistência editorial e métricas reproduzíveis.
+- [ ] G implementada e verificada; execução remota e exigência dos checks não confundidas com configuração local de YAML.
+- [ ] H aprovada com revisão final, pacote instalado, backup restaurado, rollback ensaiado e monitoramento demonstrado.
+- [ ] Cada item não executado tem motivo/pré-requisito explícito e permanece aberto; ADIADA-44KG é o único adiamento funcional aceito por esta solicitação.
+- [ ] Relatório final distingue conclusão do §17, conclusão integral do 041 e autorização de publicação. Nenhum desses estados é inferido do outro.
+
+### 17.12 Ledger a preencher na execução
+
+| Sessão | Estado inicial | Evidência exigida |
+|---|---|---|
+| Baseline | Não executado nesta continuação | HEAD/hashes, versões, saúde, fixtures e gates focados |
+| A — falhas/entrega | Fatia de resposta perdida no §19; nonce, duas linhas e timeout ainda não fecham a sessão | Negativos integrados, rede/store/DOM e recuperação |
+| B — endereço/sessão | Não executado | Matriz de endereços, contas, duas abas e reload |
+| C — superfícies/valores | Não executado | Navegação global e comparação financeira incluída |
+| D — segurança | Revisão estática no §18; testes negativos da sessão não executados | Inventário, testes negativos e achados/resoluções |
+| E — pedido/pagamento | Não executado; depende de staging | Pedidos sandbox, notificações, estoque e caixa de e-mail |
+| F — experiência/conteúdo | Não executado | Teclado/leitores, edição persistente e métricas |
+| G — CI/manutenção | Não executado | Workflow, execução/checks e política de atualização |
+| H — fechamento/operação | Não executado | Revisão, suíte final, pacote, restauração e alertas |
+| ADIADA-44KG | Adiado por solicitação do usuário | Diagnóstico anterior preservado; sem aprovação implícita |
+
+Este registro planeja o trabalho; não altera os resultados históricos nem cria um segundo plano/ticket para a continuação do 041. Vínculo ClickUp continua no estado já registrado; nenhuma criação/alteração externa foi realizada ao escrever esta seção.
+
+## 18. Security review da branch — 09/10/2026
+
+**Registrado em:** 09/10/2026. **Branch:** `codex/041-integridade-frete-carrinho-checkout`. **HEAD:** `1a5bede`, com alterações locais não commitadas. **Método:** revisão estática do diff da branch em duas passagens. **Resultado:** nenhum achado crítico, alto ou médio com caminho de ataque realista no escopo revisado.
+
+Esta seção não aprova a Sessão D, não certifica a loja e não fecha o plano. Os testes negativos, o inventário de rotas com contas A/B, a medição de limite de frequência, o cache compartilhado e a consulta de avisos de dependências continuam não executados.
+
+### 18.1 O que foi revisado
+
+| Passagem | Escopo | Resultado |
+|---|---|---|
+| Infraestrutura de teste e documentação | Planos, docs, runners de gate, helpers de browser e fixtures 041 que entraram no primeiro recorte (19 arquivos) | Nenhum achado médio ou acima |
+| Produção PHP/JS | Plugin, tema e módulos de carrinho/endereço/cotação listados abaixo | Nenhum achado médio ou acima |
+
+Arquivos de produção revisados: `Plugin.php`, `AddressLookup.php`, `BrazilianPostcode.php`, `CartBlocksIntegration.php`, `CartQuantityStability.php`, `CartShippingQuoteBlocksIntegration.php`, `CheckoutCustomerData.php`, `ProductDetails.php`, `ShippingQuoteCartExtension.php`, `ShippingQuoteDestination.php`, `ShippingQuotes.php`, `ShippingRateSelection.php`, `class-storefront-product-card.php`, `address-lookup.js`, `cart-shipping-quote-block.js`, `product-card.js`, `product-experience.js`, `cart-estimate.js`, `cart-feedback.js`, `cart-operations.js`, `cart-request-coordinator.js`, `quote-preference.js`, `editor.js` do bloco de cotação, `checkout-address-layout.js` e `functions.php` do tema.
+
+Controles conferidos no código:
+
+- ViaCEP AJAX exige nonce e CEP de 8 dígitos; a URL de saída é o host fixo da ViaCEP (`AddressLookup.php`).
+- A extensão da Store API só aceita `set_quote_destination` com CEP brasileiro válido e grava o destino na sessão corrente do WooCommerce (`ShippingQuoteCartExtension.php`).
+- A hidratação do checkout marca a sessão com o usuário, limpa dados da ponte no logout e quando o usuário marcado difere do atual (`CheckoutCustomerData.php`).
+- Estimativas no cliente são só apresentação; não gravam total de checkout.
+- A preferência de CEP da PDP fica em `sessionStorage`, separada por URL da loja e conta atual.
+
+### 18.2 Abaixo do limiar — não são achados abertos da Sessão D
+
+- Se um gate for interrompido antes do cleanup, uma conta sintética de editor pode permanecer no banco local até a próxima limpeza. A senha é aleatória e o arquivo fica em `.local/`, já ignorado pelo Git.
+- `scripts/run-gates.mjs` ainda altera `home` e `siteurl` sem o guarda de loopback que `.sh` e `.ps1` já têm. É ferramenta de desenvolvimento, não superfície da loja.
+- O AJAX da ViaCEP não tem limite de frequência próprio da aplicação. O nonce restringe a mesma origem; o abuso possível é custo operacional, não leitura cruzada de contas.
+- Migrações de opção única rodam em `init` sem checagem de capability e gravam valores predeterminados.
+- A divergência financeira já registrada entre a store e o GET independente permanece bug de consistência. Não há evidência de que o cliente force um total cobrado menor.
+
+### 18.3 Fora desta revisão
+
+- Scripts `validate-*` omitidos na primeira passagem, inclusive a maior parte dos gates `validate-041-*`, não tiveram passagem dedicada. São harness de teste.
+- Não houve teste dinâmico de cliente A contra cliente B, token de outro pedido, cache/CDN, HTTPS/proxy, burst de cadastro/cotação/upload nem varredura de avisos das dependências instaladas.
+- `cart-quantity-guard.js` e `cart-quantity-stability.js` não estão na árvore; a remoção segue o plano e reduz superfície de interceptação.
+
+**Gate desta seção:** revisão estática registrada, sem achado crítico/alto/médio no escopo coberto. A Sessão D continua aberta até os testes do §17.6.
+
+## 19. Resposta perdida e falha antes da gravação — 09/10/2026
+
+**Estado:** fatia da Sessão A implementada e verificada. A sessão inteira continua aberta.
+
+Quando a Store API responde com status HTTP, a rejeição continua explícita: 429 não é reenviado sozinho e o botão Tentar novamente repete a quantidade. Quando a conexão cai sem status (`fetch_error` / `offline_error`), o coordenador lê o carrinho oficial e não repete adição, remoção nem a quantidade. Se a leitura confirma o desejo, a falha some. Se o servidor não aplicou a quantidade, o desejo e o retry permanecem.
+
+A seleção de frete recebe a geração do CEP. Se o CEP muda antes da seleção terminar, ela não é anunciada como sucesso nem como falha de seleção. Lista oficial vazia, com o CEP pedido, mostra ausência de cobertura. CEP devolvido diferente do pedido mostra falha técnica.
+
+| Verificação | Resultado |
+|---|---|
+| `node scripts/validate-041-cart-request-coordinator.mjs` | Aprovado, inclusive `fetch_error` com uma escrita e um GET |
+| `node scripts/validate-041-cart-operations.mjs` | Aprovado; seleção obsoleta não é enviada |
+| `scripts/validate-041-cart-failures-browser.mjs` | Aprovado em 1440 e 390, visitante, produto 1486. 429 direto, resposta perdida com leitura, retry, CTA no carrinho, ausência de cobertura. Evidência em `.local/evidence/041-cart-failures/results.json` |
+
+Neste browser o WooCommerce enviou `update-item` direto, não batch. O erro interno de batch HTTP 200 segue coberto no contrato do coordenador, não nesta passagem de browser. Nonce expirado, timeout nomeado, duas linhas com uma falha e remoção de linha pendente continuam abertos na Sessão A. URLs `home` e `siteurl` restauradas para `http://localhost:8888`. Sem commit.

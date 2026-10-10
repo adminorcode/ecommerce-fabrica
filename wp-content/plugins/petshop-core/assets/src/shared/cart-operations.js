@@ -47,13 +47,15 @@
         }));
         return result;
     };
-    const selectShippingRate = (rateId, packageId) => {
+    const selectShippingRate = (rateId, packageId, isCurrent = () => true) => {
         const operation = queue.catch(() => {}).then(async () => {
             // Queue still waits for a preceding CEP operation's debounce window.
             // Selecting a rate itself has no delayed address write to anticipate.
-            await waitForIdle(() => true, 0);
+            await waitForIdle(isCurrent, 0);
+            if (!isCurrent()) throw new Error('petshop_quote_changed');
             await window.wp.data.dispatch('wc/store/cart').selectShippingRate(rateId, packageId);
-            await waitForIdle(() => true, 0);
+            if (!isCurrent()) throw new Error('petshop_quote_changed');
+            await waitForIdle(isCurrent, 0);
             const updated = cart();
             const selected = (updated.shippingRates || []).find((pack) => pack.package_id === packageId)
                 ?.shipping_rates?.some((rate) => rate.rate_id === rateId && rate.selected);
