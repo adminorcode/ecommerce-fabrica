@@ -41,7 +41,7 @@ Não declare validação concluída se o runtime ainda tiver código velho.
 
 1. Confirme Compose **2.32.2+** (`.\scripts\require-compose.ps1` ou `docker compose version`).
 2. Veja os terminais já abertos. Se já existir `docker compose up --watch` saudável e a mudança for só plugin/tema, o sync contínuo basta — não suba outro watch.
-3. Se a stack estiver down, a imagem estiver velha, Dockerfiles/lockfiles mudaram, ou o runtime não tiver o código: rode o comando canônico **em background** (`block_until_ms: 0`). `--watch` é processo em primeiro plano; não use `-d` junto.
+3. Se a stack estiver down, a imagem estiver velha, Dockerfiles/lockfiles mudaram, ou o runtime não tiver o código: rode o comando canônico em background pelo Terminal do agente e mantenha o terminal/sessão disponível para acompanhamento. `--watch` é processo em primeiro plano; não use `-d` junto.
 4. Espere o WordPress ficar healthy e o watch habilitar (`Watch enabled` / `Syncing`). Confirme com `docker compose ps` (serviço `wordpress` healthy).
 5. URLs: loja `http://localhost:8888`, admin `http://localhost:8888/wp-admin`.
 
