@@ -60,7 +60,7 @@ trait StorefrontLegacyApi
 
     public static function filterSeasonalMenuItems(array $items): array
     {
-        return array_values(
+        $visible = array_values(
             array_filter(
                 $items,
                 static function (\WP_Post $item): bool {
@@ -69,10 +69,37 @@ trait StorefrontLegacyApi
                     }
 
                     $termId = (int) $item->object_id;
+                    // A class menu-item-has-children is applied before this filter.
+                    // Missing meta must stay visible; only an explicit opt-out hides the item.
+                    if (!metadata_exists('term', $termId, 'petshop_visible_in_menu')) {
+                        return true;
+                    }
+
                     return (bool) get_term_meta($termId, 'petshop_visible_in_menu', true);
                 }
             )
         );
+
+        $parentsWithChildren = [];
+        foreach ($visible as $item) {
+            $parentId = (int) $item->menu_item_parent;
+            if ($parentId > 0) {
+                $parentsWithChildren[$parentId] = true;
+            }
+        }
+
+        foreach ($visible as $item) {
+            $classes = array_values(array_filter(
+                array_map('strval', (array) $item->classes),
+                static fn (string $class): bool => $class !== 'menu-item-has-children'
+            ));
+            if (isset($parentsWithChildren[(int) $item->ID])) {
+                $classes[] = 'menu-item-has-children';
+            }
+            $item->classes = $classes;
+        }
+
+        return $visible;
     }
 
     public static function renderCatalogFilter(): void
