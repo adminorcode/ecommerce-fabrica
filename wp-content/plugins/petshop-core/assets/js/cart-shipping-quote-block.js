@@ -8,6 +8,23 @@
     const blockName = 'petshop/cart-shipping-quote';
     const digits = (value) => String(value || '').replace(/\D/g, '').slice(0, 8);
     const format = (value) => digits(value).replace(/^(\d{5})(\d{0,3})$/, '$1-$2').replace(/-$/, '');
+    const namedEntities = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+    const plain = (value) => {
+        let text = String(value || '');
+        for (let pass = 0; pass < 2 && text.includes('&'); pass += 1) {
+            const next = text.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (entity, body) => {
+                if (body[0] === '#') {
+                    const code = body[1] === 'x' || body[1] === 'X' ? Number.parseInt(body.slice(2), 16) : Number.parseInt(body.slice(1), 10);
+                    return Number.isFinite(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
+                }
+                const named = namedEntities[body.toLowerCase()];
+                return named === undefined ? entity : named;
+            });
+            if (next === text) break;
+            text = next;
+        }
+        return text;
+    };
     checkout.registerCheckoutFilters('petshop-cart-shipping-quote', {
         additionalCartCheckoutInnerBlockTypes: (allowed, _extensions, args) =>
             args?.block === 'woocommerce/cart-totals-block' && !allowed.includes(blockName) ? [...allowed, blockName] : allowed,
@@ -41,7 +58,7 @@
         }, [pending, transportPending, nativePending, postcode, cart]);
         const run = async (normalized, generation, preference) => {
             setPending(true);
-            setStatus(t('Atualizando opções de entrega…', 'petshop-core'));
+            setStatus('');
             try {
                 const updated = await window.petshopCartOperations.setQuoteDestination(normalized,
                     () => mounted.current && revision.current === generation);
@@ -92,7 +109,7 @@
             if (pending || transportPending || nativePending || quantityDraft) return;
             const generation = revision.current;
             setPending(true);
-            setStatus(t('Atualizando opções de entrega…', 'petshop-core'));
+            setStatus('');
             try {
                 await window.petshopCartOperations.selectShippingRate(rateId, packageId,
                     () => mounted.current && revision.current === generation);
@@ -108,6 +125,7 @@
         };
         const packages = digits(postcode) === digits(cart.shippingAddress?.postcode) ? cart.shippingRates || [] : [];
         const amount = (rate) => Number(rate.price) + (window.wc.wcSettings.getSetting('displayCartPricesIncludingTax', false) ? Number(rate.taxes || 0) : 0);
+        const deliveryLoading = pending || transportPending || nativePending || quantityDraft;
         return el('section', { className: 'petshop-cart-shipping', 'aria-busy': pending || transportPending || nativePending || quantityDraft, 'aria-label': t('Calcular entrega', 'petshop-core') },
             el('form', { className: 'petshop-cart-shipping__form', onSubmit: submit, 'data-petshop-cart-shipping-form': true }, [
                 el('label', { key: 'label', htmlFor: 'petshop-cart-shipping-postcode' }, t('CEP', 'petshop-core')),
@@ -126,17 +144,23 @@
                         } }),
                     el('button', { key: 'button', className: 'petshop-cart-shipping__button', type: 'submit', disabled: pending }, t('Calcular', 'petshop-core')),
                 ]),
-                el('p', { key: 'status', className: 'petshop-cart-shipping__status', 'data-petshop-cart-shipping-status': true, role: 'status', 'aria-live': 'polite' }, status || (transportPending || nativePending || quantityDraft ? t('Atualizando opções de entrega…', 'petshop-core') : destinationUnconfirmed ? t('Calcule a entrega para o CEP informado.', 'petshop-core') : '')),
+                el('p', { key: 'status', className: 'petshop-cart-shipping__status', 'data-petshop-cart-shipping-status': true, role: 'status', 'aria-live': 'polite' }, deliveryLoading
+                    ? el('span', { className: 'petshop-cart-shipping__spinner' }, [
+                        el('span', { className: 'screen-reader-text' }, t('Atualizando opções de entrega…', 'petshop-core')),
+                        el('span', { className: 'wc-block-components-spinner', 'aria-hidden': 'true' }),
+                    ])
+                    : (status || (destinationUnconfirmed ? t('Calcule a entrega para o CEP informado.', 'petshop-core') : ''))),
             ]),
             packages.map((pack) => el('div', { key: pack.package_id, role: 'group', 'aria-label': packages.length > 1 ? pack.name : t('Opções de entrega', 'petshop-core'), className: 'wc-block-components-shipping-rates-control',
                 'data-petshop-shipping-package': pack.package_id }, [
-                el('p', { key: 'legend' }, packages.length > 1 ? pack.name : t('Opções de entrega', 'petshop-core')),
+                el('p', { key: 'legend', className: 'petshop-cart-shipping__legend' }, packages.length > 1 ? plain(pack.name) : t('Opções de entrega', 'petshop-core')),
                 el(window.wc.blocksComponents.RadioControl, {
-                    key: 'options', id: `petshop-shipping-package-${pack.package_id}`, disabled: pending || nativePending || transportPending || quantityDraft,
+                    key: 'options', id: `petshop-shipping-package-${pack.package_id}`,
+                    disabled: pending || nativePending || transportPending || quantityDraft,
                     selected: (pack.shipping_rates || []).find((rate) => rate.selected)?.rate_id || '',
                     onChange: (rateId) => void selectRate(rateId, pack.package_id),
                     options: (pack.shipping_rates || []).map((rate) => ({
-                        value: rate.rate_id, label: rate.name,
+                        value: rate.rate_id, label: plain(rate.name),
                         secondaryLabel: el(window.wc.blocksComponents.FormattedMonetaryAmount, {
                             value: amount(rate), currency: window.wc.priceFormat.getCurrencyFromPriceResponse(rate),
                         }),

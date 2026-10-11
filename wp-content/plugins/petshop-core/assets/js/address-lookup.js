@@ -8,14 +8,24 @@
     const revisionOf = (field) => Number(field?.dataset.petshopManualRevision || 0);
     const revisionSnapshot = (fields) => Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, revisionOf(field)]));
     const unchanged = (field, revisions, key) => revisionOf(field) === (revisions[key] || 0);
+    const addressText = (value, key) => {
+        const text = String(value ?? '').trim();
+        if (key === 'postcode') return digits(text);
+        if (key === 'state') return text.toUpperCase();
+        return text;
+    };
+    const addressUnchanged = (current, values) => Boolean(current) && Object.entries(values).every(([key, value]) => addressText(current[key], key) === addressText(value, key));
     const applyBlockAddress = (type, values) => {
+        const cart = window.wp.data.select('wc/store/cart').getCartData?.() || {};
         const actions = window.wp.data.dispatch('wc/store/cart');
-        actions[type === 'shipping' ? 'setShippingAddress' : 'setBillingAddress'](values);
-        if (type === 'shipping' && window.wp.data.select('wc/store/checkout').getUseShippingAsBilling?.()) {
-            actions.setBillingAddress(values);
-        } else if (type === 'billing' && window.wc?.wcSettings?.getSetting?.('forcedBillingAddress', false)) {
-            actions.setShippingAddress(values);
+        const primary = type === 'shipping' ? cart.shippingAddress : cart.billingAddress;
+        if (!addressUnchanged(primary, values)) {
+            actions[type === 'shipping' ? 'setShippingAddress' : 'setBillingAddress'](values);
         }
+        const mirrorBilling = type === 'shipping' && window.wp.data.select('wc/store/checkout').getUseShippingAsBilling?.();
+        const mirrorShipping = type === 'billing' && window.wc?.wcSettings?.getSetting?.('forcedBillingAddress', false);
+        if (mirrorBilling && !addressUnchanged(cart.billingAddress, values)) actions.setBillingAddress(values);
+        else if (mirrorShipping && !addressUnchanged(cart.shippingAddress, values)) actions.setShippingAddress(values);
     };
 
     const setNativeValue = (field, value) => {

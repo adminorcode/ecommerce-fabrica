@@ -3,7 +3,7 @@ Theme Name: Petshop Theme
 Theme URI: https://example.invalid
 Description: Child theme do Blocksy para o e-commerce do petshop.
 Author: Petshop
-Version: 0.6.34
+Version: 0.6.38
 Template: blocksy
 Requires at least: 7.0
 Requires PHP: 8.3
@@ -896,6 +896,77 @@ a:hover { color: var(--color-brand-orange-dark); }
   display: none;
 }
 
+.petshop-cart-shipping__spinner {
+  position: relative;
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-brand-teal-dark);
+}
+
+.petshop-cart-shipping__spinner .wc-block-components-spinner {
+  font-size: 1.25rem;
+}
+
+.petshop-cart-shipping__spinner .wc-block-components-spinner:after {
+  transform: translateZ(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petshop-cart-shipping__spinner .wc-block-components-spinner:after {
+    animation: none;
+  }
+}
+
+.petshop-cart-shipping__legend {
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--color-brand-teal-dark);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control__label-group {
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control__label-group .wc-block-components-radio-control__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control__label-group .wc-block-components-radio-control__secondary-label {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: none;
+  color: var(--color-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control__option,
+.petshop-cart-shipping .wc-block-components-radio-control__option--checked-option-highlighted {
+  border-radius: 0;
+  box-shadow: none;
+  padding:10px 8px 5px 30px
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control__option + .wc-block-components-radio-control__option {
+  box-shadow: inset 0 1px 0 var(--color-border);
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control .wc-block-components-radio-control__input:checked {
+  border-color: var(--color-brand-teal-dark);
+}
+
+.petshop-cart-shipping .wc-block-components-radio-control .wc-block-components-radio-control__input:checked:before {
+  background: var(--color-brand-teal-dark);
+}
+
 .wc-block-cart [data-petshop-cart-shipping-spinner] {
   display: none;
 }
@@ -1431,6 +1502,11 @@ a:hover { color: var(--color-brand-orange-dark); }
   .admin-bar .petshop-commercial-header__menu-panel,
   .admin-bar .petshop-commercial-header__menu-overlay {
     top: 46px;
+  }
+
+  .petshop-cart-shipping .wc-block-components-radio-control__option,
+  .petshop-cart-shipping .wc-block-components-radio-control__option--checked-option-highlighted { 
+    padding:10px 8px 5px 50px
   }
 }
 
