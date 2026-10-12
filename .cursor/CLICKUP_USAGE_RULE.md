@@ -15,14 +15,11 @@ Fonte canônica da lista deste repositório. Não versionar tokens nem credencia
 
 ## Regras de criação
 
-1. Ler `.cursor/skills/write-kanban-tickets/SKILL.md` antes de criar ou revisar o ticket.
+1. Ler `.agents/skills/write-kanban-tickets/SKILL.md` antes de criar ou revisar o ticket.
 2. Criar **uma tarefa ClickUp por plano** na lista acima. Não criar lista, pasta ou space novos.
 3. Antes de criar, buscar na lista pelo número do plano (`Plano 0NN`) e pelo título. Reutilizar a tarefa existente; não duplicar.
 4. Título: `Plano NNN - Resultado curto` (exemplo: `Plano 025 - Frete com prazo por CEP`).
-5. Descrição em Markdown, em português, com as seções obrigatórias da skill:
-   - `## Por quê`
-   - `## Critérios de aceite`
-   - `## Contexto técnico`
+5. Descrição em Markdown, em português, com as seções de `.agents/skills/write-kanban-tickets/SKILL.md`. Premissas e inventário editorial só entram quando a skill manda.
 6. **Nada opcional:** nenhum critério, campo ou parâmetro pode aparecer como opcional, nice to have ou proposta. Ou é obrigatório ou está fora de escopo (`plans-no-optional.mdc`).
 7. CEP de endereço implica ViaCEP (`viacep-address.mdc`). Calculadora de frete é a única exceção.
 8. Sempre incluir o caminho local: `Plano local: Plans/{numero}-{slug}.md`.

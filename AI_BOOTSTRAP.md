@@ -75,7 +75,7 @@ Após alterar plugin, tema, Dockerfiles ou lockfiles — e antes de validar — 
 comando (o `init` não sobrescreve `petshop-core`/`petshop-theme` já existentes no
 volume). One-shot sem watch: skill `docker-compose-watch-build`.
 
-Detalhe operacional: `.cursor/skills/docker-compose-watch-build/SKILL.md`.
+Detalhe operacional: `.agents/skills/docker-compose-watch-build/SKILL.md`.
 
 URLs locais:
 

@@ -132,5 +132,5 @@ Espera visível usa um elemento animado que já existe na página. Frase de stat
 6. Executar scripts browser/PHP do plano ativo quando existirem (`scripts/validate-005-*`).
 7. Atualizar inventário de conteúdo por rota no plano se novos textos/imagens forem introduzidos.
 
-- Referências internas: `Plans/005-refinamento-comercial-do-storefront.md`, `style.css`, exemplos em `.cursor/skills/ecommerce-design-review/references/design-tokens.md`
+- Referências internas: `Plans/005-refinamento-comercial-do-storefront.md`, `style.css`, exemplos em `.agents/skills/ecommerce-design-review/references/design-tokens.md`
 - Componentes UI genéricos: skill `/ui-design-brain` (sempre mapear para tokens deste projeto)

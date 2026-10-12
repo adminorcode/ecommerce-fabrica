@@ -186,5 +186,5 @@ Publicar a loja: skill `preparar-deploy` (`npm run prepare:deploy`). O script co
 - Consulte `Plans/STATUS.md` — não confie em resumos embutidos nesta skill
 - Ambiente Docker: após mudanças no repo, skill `docker-compose-watch-build`
 
-Base directory for this skill: .cursor/skills/petshop-workflow
+Base directory for this skill: .agents/skills/petshop-workflow
 Relative paths in this skill (e.g., scripts/, reference/) are relative to this base directory.

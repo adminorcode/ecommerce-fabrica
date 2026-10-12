@@ -7,8 +7,7 @@ Como o time (e agentes) aproveitam rules, skills e validações deste repositór
 | Camada | Local | Quando entra |
 |--------|-------|--------------|
 | **Rules** | `.cursor/rules/*.mdc` | Contexto persistente (automático por escopo) |
-| **Skills do projeto** | `.cursor/skills/` | Workflows e revisões (automático ou `/nome`) |
-| **Skills WordPress** | `.agents/skills/` | Padrões WP oficiais (automático ou `/nome`) |
+| **Skills** | `.agents/skills/` | Workflows do projeto e padrões WordPress (automático ou `/nome`) |
 | **Tickets / ClickUp** | `.cursor/CLICKUP_USAGE_RULE.md` | Lista Autelie, 1 tarefa por plano |
 | **Planos** | `Plans/` | Escopo, gates e critérios de aceite |
 | **Scripts** | `scripts/` | Validação PHP e browser |
@@ -27,11 +26,11 @@ Ativa ao editar `petshop-theme`, `petshop-core` ou `Plans/`.
 
 **Use quando:** header, Home, catálogo, cards, PDP, CSS, filtros, conversão, acessibilidade.
 
-## Skills do projeto (`.cursor/skills/`)
+## Skills (`.agents/skills/`)
 
 ### `/write-kanban-tickets`
 
-Cria ou revisa tickets com motivação, critérios de aceite e contexto técnico. Usar junto com `.cursor/CLICKUP_USAGE_RULE.md`.
+Escreve o plano local e o ticket ClickUp com alcance, fora de escopo e critérios testáveis. Usar junto com `.cursor/CLICKUP_USAGE_RULE.md`. O plano vem antes da tarefa.
 
 **Invoque quando:** criar ticket local + ClickUp, ou enriquecer um pedido solto.
 
@@ -61,7 +60,7 @@ Checklist de UI/UX antes de fechar sessão visual. Referencia `references/design
 
 **Invoque quando:** terminar alteração de interface; antes de marcar checkbox do plano.
 
-## Skills WordPress (`.agents/skills/`)
+## Skills WordPress
 
 Instaladas de [WordPress/agent-skills](https://github.com/WordPress/agent-skills):
 
@@ -156,4 +155,4 @@ Skills com campo `paths` só aparecem quando arquivos correspondentes estão em 
 
 ## Arquivos de lock
 
-`skills-lock.json` registra versões instaladas via `npx skills add` — commitar junto com `.agents/` e `.cursor/skills/`.
+`skills-lock.json` registra versões instaladas via `npx skills add` — commitar junto com `.agents/skills/`.
