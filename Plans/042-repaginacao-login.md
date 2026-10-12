@@ -238,6 +238,11 @@ resolução das pendências. Comentário confirmado no ticket; evidência
   `initial_sync`; o CI e a baseline de Compose em README/bootstrap/validador/skill
   operacional foram alinhados a 5.3.1, versão usada na validação local. Não houve
   alteração de Compose Watch nem remoção da sincronização inicial.
+- CI passou pela configuração/build em 5.3.1 e expôs diferença de capitalização
+  no gate 005: seed cria `Kits econômicos`, enquanto o teste esperava `Kits
+  Economicos`. Comparação de labels passou a normalizar caixa tanto na origem
+  quanto na expectativa, mantendo a validação dos sete destinos e das URLs.
+  Nenhum menu do cliente foi alterado.
 
 ### Ajustes visuais solicitados — 2026-10-11
 
