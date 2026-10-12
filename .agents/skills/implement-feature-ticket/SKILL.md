@@ -23,6 +23,7 @@ Entregar a implementação completa do escopo aceito, com critérios de aceite a
 - Definir arquivos, contratos, migrações, UX, segurança e testes necessários.
 - Incluir testes unitários, integração, E2E ou visuais conforme a stack e o impacto.
 - Manter propostas adicionais fora do escopo até aprovação.
+- Esclarecer ambiguidades antes da implementação, uma pergunta por vez. Usar o "questions" sempre que possível.
 
 ## Fase 2 — preparar a branch
 
