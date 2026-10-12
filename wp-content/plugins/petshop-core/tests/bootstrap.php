@@ -230,6 +230,30 @@ function add_action(string $hook, mixed $callback, int $priority = 10, int $acce
     return add_filter($hook, $callback, $priority, $acceptedArgs);
 }
 
+function remove_filter(string $hook, mixed $callback, int $priority = 10): bool
+{
+    $filters = $GLOBALS['petshop_test_filters'][$hook] ?? [];
+    $kept = [];
+    $removed = false;
+
+    foreach ($filters as $filter) {
+        if (
+            !$removed
+            && ($filter['callback'] ?? null) === $callback
+            && (int) ($filter['priority'] ?? 10) === $priority
+        ) {
+            $removed = true;
+            continue;
+        }
+
+        $kept[] = $filter;
+    }
+
+    $GLOBALS['petshop_test_filters'][$hook] = $kept;
+
+    return $removed;
+}
+
 function home_url(string $path = ''): string
 {
     $home = rtrim((string) ($GLOBALS['petshop_test_home_url'] ?? 'https://store.test'), '/');

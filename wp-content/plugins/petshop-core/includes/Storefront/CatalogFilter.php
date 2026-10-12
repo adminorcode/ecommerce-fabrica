@@ -15,6 +15,15 @@ final class CatalogFilter
     ];
     private const STOCK_STATUSES = ['instock', 'onbackorder', 'outofstock'];
 
+    public static function hideSubcategoryCardsInProductLoop(): void
+    {
+        // A vitrine em "subcategories" ou "both" injeta li.product-category no
+        // mesmo ul.products. O card da loja então desenha a subcategoria com
+        // placeholder e contagem, sem preço nem compra. A navegação fica no
+        // menu e no filtro.
+        remove_filter('woocommerce_product_loop_start', 'woocommerce_maybe_show_product_subcategories');
+    }
+
     public static function renderCatalogFilter(): void
     {
         if (!is_shop() && !is_product_taxonomy()) {

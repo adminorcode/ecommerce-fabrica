@@ -28,6 +28,7 @@ final class StorefrontExperience
         add_filter('wp_nav_menu_objects', [self::class, 'filterSeasonalMenuItems']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueCatalogFilterAssets']);
         add_action('template_redirect', [self::class, 'canonicalizeCatalogCategoryFilter'], 0);
+        add_action('wp', [\Petshop\Core\Storefront\CatalogFilter::class, 'hideSubcategoryCardsInProductLoop'], 0);
         add_action('woocommerce_before_shop_loop', [self::class, 'renderCatalogFilter'], 15);
         add_action('woocommerce_before_shop_loop', [self::class, 'closeCatalogToolbar'], 40);
         add_action('woocommerce_single_product_summary', [self::class, 'renderProductAssurance'], 25);
