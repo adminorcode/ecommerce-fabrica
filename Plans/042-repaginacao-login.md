@@ -4,6 +4,7 @@
 **Data:** 2026-10-11
 **Branch de implementação:** `042-repaginacao-login` (a partir de `master` sincronizada com `origin/master`)
 **ClickUp:** [86e3p1dqh](https://app.clickup.com/t/86e3p1dqh) — Open; lista Autelie Ecommerce (`901715697289`).
+**Pull Request:** [#16](https://github.com/adminorcode/ecommerce-fabrica/pull/16) — draft, alvo `master`.
 **Origem:** referência visual fornecida pelo usuário, preservada em `docs/referencias/042-login-autelie.png`.
 **Dependências:** Planos 014 (tokens da marca), 025 (cadastro e senha escolhida), 010b (lista de desejos).
 **Alcance:** tela de entrada de visitante em Minha conta, pela página configurada no WooCommerce (slug atual `/minha-conta/`). Cadastro e recuperação recebem somente os ajustes necessários para manter navegação, legibilidade e funcionamento no novo invólucro. Área autenticada, login administrativo e login do checkout estão fora do redesenho.
@@ -180,8 +181,18 @@ contratos JS passaram; a suíte browser ampliada não foi declarada aprovada.
 
 Textos e mídia são administráveis em Páginas → Minha conta, com guia atualizado.
 A arte WebP foi importada na Biblioteca de mídia; a matriz PNG permanece em docs.
-Branch `042-repaginacao-login`, alterações locais sem commit. ClickUp continua
-Open. Não foram executados push, PR, merge ou deploy.
+Branch `042-repaginacao-login`, implementação no commit `04dd72e`, enviada ao remoto.
+PR #16 criado em draft e vinculado por comentário ao ClickUp, que permanece Open.
+Merge, fechamento e deploy não foram executados.
+
+Pedido de merge e fechamento recebido em 2026-10-11. Além das pendências de
+header/menu, o check `php-gates` do PR falhou antes de executar testes: o Docker
+Compose do runner rejeita `services.wordpress.develop.watch.0.initial_sync`.
+[Log do CI](https://github.com/adminorcode/ecommerce-fabrica/actions/runs/38187357515).
+A skill merge-and-close-ticket impede fechar o ticket com gates obrigatórios
+pendentes. O PR foi preparado para revisão; integração e fechamento aguardam a
+resolução das pendências. Comentário confirmado no ticket; evidência
+`.local/evidence/042/pr-vinculado-clickup.jpg`.
 
 ### Ajustes visuais solicitados — 2026-10-11
 
