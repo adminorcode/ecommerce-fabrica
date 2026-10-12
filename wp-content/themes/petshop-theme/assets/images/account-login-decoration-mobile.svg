@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="1500" viewBox="0 0 400 1500" preserveAspectRatio="none">
+  <defs>
+    <g id="paw">
+      <path d="M24 52C7 38-8 68 5 79c9 7 18-1 25-1s17 8 26 1c13-11-2-41-19-27-4 3-9 3-13 0Z"/>
+      <ellipse cx="3" cy="39" rx="9" ry="13" transform="rotate(-28 3 39)"/>
+      <ellipse cx="21" cy="22" rx="9" ry="15" transform="rotate(-9 21 22)"/>
+      <ellipse cx="41" cy="22" rx="9" ry="15" transform="rotate(12 41 22)"/>
+      <ellipse cx="59" cy="40" rx="9" ry="13" transform="rotate(28 59 40)"/>
+    </g>
+  </defs>
+  <path d="M0 120C80 117 85 16 148 57c84 55 154-17 252-57H0Z" fill="#fff" opacity=".8"/>
+  <path d="M0 1120c45 20 25 210 75 254 45 39 61 71 76 126H0Z" fill="#dceff0"/>
+  <path d="M252 1500c22-159 83-157 94-256 14-124 1-161 54-172v428Z" fill="#ffebdc"/>
+  <use href="#paw" x="0" y="780" fill="#fcebdc" transform="translate(0 280) scale(.65)"/>
+  <use href="#paw" x="330" y="160" fill="#cfe7e9" transform="translate(98 55) scale(.75)"/>
+  <use href="#paw" x="335" y="1280" fill="#fbdcc5" transform="translate(117 450) scale(.65)" opacity=".65"/>
+</svg>

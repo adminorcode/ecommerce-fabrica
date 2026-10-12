@@ -190,6 +190,9 @@ try {
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 } finally {
+  // Finish proxy requests before disposing their API context during teardown.
+  await Promise.all(browser.contexts().flatMap(context => context.pages())
+    .map(page => page.unrouteAll({ behavior: 'wait' })));
   await browser.close();
 }
 

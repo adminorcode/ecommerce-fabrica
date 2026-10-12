@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +33,9 @@ const run = (command, commandArgs, options = {}) => {
 
 const dockerCli = (...wpArgs) => run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '--no-deps', 'cli', 'wp', ...wpArgs]);
 const dockerCliOutput = (...wpArgs) => run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '--no-deps', 'cli', 'wp', ...wpArgs], { capture: true });
-const evalFile = (script) => dockerCli('eval-file', `/var/www/html/scripts/${script}`);
+const evalFile = (script) => script.includes('042-')
+    ? dockerCli('eval', `require "/var/www/html/scripts/${script}";`)
+    : dockerCli('eval-file', `/var/www/html/scripts/${script}`);
 
 const changedFiles = () => {
     const tracked = run('git', ['diff', '--name-only', '--diff-filter=ACMRTUXB', 'HEAD'], { capture: true })
@@ -266,6 +268,12 @@ const classifySuites = (files) => {
             suites.add('account-025');
             browserScripts.add('validate-025-account-registration-browser.mjs');
         }
+        if (file.includes('042-') || file.includes('AccountLoginContent') || file.includes('account-login')
+            || file.includes('account-registration')) {
+            suites.add('login-042');
+            browserScripts.add('validate-042-login-browser.mjs');
+            browserScripts.add('validate-042-editor-browser.mjs');
+        }
         if (file.includes('014-identity') || file.includes('validate-014-docs-and-tokens')) {
             suites.add('identity-014');
         }
@@ -468,6 +476,9 @@ const runFocusedSuites = (suites) => {
     if (suites.has('account-025')) {
         evalFile('validate-025-account-registration.php');
     }
+    if (suites.has('login-042')) {
+        evalFile('validate-042-login.php');
+    }
     if (suites.has('identity-014')) {
         evalFile('validate-014-identity-campaigns.php');
     }
@@ -561,11 +572,33 @@ const runBrowserScripts = (browserScripts) => {
             ensureLocalDir();
             writeFileSync(join(root, '.local', '041-editor-fixture.json'), fixture);
         }
+        if (browserScripts.has('validate-042-editor-browser.mjs')) {
+            const fixture = dockerCliOutput('eval', 'require "/var/www/html/scripts/setup-042-editor-fixture.php";');
+            ensureLocalDir();
+            writeFileSync(join(root, '.local', '042-editor-fixture.json'), fixture);
+        }
         for (const script of browserScripts) {
-            run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=wordpress', 'node', 'node', `/workspace/scripts/${script}`]);
+            try {
+                run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '-e', 'PETSHOP_BASE_URL=http://wordpress', '-e', 'PETSHOP_CANONICAL_HOST=wordpress', 'node', 'node', `/workspace/scripts/${script}`]);
+            } finally {
+                if (script === 'validate-042-login-browser.mjs') {
+                    const report = join(root, '.local/evidence/042/report.json');
+                    if (existsSync(report)) {
+                        for (const email of JSON.parse(readFileSync(report, 'utf8')).fixtureEmails || []) {
+                            const payload = Buffer.from(JSON.stringify(['cleanup', email])).toString('base64');
+                            dockerCli('eval', `$args = json_decode(base64_decode("${payload}"), true); require "/var/www/html/scripts/validate-042-login.php";`);
+                        }
+                    }
+                }
+            }
         }
     } finally {
         try {
+            if (browserScripts.has('validate-042-editor-browser.mjs')) {
+                evalFile('cleanup-042-editor-fixture.php');
+                const fixturePath = join(root, '.local', '042-editor-fixture.json');
+                if (existsSync(fixturePath)) unlinkSync(fixturePath);
+            }
             if (browserScripts.has('validate-041-editor-browser.mjs')) {
                 evalFile('cleanup-041-editor-fixture.php');
                 const fixturePath = join(root, '.local', '041-editor-fixture.json');
@@ -656,6 +689,8 @@ try {
         runChangedValidation();
     } else {
         runFullValidation();
+        evalFile('validate-042-login.php');
+        runBrowserScripts(new Set(['validate-042-login-browser.mjs', 'validate-042-editor-browser.mjs']));
     }
 } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
