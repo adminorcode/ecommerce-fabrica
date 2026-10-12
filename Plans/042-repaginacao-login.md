@@ -247,6 +247,10 @@ resolução das pendências. Comentário confirmado no ticket; evidência
   excluía o vendor de assets versionado do personalizador. A exceção específica
   foi alinhada ao `.gitignore`, preservando a exclusão do vendor Composer do
   host. Validação da imagem confirma o asset antes da nova rodada CI.
+- Gate 032 passou a comparar o redirecionamento HTTP 302 do SKU com o permalink
+  real do produto sintético, em vez de caminho inglês fixo. Bases e slugs
+  configurados/localizados do WooCommerce permanecem válidos; destino incorreto
+  ainda falha. Mensagem de falha inclui status, destino e URL esperada.
 
 ### Ajustes visuais solicitados — 2026-10-11
 
