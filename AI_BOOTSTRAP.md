@@ -25,7 +25,7 @@ Instale apenas:
 
 - [Docker Desktop para Windows](https://docs.docker.com/desktop/setup/install/windows-install/),
   com contêineres Linux e backend WSL 2 quando aplicável;
-- Docker Compose **2.32.2 ou superior** (incluído nas versões atuais do Docker
+- Docker Compose **5.3.1 ou superior** (incluído nas versões atuais do Docker
   Desktop; [instruções oficiais](https://docs.docker.com/compose/install/));
 - [Git](https://git-scm.com/downloads/);
 - um editor e um navegador.

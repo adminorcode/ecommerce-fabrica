@@ -69,6 +69,9 @@ final class AccountRegistration
             [
                 'createAccount' => __('Criar conta', 'petshop-core'),
                 'backToLogin' => __('Voltar para entrar', 'petshop-core'),
+                'showPassword' => __('Mostrar senha', 'petshop-core'),
+                'hidePassword' => __('Ocultar senha', 'petshop-core'),
+                'separator' => __('ou', 'petshop-core'),
             ]
         );
     }

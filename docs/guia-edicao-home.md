@@ -373,3 +373,31 @@ A frase no topo de `/finalizar-compra/order-received/` (clássica e Checkout Blo
 Valor inicial: `Parabéns! Seu pedido foi recebido!`. Campo em branco volta a essa frase. O reprovisionamento não desfaz uma edição posterior.
 
 Guia dedicado: [guia-edicao-rodape.md](./guia-edicao-rodape.md).
+## Minha conta — entrada de visitantes (Plano 042)
+
+Em **Páginas → Minha conta → Editar**, a composição de entrada aparece no canvas do
+Gutenberg. Abra a Visão em lista para localizar os grupos do formulário e dos
+benefícios. O título Entrar, a introdução, o título de vantagens, os quatro
+benefícios e a frase afetiva são blocos nativos de Título ou Parágrafo: edite
+diretamente no canvas e salve a página.
+
+Selecione a imagem dos pets e use **Substituir → Biblioteca de mídia** para trocar
+a arte. No painel do bloco Imagem, edite o texto alternativo; descreva a nova foto
+sem repetir os textos dos benefícios. Use imagem horizontal com os pets à direita:
+o enquadramento privilegia essa área no desktop e no mobile. Evite incorporar
+texto na imagem. Para mudar o recorte, use a ferramenta Recortar na barra do bloco
+Imagem ou a edição da imagem na Biblioteca de mídia e salve a versão ajustada.
+A arte inicial WebP tem cerca de 71 KB; mantenha a substituição
+com até 350 KB e dimensões adequadas à área visível.
+
+O bloco Shortcode dentro do card contém apenas o formulário dinâmico
+`[woocommerce_my_account]`: preserve-o e mantenha apenas uma ocorrência.
+Labels, erros, senha, cadastro e recuperação são fornecidos pelo WooCommerce e
+pelas traduções da plataforma. Os textos comerciais e a imagem são os blocos
+visíveis ao redor, não atributos do shortcode.
+
+Preserve as classes dos grupos e blocos na seção Avançado; elas definem o layout
+responsivo. Após salvar, confira Minha conta em uma janela sem autenticação.
+Clientes autenticados veem sua área de conta; a recuperação de senha utiliza seu
+formulário nativo. Atualizações e reprovisionamentos preservam as edições salvas,
+inclusive quando a marca de versão da composição precisa ser recuperada.

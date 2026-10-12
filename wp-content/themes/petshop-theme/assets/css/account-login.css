@@ -1,0 +1,185 @@
+/* Locally hosted OFL fonts keep the reference typography stable without a CDN. */
+@font-face {
+  font-family: "Autelie Login Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../fonts/nunito-sans-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Autelie Login Hand";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/kalam-700-latin.woff2") format("woff2");
+}
+/* 042: native editorial blocks; also loaded inside the Gutenberg canvas. */
+#main > :is(.ct-container, .ct-container-full):has(.petshop-account-scene) {
+  padding-bottom: 0;
+}
+body:has(.petshop-account-scene) .petshop-institutional-footer {
+  margin-top: 0;
+}
+.petshop-account-scene {
+  position: relative;
+  isolation: isolate;
+  font-family: "Autelie Login Sans", var(--font-family-base);
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(24px, 3vw, 48px);
+  padding: 24px 0 40px;
+  color: var(--color-ink);
+}
+:is(#main, .editor-styles-wrapper):has(.petshop-account-scene) {
+  position: relative;
+  isolation: isolate;
+}
+:is(#main, .editor-styles-wrapper):has(.petshop-account-scene)::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0;
+  background: url("../images/account-login-decoration.svg") center / 100% 100% no-repeat,
+    linear-gradient(180deg, var(--color-surface-soft), var(--color-surface) 38%);
+}
+.petshop-account-scene :is(h1, h2, input, button, label) {
+  font-family: "Autelie Login Sans", var(--font-family-base);
+}
+.petshop-account-scene > * { margin: 0 !important; min-width: 0; }
+.petshop-account-scene .petshop-account-card {
+  padding: clamp(24px, 3vw, 40px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+.petshop-account-scene .petshop-account-title {
+  margin: 0;
+  font-size: clamp(30px, 2.6vw, 36px);
+  line-height: 1.2;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--brand-teal-900) 42%, var(--neutral-950));
+  letter-spacing: -.025em;
+}
+.petshop-account-scene .petshop-account-intro {
+  margin: 8px 0 24px;
+  font-size: 15px;
+  color: var(--color-muted);
+}
+.petshop-account-scene #customer_login,
+.petshop-account-scene #customer_login > .u-column1,
+.petshop-account-scene #customer_login > .u-column2 { width: 100%; margin: 0; float: none; }
+.petshop-account-scene #customer_login > :is(.u-column1, .u-column2) { padding: 0; border: 0; }
+.petshop-account-scene #customer_login::before,
+.petshop-account-scene #customer_login::after { display: none; }
+.petshop-account-scene #customer_login > .u-column1 > h2 { display: none; }
+.petshop-account-scene #customer_login form { padding: 0; margin: 0; border: 0; }
+.petshop-account-scene #customer_login .form-row { margin: 0 0 20px; padding: 0; }
+.petshop-account-scene #customer_login label { font-size: 14px; font-weight: 700; color: var(--color-ink); }
+.petshop-account-scene #customer_login input.input-text {
+  min-height: 46px; width: 100%;
+  border: 1px solid var(--color-neutral-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
+  font-size: 16px;
+}
+.petshop-account-scene form.login .form-row:has(#username),
+.petshop-account-scene form.login .form-row:has(#password) { position: relative; }
+.petshop-account-scene form.login #username,
+.petshop-account-scene form.login #password { padding-inline: 44px; }
+.petshop-account-scene form.login .form-row:has(#username)::after,
+.petshop-account-scene form.login .form-row:has(#password)::after {
+  content: ""; position: absolute; bottom: 14px; left: 15px;
+  width: 18px; height: 18px; background: var(--color-muted);
+  mask: var(--account-field-icon) center / contain no-repeat; pointer-events: none;
+}
+.petshop-account-scene .form-row:has(#username) {
+  --account-field-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M3 22v-3c0-8 18-8 18 0v3'/%3E%3C/g%3E%3C/svg%3E");
+}
+.petshop-account-scene .form-row:has(#password) {
+  --account-field-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.8'%3E%3Crect x='4' y='10' width='16' height='12' rx='2'/%3E%3Cpath d='M8 10V6a4 4 0 0 1 8 0v4'/%3E%3C/g%3E%3C/svg%3E");
+}
+.petshop-account-scene .password-input { position: relative; display: block; }
+.petshop-account-scene form.login .show-password-input { display: none; }
+.petshop-account-scene .petshop-password-toggle {
+  display: grid; place-items: center;
+  position: absolute; right: 1px; top: 1px;
+  width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent;
+  color: var(--color-muted); border-radius: var(--radius-sm); cursor: pointer;
+}
+.petshop-account-scene .woocommerce-form-login .form-row:has([name="login"]) { display: flex; flex-direction: column; gap: 8px; }
+.petshop-account-scene .woocommerce-form-login__rememberme {
+  display: inline-flex !important; align-items: center; gap: 8px;
+  min-height: 44px; font-weight: 400 !important; margin: 0 !important;
+}
+.petshop-account-scene input[type="checkbox"] { accent-color: var(--color-brand-teal-dark); }
+.petshop-account-scene #customer_login .woocommerce-form-login__submit {
+  width: 100%; min-height: 46px; margin: 0; float: none;
+  border: 1px solid var(--color-brand-teal-dark); border-radius: var(--radius-pill);
+  background: var(--color-brand-teal-dark); color: var(--color-surface); font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.petshop-account-scene .woocommerce-LostPassword { margin: 0; font-size: 14px; }
+.petshop-account-scene .woocommerce-LostPassword a { display: inline-flex; min-height: 44px; align-items: center; text-decoration: underline; }
+.petshop-account-scene .petshop-login-options { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.petshop-account-scene .petshop-account-separator { display: flex; align-items: center; gap: 14px; margin: 8px 0; color: var(--color-muted); font-size: 13px; }
+.petshop-account-scene .petshop-account-separator::before,
+.petshop-account-scene .petshop-account-separator::after { content: ""; height: 1px; flex: 1; background: var(--color-border); }
+.petshop-account-scene #customer_login .petshop-account-create {
+  width: 100%; min-height: 46px; margin: 0; padding: 10px 20px;
+  background: var(--color-surface); border: 1px solid var(--color-brand-teal-dark);
+  color: var(--color-brand-teal-dark); border-radius: var(--radius-pill);
+}
+.petshop-account-scene #customer_login button:hover { filter: brightness(.95); }
+.petshop-account-scene :is(button, input, a):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.petshop-account-scene .petshop-account-editorial { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; gap: 8px; }
+.petshop-account-scene .petshop-account-editorial > * { min-width: 0; margin: 0 !important; }
+.petshop-account-scene .petshop-account-benefits h2 { font-size: clamp(25px, 2.5vw, 34px); line-height: 1.15; color: var(--color-brand-teal-dark); margin: 0 0 24px; font-weight: 800; }
+.petshop-account-scene .petshop-account-benefits h2 em {
+  color: var(--color-brand-orange-dark);
+  font-family: "Autelie Login Hand", "Autelie Login Sans", cursive;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+}
+.petshop-account-scene .petshop-account-benefit { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 1.4; margin: 0 0 20px; }
+.petshop-account-scene .petshop-account-benefit::before {
+  content: ""; width: 46px; height: 46px; flex: 0 0 46px;
+  border-radius: 50%; background-color: color-mix(in srgb, var(--color-brand-teal) 20%, var(--color-surface));
+  background-image: var(--account-benefit-icon); background-position: center; background-repeat: no-repeat; background-size: 24px;
+}
+.petshop-account-scene .petshop-account-benefit--orders { --account-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23126e70' stroke-width='1.8'%3E%3Cpath d='m12 2 9 5v10l-9 5-9-5V7Zm0 10 9-5M12 12 3 7m9 5v10M7 5l10 5'/%3E%3C/svg%3E"); }
+.petshop-account-scene .petshop-account-benefit--favorites { --account-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c94b0b' stroke-width='1.8'%3E%3Cpath d='M12 21 3 12C-3 3 7-2 12 5 17-2 27 3 21 12Z'/%3E%3C/svg%3E"); }
+.petshop-account-scene .petshop-account-benefit--details { --account-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23126e70' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='m9 2 6 0 1 4 4 1 2 5-3 3v4l-5 3-3-3-4 1-4-4 1-4-2-3 3-5h4Z'/%3E%3C/svg%3E"); }
+.petshop-account-scene .petshop-account-benefit--offers { --account-benefit-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c94b0b' stroke-width='1.8'%3E%3Cpath d='m12 2 3 6 7 1-5 5 1 8-6-4-6 4 1-8-5-5 7-1Z'/%3E%3C/svg%3E"); }
+.petshop-account-scene :is(.petshop-account-benefit--favorites, .petshop-account-benefit--offers)::before { background-color: color-mix(in srgb, var(--color-brand-orange) 20%, var(--color-surface)); }
+.petshop-account-scene .petshop-account-affection { color: var(--color-brand-teal-dark); font-style: italic; font-weight: 700; margin: 8px 0 0; }
+.petshop-account-scene .petshop-account-art { height: 500px; overflow: hidden; border-radius: 48% 48% 16px 16px; }
+.petshop-account-scene .petshop-account-art img { width: 100%; height: 100%; object-fit: cover; object-position: 100% 50%; }
+.petshop-account-scene.petshop-account-registering { grid-template-columns: minmax(0, 1.2fr) minmax(0, .85fr); }
+.petshop-account-scene.petshop-account-registering .petshop-account-title,
+.petshop-account-scene.petshop-account-registering .petshop-account-intro { display: none; }
+.petshop-account-scene.petshop-account-registering .petshop-account-editorial { grid-template-columns: 1fr; }
+.petshop-account-scene.petshop-account-registering .petshop-account-art { height: 260px; }
+.petshop-account-scene .woocommerce-error { overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+  .petshop-account-scene, .petshop-account-scene.petshop-account-registering { grid-template-columns: 1fr; gap: 32px; max-width: 720px; margin-inline: auto; }
+  .petshop-account-scene .petshop-account-art { height: 380px; }
+  .petshop-account-scene.petshop-account-registering .petshop-account-editorial { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+}
+@media (max-width: 540px) {
+  :is(#main, .editor-styles-wrapper):has(.petshop-account-scene)::before {
+    background-image: url("../images/account-login-decoration-mobile.svg"),
+      linear-gradient(180deg, var(--color-surface-soft), var(--color-surface) 38%);
+  }
+  .petshop-account-scene { padding-top: 8px; }
+  .petshop-account-scene .petshop-account-card { padding: 24px 20px; }
+  .petshop-account-scene .petshop-account-editorial,
+  .petshop-account-scene.petshop-account-registering .petshop-account-editorial { grid-template-columns: 1fr; gap: 20px; }
+  .petshop-account-scene .petshop-account-art { height: 330px; width: min(100%, 350px); justify-self: center; }
+  .petshop-account-scene .petshop-account-benefits h2 { font-size: 30px; }
+}

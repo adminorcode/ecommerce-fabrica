@@ -65,8 +65,11 @@ $skuResponse = wp_remote_get('http://wordpress/?s=PLAN013-SIMPLE&post_type=produ
 ]);
 $skuStatus = is_wp_error($skuResponse) ? 0 : (int) wp_remote_retrieve_response_code($skuResponse);
 $skuLocation = is_wp_error($skuResponse) ? '' : (string) wp_remote_retrieve_header($skuResponse, 'location');
-if ($skuStatus !== 302 || !str_contains($skuLocation, '/product/bandana-essencial-amostra-plano-013/')) {
-    $failures[] = 'SKU exato nao preservou redirecionamento para PDP.';
+$skuProduct = wc_get_product(wc_get_product_id_by_sku('PLAN013-SIMPLE'));
+$expectedSkuUrl = $skuProduct instanceof WC_Product ? $skuProduct->get_permalink() : '';
+if ($expectedSkuUrl === '' || $skuStatus !== 302 || untrailingslashit($skuLocation) !== untrailingslashit($expectedSkuUrl)) {
+    $failures[] = 'SKU exato nao preservou redirecionamento para PDP: HTTP ' . $skuStatus
+        . ', destino ' . $skuLocation . ', esperado ' . $expectedSkuUrl . '.';
 }
 
 if ($failures !== []) {
