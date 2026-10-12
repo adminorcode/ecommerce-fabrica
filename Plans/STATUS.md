@@ -46,6 +46,7 @@
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 | [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
 | [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Em andamento | Integração oficial, ViaCEP, preferência PDP, preview isolado e migração implementados; PHP/58 unitários aprovados em checkpoints. Fechamento bloqueado: totais de frete do pacote pesado divergem do GET independente mesmo após correção de sincronização; gate amplo final também atingiu timeout no visitante desktop. Continuação corrigiu preferência em HTTP; 027/031, PDP com erros/timeout, Gutenberg, billing obrigatório e comércio nativo isolado aprovados. CEP reposicionado acima do total, estilos anteriores restaurados e alternativas nativas de entrega mantidas; checkout reorganizado conforme referência aprovada, consulta de sessão e campos únicos; validação nos §§11–15; seleção acelerada e coordenação de quantidade/CEP com uma requisição física, descarte de respostas antigas e retornos de intenção; gates finais de concorrência e entrega aprovados em desktop/mobile, visitante/autenticado. Ação de desempenho e UX implementada no §16: coalescência por produto, estimativas identificadas, total oficial por linha e pendências por região; validação ampliada de estoque/rede em andamento. Matriz T01–T20 ainda parcial; staging/pedido pendentes; ledger no plano. |
+| [043-desconto-meio-pagamento.md](./043-desconto-meio-pagamento.md) | Pendente | Desconto percentual por produto e variação, lista global de meios e Pix separado do cartão. ClickUp [86e3p30ww](https://app.clickup.com/t/86e3p30ww) |
 
 ## Ordem recomendada de execução
 
@@ -91,7 +92,8 @@
   ├── 036 (dependencias de frete e checkout versionadas)
   ├── 039 (quantidade do carrinho após o CEP)
   ├── 040 (card mobile: sem legenda, padding menor, CTA Comprar no mobile e no desktop)
-  └── 041 (integridade global de frete/carrinho/checkout; consolida e corrige 026/027/037/038/039)
+  ├── 041 (integridade global de frete/carrinho/checkout; consolida e corrige 026/027/037/038/039)
+  └── 043 (desconto percentual por produto/variação ao escolher um meio da lista global; Pix separado do cartão)
 ```
 
 ## Origem
@@ -140,4 +142,6 @@ Plano 040 derivado do mockup mobile de “Destaques da loja” (2026-10-01): no 
 
 **Checkpoint 041:** rodada ampliada do §16 aprovada em desktop/mobile, visitante/autenticado, incluindo estoque,503/retry, teclado, foco e CTA. A regressão conjunta e o aceite financeiro pesado continuam abertos. Consulte o [relatório consolidado de problemas, correções e pendências](../docs/relatorio-branch-041-problemas-correcoes-pendencias.md).
 
-**Última atualização:** 2026-10-09 (Plano 041 em andamento; implementação de desempenho e UX com validação ampliada aprovada no §16, aceite integral pendente)
+Plano 043 derivado do pedido do lojista (2026-10-12): porcentagem de desconto por produto e variação, disparada por uma lista global de meios. O Pix do Mercado Pago entra como meio próprio no checkout; cartão não herda o desconto.
+
+**Última atualização:** 2026-10-12 (Plano 043 aberto; Plano 041 em andamento, aceite integral pendente)
