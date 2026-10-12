@@ -243,6 +243,10 @@ resolução das pendências. Comentário confirmado no ticket; evidência
   Economicos`. Comparação de labels passou a normalizar caixa tanto na origem
   quanto na expectativa, mantendo a validação dos sete destinos e das URLs.
   Nenhum menu do cliente foi alterado.
+- CI com instalação nova também encontrou Fabric.js ausente: `.dockerignore`
+  excluía o vendor de assets versionado do personalizador. A exceção específica
+  foi alinhada ao `.gitignore`, preservando a exclusão do vendor Composer do
+  host. Validação da imagem confirma o asset antes da nova rodada CI.
 
 ### Ajustes visuais solicitados — 2026-10-11
 
