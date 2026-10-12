@@ -23,7 +23,7 @@ jobs:
       - name: Set up compatible Docker Compose
         uses: docker/setup-compose-action@v2
         with:
-          version: v2.32.2
+          version: v5.3.1
 
       - name: Validate Compose configuration
         run: docker compose config --quiet

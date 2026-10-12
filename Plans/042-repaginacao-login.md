@@ -213,8 +213,8 @@ resolução das pendências. Comentário confirmado no ticket; evidência
   a controlar a visibilidade, permitindo Escape fechar mesmo com foco no pai.
   Gate 035 valida foco restaurado, reabertura, drawer, navegação das filhas e
   fallback sem JS; passou após o rebuild.
-- CI: `docker/setup-compose-action@v2` instala explicitamente Compose v2.32.2,
-  mínimo definido no bootstrap, antes de validar a configuração e iniciar a
+- CI: `docker/setup-compose-action@v2` instala explicitamente Compose v5.3.1,
+  baseline validada localmente e atualizada no bootstrap, antes de validar a configuração e iniciar a
   stack. Os runners Windows/Bash também executam o gate PHP 042 por `wp eval`
   com require, compatível com strict_types do script.
 - Browser 042 agora exige ausência de overflow da página inteira, removendo a
@@ -234,6 +234,10 @@ resolução das pendências. Comentário confirmado no ticket; evidência
   em `.local/042-blockers-menu.log`.
 - As pendências de header/menu descritas acima são históricas e foram resolvidas
   nesta rodada. O aceite final aguarda o CI do novo commit.
+- O CI de `53b03da` demonstrou que o mínimo antigo 2.32.2 ainda rejeita
+  `initial_sync`; o CI e a baseline de Compose em README/bootstrap/validador/skill
+  operacional foram alinhados a 5.3.1, versão usada na validação local. Não houve
+  alteração de Compose Watch nem remoção da sincronização inicial.
 
 ### Ajustes visuais solicitados — 2026-10-11
 
