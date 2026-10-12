@@ -26,6 +26,7 @@ final class StorefrontProvisioner
 
     public static function ensureStorefront(): void
     {
+        \Petshop\Core\WooCommerce\AccountLoginContent::provision();
         $isScheduled = get_option(\Petshop\Core\Lifecycle::SCHEDULED_OPTION, false) !== false;
         if (
             !class_exists('WooCommerce')

@@ -45,6 +45,7 @@ final class Plugin
         CartCheckout::bootstrap();
         CheckoutCustomerData::bootstrap();
         AccountRegistration::bootstrap();
+        \Petshop\Core\WooCommerce\AccountLoginContent::bootstrap();
         AccountPrivacy::bootstrap();
         AddressLookup::bootstrap();
         CartQuantityStability::bootstrap();

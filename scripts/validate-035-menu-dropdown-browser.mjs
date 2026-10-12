@@ -99,6 +99,10 @@ try {
     afterFocus.filter((item) => item.submenuVisible).length === 1,
     'desktop-1440: foco no pai nao abriu o dropdown'
   );
+  await firstParent.hover();
+  await desktop.mouse.move(0, 0);
+  recordFailure(await firstParent.locator(':scope > .sub-menu').isVisible(),
+    'desktop-1440: mouseleave fechou submenu com foco no pai');
   await desktop.keyboard.press('Tab');
   const afterFirstTab = await desktop.evaluate(() => ({
     inSubmenu: document.activeElement?.closest('.petshop-commercial-menu .sub-menu') instanceof HTMLElement,
@@ -116,6 +120,8 @@ try {
     afterEscape.every((item) => !item.submenuVisible),
     'desktop-1440: Escape nao fechou o dropdown'
   );
+  recordFailure(await firstParent.locator(':scope > a').evaluate(link => document.activeElement === link),
+    'desktop-1440: Escape nao devolveu o foco ao pai');
 
   await firstParent.hover();
   const child = firstParent.locator(':scope > .sub-menu > .menu-item > a').first();
@@ -187,9 +193,35 @@ try {
   ]);
   recordFailure(!(await mobile.locator('.petshop-commercial-header').evaluate((header) => header.classList.contains('is-menu-open'))), 'mobile-390: clique na filha nao fechou o drawer');
   recordFailure(mobileErrors.length === 0, `mobile-390: ${mobileErrors.length} erro(s) de pagina`);
+
+  for (const width of [768, 390, 360]) {
+    const page = await browser.newPage({ viewport: { width, height: 1000 } });
+    await routeCanonicalNavigation(page, baseUrl);
+    for (const route of ['/', '/minha-conta/']) {
+      await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+      const fits = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+      recordFailure(fits, `${width} ${route}: overflow horizontal da pagina`);
+      const targets = await page.locator('.petshop-commercial-header__actions a, .petshop-commercial-header__actions button').evaluateAll(elements => elements.filter(el => el.getBoundingClientRect().width > 0).map(el => ({ width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height })));
+      recordFailure(targets.every(box => box.width >= 44 && box.height >= 44), `${width} ${route}: acao do header menor que 44x44`);
+    }
+    await page.screenshot({ path: path.join(evidenceDir, `header-${width}.png`) });
+  }
+
+  const noJs = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
+  await routeCanonicalNavigation(noJs, baseUrl);
+  await noJs.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  const fallbackParent = noJs.locator('.petshop-commercial-menu > .menu-item-has-children').first();
+  await fallbackParent.hover();
+  recordFailure(await fallbackParent.locator(':scope > .sub-menu').isVisible(), 'sem JS: hover nao abriu submenu');
+  await fallbackParent.locator(':scope > a').focus();
+  await noJs.mouse.move(0, 0);
+  recordFailure(await fallbackParent.locator(':scope > .sub-menu').isVisible(), 'sem JS: foco nao manteve submenu');
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 } finally {
+  // Finish proxy requests before disposing their API context during teardown.
+  await Promise.all(browser.contexts().flatMap(context => context.pages())
+    .map(page => page.unrouteAll({ behavior: 'wait' })));
   await browser.close();
 }
 

@@ -47,6 +47,8 @@
 | [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
 | [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Em andamento | Integração oficial, ViaCEP, preferência PDP, preview isolado e migração implementados; PHP/58 unitários aprovados em checkpoints. Fechamento bloqueado: totais de frete do pacote pesado divergem do GET independente mesmo após correção de sincronização; gate amplo final também atingiu timeout no visitante desktop. Continuação corrigiu preferência em HTTP; 027/031, PDP com erros/timeout, Gutenberg, billing obrigatório e comércio nativo isolado aprovados. CEP reposicionado acima do total, estilos anteriores restaurados e alternativas nativas de entrega mantidas; checkout reorganizado conforme referência aprovada, consulta de sessão e campos únicos; validação nos §§11–15; seleção acelerada e coordenação de quantidade/CEP com uma requisição física, descarte de respostas antigas e retornos de intenção; gates finais de concorrência e entrega aprovados em desktop/mobile, visitante/autenticado. Ação de desempenho e UX implementada no §16: coalescência por produto, estimativas identificadas, total oficial por linha e pendências por região; validação ampliada de estoque/rede em andamento. Matriz T01–T20 ainda parcial; staging/pedido pendentes; ledger no plano. |
 
+| [042-repaginacao-login.md](./042-repaginacao-login.md) | Em validação | Login inspirado na referência: card, benefícios Gutenberg, fundo com pets e preservação dos fluxos WooCommerce. Header mobile e Escape do dropdown corrigidos e aprovados nos gates browser; CI instala Compose compatível. Fechamento aguardando os gates gerais e o CI do PR #16. ClickUp [86e3p1dqh](https://app.clickup.com/t/86e3p1dqh) — Open. |
+
 ## Ordem recomendada de execução
 
 ```
@@ -140,4 +142,4 @@ Plano 040 derivado do mockup mobile de “Destaques da loja” (2026-10-01): no 
 
 **Checkpoint 041:** rodada ampliada do §16 aprovada em desktop/mobile, visitante/autenticado, incluindo estoque,503/retry, teclado, foco e CTA. A regressão conjunta e o aceite financeiro pesado continuam abertos. Consulte o [relatório consolidado de problemas, correções e pendências](../docs/relatorio-branch-041-problemas-correcoes-pendencias.md).
 
-**Última atualização:** 2026-10-09 (Plano 041 em andamento; implementação de desempenho e UX com validação ampliada aprovada no §16, aceite integral pendente)
+**Última atualização:** 2026-10-11 (Plano 042: header/mobile e Escape corrigidos; fechamento aguarda gates gerais e CI. Plano 041 mantém as pendências documentadas.)

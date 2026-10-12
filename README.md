@@ -4,7 +4,7 @@ E-commerce baseado em WordPress e WooCommerce.
 
 ## Requisitos no host
 
-- [Docker Desktop](https://docs.docker.com/desktop/) com Docker Compose **2.32.2+**
+- [Docker Desktop](https://docs.docker.com/desktop/) com Docker Compose **5.3.1+**
 - [Git](https://git-scm.com/downloads)
 - editor e navegador
 

@@ -16,6 +16,10 @@ add_filter('blocksy:footer:copyright:value', static fn (): string => '');
 add_filter(
     'blocksy:single:has-default-hero',
     static function (bool $hasDefaultHero): bool {
+        if (function_exists('is_account_page') && is_account_page() && !is_user_logged_in()
+            && !is_wc_endpoint_url() && get_post_meta(get_queried_object_id(), '_petshop_account_login_042', true)) {
+            return false;
+        }
         if (function_exists('is_product') && is_product()) {
             return false;
         }
@@ -81,6 +85,7 @@ add_action(
         add_editor_style([
             'style.css',
             'assets/css/editor-storefront.css',
+            'assets/css/account-login.css',
         ]);
     }
 );
@@ -275,6 +280,11 @@ add_action(
             ['petshop-theme-fonts'],
             $version
         );
+        if (function_exists('is_account_page') && is_account_page() && !is_user_logged_in() && !is_wc_endpoint_url()) {
+            wp_enqueue_style('petshop-account-login', get_stylesheet_directory_uri() . '/assets/css/account-login.css',
+                ['petshop-theme', 'petshop-account-registration'],
+                (string) filemtime(get_stylesheet_directory() . '/assets/css/account-login.css'));
+        }
 
         wp_enqueue_script(
             'petshop-commercial-menu',

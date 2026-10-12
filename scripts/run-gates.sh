@@ -111,6 +111,7 @@ docker compose --profile tools run --rm node node /workspace/scripts/validate-04
 docker compose --profile tools run --rm node node /workspace/scripts/validate-041-runner-cleanup.mjs
 run_eval_file validate-034-emails.php
 run_eval_file validate-035-menu-dropdown.php
+"${COMPOSE[@]}" wp eval 'require "/var/www/html/scripts/validate-042-login.php";'
 run_eval_file smoke-012-order-flow.php
 
 if [[ "$RUN_CONTENT_AUDIT" -eq 1 ]]; then

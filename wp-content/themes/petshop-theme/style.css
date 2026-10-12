@@ -4123,7 +4123,7 @@ footer.ct-footer .ct-footer-copyright {
       display: none;
     }
 
-    .petshop-commercial-menu > .menu-item-has-children:is(:hover, :focus-within) > .sub-menu {
+    .petshop-commercial-menu:not(.petshop-commercial-menu--enhanced) > .menu-item-has-children:is(:hover, :focus-within) > .sub-menu {
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -4339,8 +4339,8 @@ footer.ct-footer .ct-footer-copyright {
   }
 
   .petshop-commercial-header__main {
-    grid-template-columns: 44px minmax(5.5rem, 1fr) auto;
-    gap: .5rem 1rem;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: .5rem;
     min-height: auto;
     padding-block: .65rem;
   }
@@ -4363,6 +4363,10 @@ footer.ct-footer .ct-footer-copyright {
     max-height: 50px;
   }
 
+  .petshop-commercial-header__brand .custom-logo-link {
+    max-width: 100%;
+  }
+
   .petshop-commercial-header__search {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -4371,7 +4375,7 @@ footer.ct-footer .ct-footer-copyright {
   .petshop-commercial-header__actions {
     grid-column: 3;
     grid-row: 1;
-    gap: var(--space-2);
+    gap: .25rem;
   }
 
   .petshop-commercial-header__navigation {

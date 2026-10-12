@@ -27,6 +27,9 @@
 
   let suppressOpen = null;
 
+  // With JavaScript, expanded state also controls hover/focus dismissal.
+  menu.classList.add('petshop-commercial-menu--enhanced');
+
   const setExpanded = (item, expanded) => {
     item.classList.toggle('is-submenu-open', expanded);
     const button = submenuToggle(item);
@@ -137,7 +140,7 @@
       }
     });
     item.addEventListener('mouseleave', () => {
-      if (usesDesktopHover()) {
+      if (usesDesktopHover() && !item.contains(document.activeElement)) {
         setExpanded(item, false);
       }
     });

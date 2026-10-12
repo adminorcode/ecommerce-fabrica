@@ -70,7 +70,7 @@ Invoke-EvalFile 'validate-039-cart-qty.php'
 Invoke-EvalFile 'validate-shipping-quote-destination.php'
 Invoke-EvalFile 'validate-041-shipping-destination.php'
 Invoke-EvalFile 'validate-041-shipping-preview.php'
-Invoke-WpCli eval 'require "/var/www/html/scripts/validate-041-shipping-selection-cache.php";'
+Invoke-WpCli eval "require '/var/www/html/scripts/validate-041-shipping-selection-cache.php';"
 Invoke-EvalFile 'validate-041-block-persistence.php'
 Invoke-EvalFile 'validate-041-native-commerce.php'
 docker compose --profile tools run --rm node node /workspace/scripts/validate-041-quote-preference.mjs
@@ -177,4 +177,5 @@ if ($Browser -or $Pdp -or $Cart) {
     }
 }
 
+Invoke-WpCli eval "require '/var/www/html/scripts/validate-042-login.php';"
 Write-Host 'run-gates: all PHP gates passed'

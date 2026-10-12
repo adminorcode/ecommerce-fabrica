@@ -18,7 +18,7 @@ $expected = [
 ];
 $normalize = static function (string $value): string {
     $value = remove_accents(wp_strip_all_tags($value));
-    return trim((string) preg_replace('/\s+/u', ' ', $value));
+    return strtolower(trim((string) preg_replace('/\s+/u', ' ', $value)));
 };
 
 if (trim((string) get_theme_mod('petshop_benefit_text', '')) === '') {
@@ -51,7 +51,7 @@ foreach ($items as $item) {
     $actual[$normalize((string) $item->title)] = (string) $item->url;
 }
 foreach ($expected as $label => $slug) {
-    $url = $actual[$label] ?? '';
+    $url = $actual[$normalize($label)] ?? '';
     if ($url === '') {
         $failures[] = "Entrada ausente no menu: {$label}";
         continue;
