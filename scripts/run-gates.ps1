@@ -177,4 +177,5 @@ if ($Browser -or $Pdp -or $Cart) {
     }
 }
 
+Invoke-WpCli eval "require '/var/www/html/scripts/validate-042-login.php';"
 Write-Host 'run-gates: all PHP gates passed'

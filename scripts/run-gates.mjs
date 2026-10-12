@@ -689,7 +689,6 @@ try {
         runChangedValidation();
     } else {
         runFullValidation();
-        evalFile('validate-042-login.php');
         runBrowserScripts(new Set(['validate-042-login-browser.mjs', 'validate-042-editor-browser.mjs']));
     }
 } catch (error) {

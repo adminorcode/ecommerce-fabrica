@@ -15,6 +15,11 @@ A tela de entrada deve comunicar a identidade Auteliê e os benefícios da conta
 
 ## Escopo e decisões
 
+Em 2026-10-11, o usuário autorizou corrigir os três bloqueios do fechamento:
+overflow do header global em 390/360 px, fechamento do dropdown por Escape e
+compatibilidade do Docker Compose no CI. São correções de comportamento e
+infraestrutura; não alteram a edição do conteúdo nem redesenham o header.
+
 - Desktop a partir de 1024 px: seção em duas áreas, card de login à esquerda e painel editorial à direita. Usar os tokens existentes da marca para teal, laranja, tipografia, espaçamento e foco.
 - Card branco com borda suave, sombra discreta e cantos arredondados; título Entrar, introdução, campos com labels visíveis e ícones decorativos, lembrar-me, recuperação, botão Acessar com seta, separador ou e botão secundário contornado Criar conta.
 - Campo de identificação aceita nome de usuário ou e-mail. Identificação e senha são obrigatórios; lembrar-me continua uma escolha do usuário, inicialmente desmarcada. Nunca provisionar admin nem senha preenchida do mockup.
@@ -31,8 +36,12 @@ A tela de entrada deve comunicar a identidade Auteliê e os benefícios da conta
 
 ## Critérios de aceite
 
+- [x] Header global não gera overflow na Home e em Minha conta em 768/390/360 px, preservando ações com área mínima de 44 × 44 px.
+- [x] Escape fecha o dropdown desktop e retorna foco ao pai; hover e foco continuam disponíveis sem JavaScript.
+- [ ] CI instala Docker Compose compatível e aprova os gates PHP e PHPUnit antes do merge.
+
 - [x] Em 1440 e 1024 px, a entrada reproduz a hierarquia do print: card à esquerda, benefícios e pets à direita, fundo claro, CTA teal e detalhes aqua/laranja sem alterar os tokens globais.
-- [ ] Em 768, 390 e 360 px, formulário vem primeiro; não há overflow horizontal, rolagem interna do card, sobreposição com pets nem corte de labels, mensagens ou CTAs.
+- [x] Em 768, 390 e 360 px, formulário vem primeiro; não há overflow horizontal, rolagem interna do card, sobreposição com pets nem corte de labels, mensagens ou CTAs.
 - [x] Entrar por usuário e por e-mail funciona; credencial inválida e campo obrigatório vazio apresentam mensagens acessíveis do WooCommerce. Nonces, sessão, lembrar-me e redirecionamento continuam sob controle nativo.
 - [x] Senha pode ser exibida/ocultada por teclado com nome acessível e estado anunciado. Inputs mantêm labels, required e autocomplete corretos; ícones são ignorados por leitor de tela.
 - [x] Acessar funciona por clique e Enter; foco é visível; controles interativos têm área mínima de 44 × 44 px. Texto normal tem contraste mínimo 4,5:1, texto grande 3:1 e foco/controles 3:1.
@@ -193,6 +202,38 @@ A skill merge-and-close-ticket impede fechar o ticket com gates obrigatórios
 pendentes. O PR foi preparado para revisão; integração e fechamento aguardam a
 resolução das pendências. Comentário confirmado no ticket; evidência
 `.local/evidence/042/pr-vinculado-clickup.jpg`.
+
+### Correções de bloqueios autorizadas — 2026-10-11
+
+- Header mobile: coluna do logo pode encolher, link da imagem limita-se à coluna
+  e gaps do grid/ações foram reduzidos. Não há máscara de overflow; a largura
+  real foi validada na Home e em Minha conta em 768/390/360 px, com ações de 44 px.
+- Dropdown: a classe `petshop-commercial-menu--enhanced` reserva a abertura
+  hover/foco por CSS ao fallback sem JavaScript. Com JS, `is-submenu-open` passa
+  a controlar a visibilidade, permitindo Escape fechar mesmo com foco no pai.
+  Gate 035 valida foco restaurado, reabertura, drawer, navegação das filhas e
+  fallback sem JS; passou após o rebuild.
+- CI: `docker/setup-compose-action@v2` instala explicitamente Compose v2.32.2,
+  mínimo definido no bootstrap, antes de validar a configuração e iniciar a
+  stack. Os runners Windows/Bash também executam o gate PHP 042 por `wp eval`
+  com require, compatível com strict_types do script.
+- Browser 042 agora exige ausência de overflow da página inteira, removendo a
+  exceção anterior do header. Cinco breakpoints, teclado, contraste, ausência
+  de JS, cadastro e login usuário/e-mail passaram; log
+  `.local/042-blockers-browser.log`. Evidências em `.local/evidence/035/` e
+  `.local/evidence/042/`.
+- Rebuild concluído com WordPress healthy. A primeira tentativa browser foi
+  interrompida pela recriação do serviço; outra coincidiu com atualização
+  automática do Core. Integridade do runtime conferida por checksums e URLs
+  locais restauradas; a rodada posterior passou, com cleanup das fixtures.
+- `npm run validate` aprovado com gate PHP 042, incluindo persistência após dois
+  reprovisionamentos, autenticação e redefinição de senha. `npm test`: 58 testes
+  e 219 assertions. Logs `.local/042-blockers-validation.log` e
+  `.local/042-blockers-unit.log`. Revisão das correções e `git diff --check`
+  aprovados. Gate 035 repetido após proteger foco durante mouseleave, aprovado
+  em `.local/042-blockers-menu.log`.
+- As pendências de header/menu descritas acima são históricas e foram resolvidas
+  nesta rodada. O aceite final aguarda o CI do novo commit.
 
 ### Ajustes visuais solicitados — 2026-10-11
 

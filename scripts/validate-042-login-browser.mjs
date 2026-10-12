@@ -56,6 +56,7 @@ try {
     });
     await page.screenshot({ path: path.join(evidence, 'layout-' + width + '.png'), fullPage: true });
     assert.equal(layout.overflow, false, width + ': horizontal overflow ' + JSON.stringify(layout.overflowElements));
+    assert.equal(layout.pageOverflow, false, width + ': page horizontal overflow');
     assert(width >= 1024 ? layout.columns : layout.stacked, width + ': composition');
     assert(layout.image.naturalWidth > 0 && layout.image.dimensions && layout.image.loading === 'eager', width + ': image');
     for (const target of layout.targets) assert(target.height >= 44 && target.width >= 44, width + ': small target ' + JSON.stringify(target));
@@ -87,19 +88,6 @@ try {
     await page.waitForLoadState('networkidle');
     assert.equal(await page.locator('.woocommerce-ResetPassword').count(), 1);
     assert.equal(await page.locator('.petshop-account-scene').count(), 0);
-    if (layout.pageOverflow) {
-      const baseline = await context.newPage();
-      await routeCanonicalNavigation(baseline, baseUrl);
-      await baseline.goto(baseUrl + '/', { waitUntil: 'networkidle' });
-      layout.globalHeaderBaseline = await baseline.locator('.petshop-commercial-header__search').evaluate(el => ({
-        right: el.getBoundingClientRect().right, viewport: innerWidth,
-        overflow: document.documentElement.scrollWidth > innerWidth,
-      }));
-      assert(layout.globalHeaderBaseline.overflow && layout.globalHeaderBaseline.right > width,
-        'Page overflow must be independently reproduced outside account scope');
-      await baseline.screenshot({ path: path.join(evidence, 'global-header-baseline-' + width + '.png'), fullPage: false });
-      await baseline.close();
-    }
     results.push({ width, layout });
     await context.close();
   }
