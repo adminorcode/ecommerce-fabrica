@@ -267,9 +267,9 @@ final class ProductGridBlock
 
         return [
             'selectionMode' => $mode,
-            'productIds' => self::normalizeIds((array) ($attributes['productIds'] ?? []), 12),
+            'productIds' => self::normalizeIds((array) ($attributes['productIds'] ?? []), 20),
             'categoryIds' => self::normalizeIds((array) ($attributes['categoryIds'] ?? []), 12),
-            'limit' => min(12, max(1, absint($attributes['limit'] ?? 4))),
+            'limit' => min(20, max(1, absint($attributes['limit'] ?? 4))),
             'columns' => min(6, max(2, absint($attributes['columns'] ?? 4))),
             'orderby' => $mode === 'popular' ? 'popularity' : $orderby,
             'order' => $order,

@@ -47,25 +47,56 @@ export const routeCanonicalNavigation = async (page, baseUrl) => {
   await page.route('**/*', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
-    const isCanonicalLocalUrl = url.hostname === 'localhost' && url.port === '8888';
+    const isCanonicalLocalUrl = ['localhost', '127.0.0.1'].includes(url.hostname) && ['', '8888'].includes(url.port);
     const isBaseHostWithCanonicalPort = url.hostname === base.hostname && url.origin !== base.origin;
 
-    if (url.origin === base.origin) {
-      await route.continue({
-        headers: { ...request.headers(), Host: canonicalHost },
-      });
+    if (url.origin === base.origin || isCanonicalLocalUrl || isBaseHostWithCanonicalPort) {
+      const headers = request.headers();
+      delete headers.host;
+      let response;
+      try {
+        response = await route.fetch({
+          maxRedirects: 0,
+          // Recover only transport resets for safe reads, never repeat a write.
+          maxRetries: ['GET', 'HEAD'].includes(request.method()) ? 2 : 0,
+          url: withBaseUrl(url, baseUrl),
+          headers: { ...headers, Host: canonicalHost },
+        });
+      } catch (error) {
+        // Playwright's full call log contains cookie headers. Keep diagnostic
+        // errors useful without copying session credentials into gate output.
+        throw new Error(`${request.method()} ${url.pathname}: ${String(error.message).split('\n')[0]}`);
+      }
+      // The Docker proxy maps canonical localhost assets/API to wordpress:80.
+      // Preserve the browser origin across that test-only alias mapping.
+      const proxyHeaders = { ...response.headers() };
+      const requestOrigin = request.headers().origin;
+      if (requestOrigin && [base.origin, `http://${canonicalHost}`].includes(requestOrigin)) {
+        proxyHeaders['access-control-allow-origin'] = requestOrigin;
+        proxyHeaders['access-control-allow-credentials'] = 'true';
+        proxyHeaders['access-control-allow-methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
+        proxyHeaders['access-control-allow-headers'] = request.headers()['access-control-request-headers'] || 'Content-Type, Nonce, X-WP-Nonce';
+        proxyHeaders['access-control-expose-headers'] = 'Nonce, Cart-Token';
+      }
+      const location = response.headers().location;
+      if (location) {
+        const destination = new URL(location, baseUrl);
+        const destinationIsCanonicalLocalUrl = ['localhost', '127.0.0.1'].includes(destination.hostname)
+          && ['', '8888'].includes(destination.port);
+        const targetsBaseHost = destination.hostname === base.hostname;
+        if (destinationIsCanonicalLocalUrl || targetsBaseHost) {
+          await route.fulfill({
+            response,
+            headers: { ...proxyHeaders, location: withBaseUrl(destination, baseUrl) },
+          });
+          return;
+        }
+      }
+      await route.fulfill({ response, headers: proxyHeaders });
       return;
     }
 
-    if (!isCanonicalLocalUrl && !isBaseHostWithCanonicalPort) {
-      await route.continue();
-      return;
-    }
-
-    await route.continue({
-      headers: { ...request.headers(), Host: canonicalHost },
-      url: withBaseUrl(url, baseUrl),
-    });
+    await route.continue();
   });
 };
 
