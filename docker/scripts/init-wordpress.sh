@@ -64,6 +64,26 @@ wp language plugin install blocksy-companion pt_BR --path="$runtime" --allow-roo
 wp language theme install blocksy pt_BR --path="$runtime" --allow-root || true
 wp plugin activate woocommerce blocksy-companion petshop-core woo-better-shipping-calculator-for-brazil melhor-envio-cotacao --path="$runtime" --allow-root
 
+wp option update woocommerce_feature_abandoned_cart_recovery_enabled yes --path="$runtime" --allow-root
+wp eval '
+$settings = get_option("woocommerce_customer_abandoned_cart_recovery_settings", array());
+if (! is_array($settings)) {
+    $settings = array();
+}
+$settings["enabled"] = "yes";
+$settings["automated"] = "yes";
+$settings["email_type"] = isset($settings["email_type"]) ? $settings["email_type"] : "html";
+
+if ("1" !== get_option("petshop_abandoned_cart_recovery_028_configured")) {
+    $settings["subject"] = "Finalize o pagamento do seu pedido";
+    $settings["heading"] = "Recebemos o seu pedido, mas o pagamento ainda não foi concluído";
+    $settings["additional_content"] = "Recebemos o seu pedido e estamos aguardando a confirmação do pagamento. Use o botão deste e-mail para concluir o pagamento com segurança.";
+    update_option("petshop_abandoned_cart_recovery_028_configured", "1");
+}
+
+update_option("woocommerce_customer_abandoned_cart_recovery_settings", $settings);
+' --path="$runtime" --allow-root
+
 if ! wp option get petshop_shipping_dependencies_036_configured --path="$runtime" --allow-root >/dev/null 2>&1; then
   wp option update woo_better_calc_enable_product_page no --path="$runtime" --allow-root
   wp option update woo_better_calc_enable_cart_page no --path="$runtime" --allow-root
