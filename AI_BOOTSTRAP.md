@@ -173,8 +173,8 @@ docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html
 
 ## Trabalhar por plano
 
-1. Leia este arquivo, qualquer `AGENTS.md`, [Plans/STATUS.md](Plans/STATUS.md) e o
-   arquivo do plano solicitado por inteiro.
+1. Leia este arquivo, qualquer `AGENTS.md`, [docs/WORKFLOW-TICKETS.md](docs/WORKFLOW-TICKETS.md),
+   [Plans/STATUS.md](Plans/STATUS.md) e o arquivo do plano solicitado por inteiro.
 2. Para **um plano novo**, confirme que o worktree está limpo; então atualize
    `master` com fast-forward e crie `<numero>-<nome-do-arquivo-sem-.md>` a partir dele:
 
