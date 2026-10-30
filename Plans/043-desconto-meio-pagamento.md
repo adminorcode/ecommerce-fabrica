@@ -1,6 +1,6 @@
 # Plano 043 — Desconto por meio de pagamento no item
 
-**Status:** Em validação  
+**Status:** Concluído  
 **Data:** 2026-10-12  
 **Branch sugerida:** `043-desconto-meio-pagamento`  
 **Dependências:** Checkout Block e plugin oficial Mercado Pago já em uso (013/017). O retorno à loja após Pix aprovado permanece o do [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md). O preço principal do card variável permanece o da variação selecionada no [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md).  
