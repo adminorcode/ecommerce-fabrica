@@ -25,6 +25,7 @@ use Petshop\Core\WooCommerce\OrderReceivedMessage;
 use Petshop\Core\WooCommerce\GuestAccount;
 use Petshop\Core\WooCommerce\TransactionalEmails;
 use Petshop\Core\WooCommerce\MercadoPagoReturn;
+use Petshop\Core\WooCommerce\PaymentDiscount;
 use Petshop\Core\Analytics\FunnelEvents;
 
 defined('ABSPATH') || exit;
@@ -57,6 +58,7 @@ final class Plugin
         GuestAccount::bootstrap();
         TransactionalEmails::bootstrap();
         MercadoPagoReturn::bootstrap();
+        PaymentDiscount::bootstrap();
         FunnelEvents::bootstrap();
         HomeCampaignBlocks::bootstrap();
         ProductGridBlock::bootstrap();

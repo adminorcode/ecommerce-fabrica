@@ -194,11 +194,31 @@ final class ProductDetails
         if (!$product instanceof \WC_Product || !$product->is_purchasable()) return;
 
         $price = $product->is_type('variable') ? null : (float) wc_get_price_to_display($product);
+        $paymentUnit = '';
+        $paymentLabel = '';
+        if (
+            $price !== null
+            && class_exists(\Petshop\Core\WooCommerce\PaymentDiscount\Settings::class)
+            && \Petshop\Core\WooCommerce\PaymentDiscount\Settings::hasGateways()
+        ) {
+            $percent = \Petshop\Core\WooCommerce\PaymentDiscount\ProductMeta::effectivePercent($product);
+            if ((float) $percent > 0) {
+                $paymentUnit = \Petshop\Core\WooCommerce\PaymentDiscount\Money::discounted(
+                    wc_format_decimal($price, wc_get_price_decimals()),
+                    $percent
+                );
+                $paymentLabel = \Petshop\Core\WooCommerce\PaymentDiscount\Settings::label();
+            }
+        }
 
         echo '<p class="petshop-product-quantity-total" data-petshop-quantity-total hidden'
-            . ' data-unit-price="' . esc_attr($price === null ? '' : wc_format_decimal($price, wc_get_price_decimals())) . '">'
+            . ' data-unit-price="' . esc_attr($price === null ? '' : wc_format_decimal($price, wc_get_price_decimals())) . '"'
+            . ' data-payment-unit="' . esc_attr($paymentUnit) . '"'
+            . ' data-payment-label="' . esc_attr($paymentLabel) . '">'
             . '<span class="petshop-product-quantity-total__label" data-petshop-quantity-total-label></span>'
+            . '<del class="petshop-product-quantity-total__compare" data-petshop-quantity-total-compare hidden></del>'
             . '<strong class="petshop-product-quantity-total__value" data-petshop-quantity-total-value aria-live="polite"></strong>'
+            . '<span class="petshop-product-quantity-total__payment" data-petshop-quantity-total-payment hidden></span>'
             . '</p>';
     }
 

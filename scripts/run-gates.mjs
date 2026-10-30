@@ -367,6 +367,18 @@ const classifySuites = (files) => {
             browserScripts.add('validate-041-checkout-address-browser.mjs');
         }
         if (
+            file.includes('043-desconto-meio-pagamento')
+            || file.includes('PaymentDiscount')
+            || file.includes('payment-discount')
+            || file.includes('validate-043-payment-discount')
+            || file.includes('setup-043-payment-discount-fixture')
+            || file.includes('cleanup-043-payment-discount-fixture')
+            || file.includes('create-043-variable-discount')
+        ) {
+            suites.add('payment-discount-043');
+            browserScripts.add('validate-043-payment-discount-browser.mjs');
+        }
+        if (
             file.includes('041-integridade-frete-carrinho-checkout')
             || file.includes('ShippingQuoteCartExtension')
             || file.includes('CartBlocksIntegration')
@@ -527,6 +539,10 @@ const runFocusedSuites = (suites) => {
     }
     if (suites.has('product-card-031')) {
         run('node', ['scripts/validate-031-product-card.mjs']);
+    }
+    if (suites.has('payment-discount-043')) {
+        evalFile('validate-043-payment-discount.php');
+        run('docker', ['compose', '--profile', 'tools', 'run', '--rm', '--no-deps', 'cli', 'sh', '-lc', 'cd /var/www/html/wp-content/plugins/petshop-core && ./vendor/bin/phpunit tests/PaymentDiscountTest.php']);
     }
     if (suites.has('cart-qty-039')) {
         evalFile('validate-039-cart-qty.php');

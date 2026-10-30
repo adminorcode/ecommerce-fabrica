@@ -211,7 +211,7 @@
     }
 
     const text = enabled
-      ? (i18n.buyNow || 'Comprar agora')
+      ? (i18n.buyNow || 'Comprar')
       : (i18n.unavailable || 'Indisponível');
     const label = button.querySelector('.petshop-product-card__buy-label');
 

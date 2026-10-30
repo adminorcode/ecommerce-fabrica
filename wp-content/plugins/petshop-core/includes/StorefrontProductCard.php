@@ -63,7 +63,7 @@ final class StorefrontProductCard
             'endpoint' => wp_make_link_relative(rest_url('wc/store/v1/cart/add-item')),
             'nonce' => wp_create_nonce('wc_store_api'),
             'i18n' => [
-                'buyNow' => __('Comprar agora', 'petshop-core'),
+                'buyNow' => __('Comprar', 'petshop-core'),
                 'adding' => __('Adicionando…', 'petshop-core'),
                 'added' => __('Adicionado ao carrinho.', 'petshop-core'),
                 'selectOption' => __('Selecione uma opção disponível.', 'petshop-core'),
@@ -194,7 +194,7 @@ final class StorefrontProductCard
 
         $label = $unavailable
             ? __('Indisponível', 'petshop-core')
-            : __('Comprar agora', 'petshop-core');
+            : __('Comprar', 'petshop-core');
 
         if (\Petshop\Core\Personalization\Infrastructure\ProductSettings::isEnabledFor($productId)) {
             $url = add_query_arg(
@@ -207,7 +207,7 @@ final class StorefrontProductCard
                 . ' href="' . esc_url($url) . '"'
                 . ' data-petshop-personalizable="1"'
                 . ' aria-label="' . esc_attr(sprintf(__('Personalizar %s', 'petshop-core'), $product->get_name())) . '">'
-                . self::buttonFaces(__('Comprar agora', 'petshop-core'))
+                . self::buttonFaces(__('Comprar', 'petshop-core'))
                 . '</a>';
         }
 
@@ -376,7 +376,7 @@ final class StorefrontProductCard
             $variations[] = [
                 'id' => $variation->get_id(),
                 'attributes' => $normalizedAttributes,
-                'priceHtml' => $variation->get_price_html(),
+                'priceHtml' => self::variationStorefrontPrice($variation),
                 'discountLabel' => self::discountLabel($variation),
                 'image' => $image,
                 'purchasable' => $isPurchasable,
@@ -418,7 +418,7 @@ final class StorefrontProductCard
             'attributes' => $attributes,
             'variations' => $variations,
             'initialVariationId' => $initialVariation->get_id(),
-            'initialPriceHtml' => $initialVariation->get_price_html(),
+            'initialPriceHtml' => self::variationStorefrontPrice($initialVariation),
             'initialSelection' => $initialSelection,
         ];
 
@@ -442,6 +442,12 @@ final class StorefrontProductCard
         }
 
         return false;
+    }
+
+    private static function variationStorefrontPrice(\WC_Product_Variation $variation): string
+    {
+        return $variation->get_price_html()
+            . \Petshop\Core\WooCommerce\PaymentDiscount\Storefront::markup($variation, false);
     }
 
     private static function isBlocksyProductCard(): bool

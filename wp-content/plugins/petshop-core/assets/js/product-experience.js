@@ -9,7 +9,9 @@
   const result = document.querySelector('[data-petshop-shipping-result]');
   const quantityTotal = document.querySelector('[data-petshop-quantity-total]');
   const quantityTotalLabel = document.querySelector('[data-petshop-quantity-total-label]');
+  const quantityTotalCompare = document.querySelector('[data-petshop-quantity-total-compare]');
   const quantityTotalValue = document.querySelector('[data-petshop-quantity-total-value]');
+  const quantityTotalPayment = document.querySelector('[data-petshop-quantity-total-payment]');
   const cartForm = document.querySelector('form.cart');
   let shippingQuoteGeneration = 0;
   let shippingController;
@@ -23,6 +25,8 @@
   const formatPostcode = (postcode) => postcode.replace(/^(\d{5})(\d{3})$/, '$1-$2');
   const numberFormat = (config.priceFormat && typeof config.priceFormat === 'object') ? config.priceFormat : {};
   let currentUnitPrice = Number.parseFloat(quantityTotal?.dataset.unitPrice || '');
+  let paymentUnit = Number.parseFloat(quantityTotal?.dataset.paymentUnit || '');
+  let paymentLabel = quantityTotal?.dataset.paymentLabel || '';
 
   const decimalSeparator = numberFormat.decimalSeparator || '.';
   const thousandSeparator = numberFormat.thousandSeparator || ',';
@@ -85,17 +89,56 @@
     quantityTotal?.remove();
   };
 
+  const hideNode = (node) => {
+    if (!node) return;
+    node.hidden = true;
+    node.textContent = '';
+  };
+
   const updateQuantityTotal = () => {
     if (!quantityTotal || !quantityTotalValue) return;
     const quantity = currentQuantity();
-    if (!Number.isFinite(currentUnitPrice) || currentUnitPrice < 0 || quantity <= 1) {
+    const hasUnit = Number.isFinite(currentUnitPrice) && currentUnitPrice >= 0;
+    const hasPayment = Number.isFinite(paymentUnit) && paymentUnit > 0 && paymentLabel !== '';
+    if (!hasUnit || (quantity <= 1 && (!hasPayment || Boolean(form)))) {
       quantityTotal.hidden = true;
       if (quantityTotalLabel) quantityTotalLabel.textContent = '';
       quantityTotalValue.textContent = '';
+      hideNode(quantityTotalCompare);
+      hideNode(quantityTotalPayment);
       return;
     }
+
     quantityTotal.hidden = false;
-    if (quantityTotalLabel) quantityTotalLabel.textContent = `x${Number.isInteger(quantity) ? quantity : quantity}`;
+    const showQuantity = quantity > 1;
+    if (quantityTotalLabel) {
+      quantityTotalLabel.textContent = showQuantity ? `x${quantity}` : '';
+    }
+
+    if (hasPayment && showQuantity) {
+      if (quantityTotalCompare) {
+        quantityTotalCompare.hidden = false;
+        quantityTotalCompare.textContent = formatAmount(currentUnitPrice * quantity);
+      }
+      quantityTotalValue.textContent = formatAmount(paymentUnit * quantity);
+      if (quantityTotalPayment) {
+        quantityTotalPayment.hidden = false;
+        quantityTotalPayment.textContent = paymentLabel;
+      }
+      return;
+    }
+
+    hideNode(quantityTotalCompare);
+    if (hasPayment) {
+      quantityTotalValue.textContent = formatAmount(paymentUnit);
+      if (quantityTotalPayment) {
+        quantityTotalPayment.hidden = false;
+        quantityTotalPayment.textContent = paymentLabel;
+      }
+      return;
+    }
+
+    hideNode(quantityTotalPayment);
     quantityTotalValue.textContent = formatAmount(currentUnitPrice * quantity);
   };
 
@@ -151,6 +194,11 @@
       const variationInput = shippingForm?.querySelector('[name="variation_id"]');
       if (variationInput) variationInput.value = variation.variation_id || '';
       currentUnitPrice = Number.parseFloat(variation.display_price);
+      const parsedPayment = Number.parseFloat(variation.petshop_payment_discount_unit ?? '');
+      paymentUnit = Number.isFinite(parsedPayment) ? parsedPayment : Number.NaN;
+      paymentLabel = typeof variation.petshop_payment_discount_label === 'string'
+        ? variation.petshop_payment_discount_label
+        : '';
       updateQuantityTotal();
       detachFromSummaryPrice();
     });
@@ -169,6 +217,8 @@
       const variationInput = shippingForm?.querySelector('[name="variation_id"]');
       if (variationInput) variationInput.value = '';
       currentUnitPrice = Number.parseFloat(quantityTotal?.dataset.unitPrice || '');
+      paymentUnit = Number.parseFloat(quantityTotal?.dataset.paymentUnit || '');
+      paymentLabel = quantityTotal?.dataset.paymentLabel || '';
       updateQuantityTotal();
       placeQuantityTotal(summaryPrice());
     });

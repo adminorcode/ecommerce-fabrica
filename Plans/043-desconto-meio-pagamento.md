@@ -1,6 +1,6 @@
 # Plano 043 — Desconto por meio de pagamento no item
 
-**Status:** Pendente  
+**Status:** Em validação  
 **Data:** 2026-10-12  
 **Branch sugerida:** `043-desconto-meio-pagamento`  
 **Dependências:** Checkout Block e plugin oficial Mercado Pago já em uso (013/017). O retorno à loja após Pix aprovado permanece o do [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md). O preço principal do card variável permanece o da variação selecionada no [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md).  
@@ -34,10 +34,12 @@ User story: como lojista, quero definir o desconto por produto e por variação 
 - Valor inicial da lista: somente o gateway Pix do plugin oficial Mercado Pago (`woo-mercado-pago-pix`). `woo-mercado-pago-basic` não entra nessa lista inicial. Reprovisionar não desfaz a lista que o lojista tiver gravado depois.
 - No checkout da loja o Pix aparece como meio próprio. Com ele selecionado, o total cobrado já inclui o desconto por item e a cobrança segue só nesse Pix. Cartão é outro meio: sem esse desconto.
 - Rótulo único da vitrine, editável no painel. Valor inicial: `no Pix`. Salvar vazio grava de novo `no Pix`.
-- Card e página do produto, em todas as grades (Home, loja, categoria, busca e relacionados), mostram o preço normal e o preço com o rótulo quando a porcentagem efetiva é maior que 0. Porcentagem efetiva 0 oculta o segundo preço.
-- Card e PDP de produto variável, antes de uma variação específica ser o preço do desconto: “a partir de” o menor preço com desconto entre as variações compráveis, usando o texto nativo do WooCommerce. Se todas essas variações tiverem o mesmo preço com desconto, mostrar esse valor único, sem “a partir de”. Na PDP, depois da variação escolhida, o segundo preço é o dessa variação.
-- O preço normal do card variável continua o da variação selecionada (031). O “a partir de” do desconto não substitui esse preço.
-- Carrinho e checkout mostram o desconto somente com um meio da lista selecionado. Trocar para um meio fora da lista remove o desconto e recalcula o cupom. Minicarrinho não tem meio de pagamento e permanece no preço sem esse desconto.
+- Card e página do produto, em todas as grades (Home, loja, categoria, busca e relacionados), mostram o preço normal e o preço com o rótulo quando a porcentagem efetiva é maior que 0. Porcentagem efetiva 0 oculta o segundo preço. Se o item também está em promoção, o preço riscado dessa promoção fica oculto.
+- Porcentagem efetiva da variação: a própria, se for maior que 0; senão a do pai. O valor exibido é o preço dessa variação com essa porcentagem.
+- Pai sem porcentagem: o segundo preço não aparece enquanto nenhuma variação estiver selecionada. O desconto de outra variação não vira “a partir de”.
+- Pai com porcentagem, na PDP, antes da variação escolhida: “a partir de” o menor preço com desconto entre as variações compráveis, usando o texto nativo do WooCommerce. Se todas essas variações tiverem o mesmo preço com desconto, mostrar esse valor único, sem “a partir de”. Depois da variação escolhida, o segundo preço é o dessa variação.
+- No card a variação inicial já está selecionada. O segundo preço é o dessa variação, não o “a partir de” de outra. O preço normal do card variável continua o da variação selecionada (031).
+- Carrinho e checkout mostram o desconto somente com um meio da lista selecionado. Trocar para um meio fora da lista remove o desconto e recalcula o cupom. O minicarrinho mostra o preço cheio e, em verde, o preço com o rótulo do meio. O total cobrado do minicarrinho só inclui esse desconto quando a requisição é de carrinho ou checkout e o meio selecionado está na lista.
 - Visitante e cliente logado seguem a mesma regra.
 - O pedido HPOS grava o total cobrado, a porcentagem efetiva e o valor do desconto em cada linha. Reabrir o pedido no painel mostra esses valores.
 - Cálculo em unidades monetárias inteiras, com o arredondamento de preço do WooCommerce. O preço anunciado e o total da linha coincidem.
@@ -65,7 +67,8 @@ User story: como lojista, quero definir o desconto por produto e por variação 
 | Meios | Uma lista global. Uma porcentagem por item para todos os meios da lista |
 | Lista vazia | Nenhum desconto e nenhum segundo preço |
 | Rótulo | Texto global. Inicial `no Pix` |
-| Card variável | Preço normal da variação selecionada; segundo preço “a partir de” o menor desconto comprável |
+| Card variável | Preço normal da variação selecionada; segundo preço é o dessa variação, ou o do pai se a variação não tiver o próprio |
+| PDP sem variação | “A partir de” só quando o pai tem porcentagem. Pai sem porcentagem não mostra desconto de outra variação |
 | Quem vê | Visitante e logado |
 
 Exemplo fechado: produto a R$ 100,00 em promoção, 10% no meio, cupom de 10% e personalização de R$ 20,00. A linha do produto fica R$ 90,00 e, com o cupom, R$ 81,00. A personalização continua R$ 20,00. O frete não muda. O mesmo pedido no cartão, com o Pix fora da seleção, não aplica os 10%.
@@ -101,31 +104,74 @@ Não editar WooCommerce, Blocksy nem o plugin Mercado Pago.
 
 ### Sessão 01 — Cadastro e configuração
 
-- [ ] Campo de porcentagem no produto simples, no pai variável e em cada variação, com a regra de herança e a recusa de valor inválido.
-- [ ] Tela global com a lista de meios e o rótulo. Inicial: `woo-mercado-pago-pix` e `no Pix`, sem sobrescrever edição posterior.
+- [x] Campo de porcentagem no produto simples, no pai variável e em cada variação, com a regra de herança e a recusa de valor inválido.
+- [x] Tela global com a lista de meios e o rótulo. Inicial: `woo-mercado-pago-pix` e `no Pix`, sem sobrescrever edição posterior.
 
 ### Sessão 02 — Cobrança
 
-- [ ] Pix como meio próprio no Checkout Block. Selecionar aplica o desconto por linha; trocar para cartão remove.
-- [ ] Cupom incide sobre o produto já descontado. Personalização e frete ficam de fora.
-- [ ] Pedido HPOS guarda porcentagem e valor do desconto por linha.
+- [x] Pix como meio próprio no Checkout Block. Selecionar aplica o desconto por linha; trocar para cartão remove.
+- [x] Cupom incide sobre o produto já descontado. Personalização e frete ficam de fora.
+- [x] Pedido HPOS guarda porcentagem e valor do desconto por linha.
 
 ### Sessão 03 — Vitrine
 
-- [ ] Card e PDP mostram o segundo preço com o rótulo quando a porcentagem efetiva é maior que 0.
-- [ ] Produto variável: “a partir de” o menor desconto comprável; PDP com variação escolhida mostra o preço daquela variação.
-- [ ] Preço normal do card variável do 031 permanece o da variação selecionada.
+- [x] Card e PDP mostram o segundo preço com o rótulo quando a porcentagem efetiva é maior que 0.
+- [x] Produto variável: com o pai sem porcentagem, o segundo preço só aparece na variação selecionada. Com o pai com porcentagem, a PDP sem variação mostra “a partir de”; a variação escolhida mostra o preço dela, ou o do pai se ela não tiver o próprio.
+- [x] Preço normal do card variável do 031 permanece o da variação selecionada.
 
 **Gate**
 
-- [ ] Produto simples a R$ 100,00 com 10% e cupom de 10% cobra R$ 81,00 no Pix e R$ 90,00 no cartão com o mesmo cupom.
-- [ ] Variação com 4% usa 4%; variação vazia de pai com 10% usa 10%; variação 0 do mesmo pai usa 10%.
-- [ ] Personalização de R$ 20,00 no mesmo item continua R$ 20,00 no Pix e no cartão.
-- [ ] Card de categoria, não só a PDP, mostra o rótulo e o preço com desconto. Card variável mantém o preço normal da variação selecionada.
-- [ ] Trocar o rótulo e a lista no painel sobrevive a reprovisionamento. Lista vazia some com o segundo preço e com o desconto no checkout.
-- [ ] WooCommerce, Blocksy e o plugin Mercado Pago não foram editados.
+- [x] Produto simples a R$ 100,00 com 10% e cupom de 10% cobra R$ 81,00 no Pix e R$ 90,00 no cartão com o mesmo cupom.
+- [x] Variação com 4% usa 4%; variação vazia de pai com 10% usa 10%; variação 0 do mesmo pai usa 10%.
+- [x] Personalização de R$ 20,00 no mesmo item continua R$ 20,00 no Pix e no cartão.
+- [x] Card de categoria, não só a PDP, mostra o rótulo e o preço com desconto. Card variável mantém o preço normal da variação selecionada.
+- [x] Trocar o rótulo e a lista no painel sobrevive a reprovisionamento. Lista vazia some com o segundo preço e com o desconto no checkout.
+- [x] WooCommerce, Blocksy e o plugin Mercado Pago não foram editados.
 
-## 8. Riscos
+**Gate browser (Playwright)**
+
+- [x] Matriz de produtos fixture (`setup-043-payment-discount-fixture.php`): P1 uma filha; P1B pai+override; P2 só pai; P3/P5 sem desconto; P4 simples; E2 a partir de; E4 promoção; E5 variação R$ 0.
+- [x] PDP mostra o segundo preço correto em cada caso da matriz (`validate-043-payment-discount-browser.mjs`).
+- [x] Checkout Block: mercadoria com meio da lista (`cheque`) inclui o desconto; meio fora da lista (`cod`) cobra cheio.
+
+## 10. Evidência — 2026-10-12
+
+| Critério | Evidência | Resultado |
+|---|---|---|
+| R$ 81 no Pix e R$ 90 no cartão, mesmo cupom | `scripts/validate-043-payment-discount.php` (subtotal 90/100 e total 81/90) e `PaymentDiscountTest::testPixCouponIs81AndCardCouponIs90WhilePersonalizationStays20` | `043 ok`; PHPUnit 6 testes OK |
+| Herança 4 / vazio / 0 | O mesmo script, `ProductMeta::effectivePercent` | 4.00, 10.00 e 10.00 |
+| Personalização R$ 20 | Taxa do carrinho no Pix, no cartão e no minicarrinho | 20.00 nos três |
+| Card de categoria e preço normal do variável | Card no script com a variação inicial de 4% (R$ 96,00 `no Pix`), sem “a partir de” | `043 ok` |
+| Pai sem desconto | `get_price_html` do variável sem segundo preço; variação com 10% mostra R$ 180,00; variação sem porcentagem fica vazia; variação vazia de pai com 10% mostra R$ 90,00 | `043 ok` |
+| Rótulo, lista e lista vazia | O mesmo script, `Settings::provision` | Edição preservada; lista vazia sem segundo preço e total 90 |
+| Pedido | Meta recarregada depois de `save()` | porcentagem 10.00 e valor 10.00 |
+| Arquivos de terceiros | `git status` só tem plano, `petshop-core`, tema e o script | WooCommerce, Blocksy e Mercado Pago intactos |
+
+O gateway `woo-mercado-pago-pix` está instalado e desabilitado neste ambiente (`enabled no`). A lista aponta para ele. O checkout só mostra o meio depois que o lojista habilitar o gateway.
+
+## 8. Premissas e passos
+
+Alcance: o desconto vale em todo card e na PDP, e no cálculo do carrinho e do checkout quando o meio selecionado está na lista global.
+
+| Tema | Decisão |
+|---|---|
+| Onde mora | `petshop-core` calcula, grava e monta o segundo preço. O `petshop-theme` só ajusta o CSS do card e da PDP |
+| Tela global | WooCommerce → Configurações → aba Desconto por meio, ao lado de Pagamentos. `add_option` na primeira vez; reprovisionar não sobrescreve |
+| Herança | Meta `_petshop_payment_discount_percent`. Vazio e `0` na variação herdam o pai. Inválido não grava e avisa |
+| Arredondamento | Centavos (ou as casas de `wc_get_price_decimals`) com half-up. A mesma função serve a vitrine e o carrinho |
+| Cupom | `set_price` no produto antes do cupom do WooCommerce. A personalização não entra nesse preço |
+| Personalização | O módulo atual não cobra valor. Se a linha tiver `petshop_personalization_surcharge`, esse valor vira taxa depois do cupom e não muda entre Pix e cartão. Sem a chave, a taxa é zero |
+| Minicarrinho | Mostra o preço cheio e, em verde, o preço com o rótulo do meio. O total cobrado só inclui o desconto na requisição de carrinho ou checkout com um meio da lista |
+| Meio no checkout | O total lê `chosen_payment_method`. O script do Checkout Block atualiza a sessão ao trocar o meio. Não criamos gateway nem editamos o Mercado Pago |
+| Pedido | Meta visível no admin: porcentagem efetiva e valor descontado. Some no e-mail e na conta |
+
+1. Porcentagem, dinheiro e cotação da linha, com teste unitário do exemplo R$ 81 / R$ 90 e da herança.
+2. Configuração global e campo no produto e na variação.
+3. Carrinho, checkout e meta do pedido HPOS.
+4. Segundo preço no card e na PDP, inclusive “a partir de”.
+5. Script `scripts/validate-043-payment-discount.php` no runtime.
+
+## 9. Riscos
 
 | Risco | Mitigação |
 |---|---|
