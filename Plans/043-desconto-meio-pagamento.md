@@ -5,7 +5,9 @@
 **Branch sugerida:** `043-desconto-meio-pagamento`  
 **Dependências:** Checkout Block e plugin oficial Mercado Pago já em uso (013/017). O retorno à loja após Pix aprovado permanece o do [029-retorno-mercado-pago-pix.md](./029-retorno-mercado-pago-pix.md). O preço principal do card variável permanece o da variação selecionada no [031-card-variavel-comprar-preco.md](./031-card-variavel-comprar-preco.md).  
 **Origem:** pedido do lojista (2026-10-12): cadastrar, em cada produto e variação, uma porcentagem de desconto ao pagar por um meio configurável. O primeiro meio é o Pix do Mercado Pago.  
-**ClickUp:** [86e3p30ww](https://app.clickup.com/t/86e3p30ww) — Open  
+**ClickUp:** [86e3p30ww](https://app.clickup.com/t/86e3p30ww) — Closed  
+**PR:** https://github.com/adminorcode/ecommerce-fabrica/pull/18  
+
 
 ## 1. Objetivo
 
