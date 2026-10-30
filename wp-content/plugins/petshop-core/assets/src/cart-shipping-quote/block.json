@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "petshop/cart-shipping-quote",
+  "title": "CEP para entrega",
+  "category": "woocommerce",
+  "description": "Calcula opções de entrega pelo CEP no carrinho.",
+  "textdomain": "petshop-core",
+  "parent": ["woocommerce/cart-totals-block"],
+  "editorScript": "file:./editor.js",
+  "supports": { "html": false, "multiple": false }
+}

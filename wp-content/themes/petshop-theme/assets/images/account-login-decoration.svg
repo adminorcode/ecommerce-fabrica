@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" preserveAspectRatio="none">
+  <!-- Theme ornament only: no text, editorial media or interactive content. -->
+  <defs>
+    <g id="paw">
+      <path d="M24 52C7 38-8 68 5 79c9 7 18-1 25-1s17 8 26 1c13-11-2-41-19-27-4 3-9 3-13 0Z"/>
+      <ellipse cx="3" cy="39" rx="9" ry="13" transform="rotate(-28 3 39)"/>
+      <ellipse cx="21" cy="22" rx="9" ry="15" transform="rotate(-9 21 22)"/>
+      <ellipse cx="41" cy="22" rx="9" ry="15" transform="rotate(12 41 22)"/>
+      <ellipse cx="59" cy="40" rx="9" ry="13" transform="rotate(28 59 40)"/>
+    </g>
+  </defs>
+  <path d="M0 160C92 159 105 22 195 63c122 55 207-29 313-63H0Z" fill="#fff" opacity=".8"/>
+  <path d="M0 509c99-8 101 142 172 163 102 30 135-11 182 48H0Z" fill="#dceff0"/>
+  <path d="M1015 720c60-117 102-117 161-153 92-55 114-138 264-106v259Z" fill="#ffebdc"/>
+  <use href="#paw" x="22" y="360" fill="#fcebdc" transform="rotate(-15 52 400)"/>
+  <use href="#paw" x="1300" y="100" fill="#cfe7e9" transform="rotate(18 1330 140)"/>
+  <use href="#paw" x="1365" y="570" fill="#fbdcc5" transform="rotate(-12 1395 610)" opacity=".65"/>
+</svg>

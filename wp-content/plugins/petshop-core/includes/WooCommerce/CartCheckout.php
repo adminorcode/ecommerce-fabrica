@@ -14,12 +14,15 @@ final class CartCheckout
     {
         add_filter('body_class', [self::class, 'bodyClasses']);
         add_filter('woocommerce_package_rates', [self::class, 'filterLocalFallbackRates'], 999);
+        add_filter('gettext', [self::class, 'translateCheckoutMarketingOptIn'], 20, 3);
+        add_action('wp_enqueue_scripts', [self::class, 'enqueueCheckoutTranslations']);
     }
 
     public static function migrate(): void
     {
         self::migrateBlockPages();
         self::configureAccountOptions();
+        self::configureAccountOptions025();
         self::ensurePolicyPages();
         self::ensureLocalShippingMethod();
     }
@@ -29,6 +32,52 @@ final class CartCheckout
     {
         if (is_checkout() && !is_order_received_page()) $classes[] = 'petshop-distraction-free-checkout';
         return $classes;
+    }
+
+    public static function translateCheckoutMarketingOptIn(string $translation, string $text, string $domain): string
+    {
+        unset($domain);
+        if ($text === 'I would like to receive exclusive emails with discounts and product information') {
+            return __('Quero receber e-mails exclusivos com descontos e informações sobre produtos.', 'petshop-core');
+        }
+        return $translation;
+    }
+
+    public static function enqueueCheckoutTranslations(): void
+    {
+        if (!is_checkout() || is_order_received_page()) return;
+
+        $path = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/checkout-translations.js';
+        wp_enqueue_script(
+            'petshop-checkout-translations',
+            plugins_url('assets/js/checkout-translations.js', PETSHOP_CORE_FILE),
+            [],
+            is_file($path) ? (string) filemtime($path) : '1.0.0',
+            true
+        );
+        wp_add_inline_script('petshop-checkout-translations', 'window.petshopCheckoutTranslations=' . wp_json_encode([
+            'I would like to receive exclusive emails with discounts and product information' => __('Quero receber e-mails exclusivos com descontos e informações sobre produtos.', 'petshop-core'),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';', 'before');
+
+        $passwordConfirmationPath = plugin_dir_path(PETSHOP_CORE_FILE) . 'assets/js/checkout-account-password-confirmation.js';
+
+        wp_enqueue_script(
+            'petshop-checkout-account-password-confirmation',
+            plugins_url('assets/js/checkout-account-password-confirmation.js', PETSHOP_CORE_FILE),
+            ['wp-data', 'wc-blocks-data-store'],
+            is_file($passwordConfirmationPath) ? (string) filemtime($passwordConfirmationPath) : '1.0.0',
+            true
+        );
+        wp_localize_script(
+            'petshop-checkout-account-password-confirmation',
+            'petshopCheckoutAccountPassword',
+            [
+                'namespace' => AccountRegistration::CHECKOUT_EXTENSION_NAMESPACE,
+                'required' => __('Confirme sua senha.', 'petshop-core'),
+                'mismatch' => __('As senhas não coincidem.', 'petshop-core'),
+                'label' => __('Confirmar senha', 'petshop-core'),
+            ]
+        );
     }
 
     /**
@@ -102,6 +151,14 @@ final class CartCheckout
         update_option('petshop_account_options_013_configured', '1', false);
     }
 
+    private static function configureAccountOptions025(): void
+    {
+        if (get_option('petshop_account_options_025_configured', false) !== false) return;
+
+        update_option('woocommerce_registration_generate_password', 'no');
+
+        update_option('petshop_account_options_025_configured', '1', false);
+    }
     private static function ensurePolicyPages(): void
     {
         $privacyId = self::ensureAssignedPolicyPage('wp_page_for_privacy_policy', 'politica-de-privacidade', 'Política de privacidade', 'privacy-policy');

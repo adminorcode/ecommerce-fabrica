@@ -9,6 +9,35 @@ description: "Finaliza uma branch Git com segurança: revisa e cria o commit das
 
 Executar o fluxo completo de publicação e integração de uma branch sem presumir a branch-base, perder alterações locais ou reescrever o histórico remoto. Tratar a invocação desta skill como autorização para revisar, adicionar e criar commits das alterações em escopo, além de fazer push e merge das branches envolvidas. Não tratá-la como autorização para incluir alterações ambíguas, forçar push, apagar branches ou ignorar proteções.
 
+## Principio operacional
+
+- Ser objetivo: executar o menor numero de comandos que preserva o estado correto.
+- Nao repetir validacao completa quando o commit exato ja foi validado e o merge sera fast-forward.
+- Aumentar verificacoes apenas diante de risco real: worktree sujo ambiguo, origem divergente do remoto, destino desatualizado, merge nao-fast-forward, conflito, hook falhando ou push rejeitado.
+- Preferir verificacoes Git baratas (`status`, `rev-parse`, `merge-base`, `rev-list`) a gates demorados quando a pergunta e apenas sincronizacao/ancestralidade.
+
+## Caminho rapido permitido
+
+Quando todas as condicoes abaixo forem verdadeiras, usar o caminho rapido:
+
+- worktree limpo ou commit ja criado com escopo revisado;
+- branch de origem local corresponde ao remoto ou sera publicada pela primeira vez sem rejeicao;
+- branch-base local corresponde a `<remote>/<destino>` depois de `fetch`/`pull --ff-only`;
+- `git merge-base --is-ancestor <destino> <origem>` confirma fast-forward;
+- o commit de origem ja passou nas validacoes obrigatorias nesta sessao ou existe evidencia recente e aplicavel de CI/gate verde para esse mesmo hash.
+
+Sequencia objetiva do caminho rapido:
+
+1. `git fetch <remote> --prune`
+2. `git push [-u] <remote> <origem>` somente se a origem ainda nao estiver publicada.
+3. `git switch <destino>`
+4. `git pull --ff-only <remote> <destino>`
+5. `git merge --ff-only <origem>`
+6. `git push <remote> <destino>`
+7. Confirmar hashes locais/remotos com `git rev-parse`.
+
+Nao executar novo gate completo depois do merge fast-forward se o hash final de `<destino>` for exatamente o hash de origem ja validado.
+
 ## Regras invioláveis
 
 - Ler `AGENTS.md` e as instruções de Git do projeto antes de qualquer operação mutável.
@@ -45,7 +74,7 @@ Antes do primeiro push:
 3. Executar `git fetch <remote> --prune`.
 4. Comparar origem e destino com suas referências remotas usando `git rev-list --left-right --count`.
 5. Se a origem estiver atrás ou tiver divergido do remoto, não rebasear nem forçar. Informar o estado e pedir orientação.
-6. Executar as validações obrigatórias definidas pelo projeto. Se falharem, não criar o commit nem realizar o merge, salvo instrução explícita do usuário reconhecendo o risco.
+6. Executar as validações obrigatórias definidas pelo projeto somente quando ainda nao houver validacao aplicavel ao commit que sera publicado. Se o mesmo hash ja foi validado nesta sessao, registrar isso e nao repetir o gate. Se falharem, não criar o commit nem realizar o merge, salvo instrução explícita do usuário reconhecendo o risco.
 
 ## Criar o commit
 
@@ -73,7 +102,7 @@ Antes do primeiro push:
    - sem política, usar `git merge --ff-only <origem>` quando a branch-base for ancestral direta da origem;
    - se fast-forward não for possível, usar merge não-fast-forward somente quando o pedido autorizar merge direto e as políticas permitirem: `git merge --no-ff <origem>`.
 5. Em conflito, resolver apenas quando a intenção for inequívoca e todas as validações puderem ser repetidas. Caso contrário, abortar o merge com `git merge --abort`, preservar as duas branches e pedir orientação.
-6. Executar novamente as validações obrigatórias no resultado integrado.
+6. Executar novamente as validações obrigatórias no resultado integrado somente quando o resultado nao for o mesmo hash ja validado. Em merge fast-forward para commit validado, conferir o hash final e pular a repeticao do gate completo.
 7. Enviar a branch-base com `git push <remote> <destino>`. Se o remote rejeitar por avanço concorrente ou proteção, não forçar; buscar o estado e informar o bloqueio.
 
 ## Sincronizar e verificar

@@ -7,8 +7,8 @@ Como o time (e agentes) aproveitam rules, skills e validações deste repositór
 | Camada | Local | Quando entra |
 |--------|-------|--------------|
 | **Rules** | `.cursor/rules/*.mdc` | Contexto persistente (automático por escopo) |
-| **Skills do projeto** | `.cursor/skills/` | Workflows e revisões (automático ou `/nome`) |
-| **Skills WordPress** | `.agents/skills/` | Padrões WP oficiais (automático ou `/nome`) |
+| **Skills** | `.agents/skills/` | Workflows do projeto e padrões WordPress (automático ou `/nome`) |
+| **Tickets / ClickUp** | `.cursor/CLICKUP_USAGE_RULE.md` | Lista Autelie, 1 tarefa por plano |
 | **Planos** | `Plans/` | Escopo, gates e critérios de aceite |
 | **Scripts** | `scripts/` | Validação PHP e browser |
 
@@ -26,7 +26,27 @@ Ativa ao editar `petshop-theme`, `petshop-core` ou `Plans/`.
 
 **Use quando:** header, Home, catálogo, cards, PDP, CSS, filtros, conversão, acessibilidade.
 
-## Skills do projeto (`.cursor/skills/`)
+## Skills (`.agents/skills/`)
+
+### `/write-kanban-tickets`
+
+Escreve o plano local e o ticket ClickUp com alcance, fora de escopo e critérios testáveis. Usar junto com `.cursor/CLICKUP_USAGE_RULE.md`. O plano vem antes da tarefa.
+
+**Invoque quando:** criar ticket local + ClickUp, ou enriquecer um pedido solto.
+
+### `/implement-feature-ticket`
+
+Entrega um ticket ou plano de ponta a ponta: entendimento, enriquecimento, branch, código, revisão, testes e handoff.
+
+### `/pr-to-clickup` e `/merge-and-close-ticket`
+
+Vinculam PR ao ticket e fecham o ticket após merge autorizado. Só com pedido explícito.
+
+### `/docker-compose-watch-build`
+
+Sobe e atualiza a stack com `docker compose up --watch --build` (imagens + sync de `petshop-core` e `petshop-theme`).
+
+**Invoque quando:** iniciar o ambiente, após editar plugin/tema/Docker, antes de validar, ou quando o contêiner estiver com código antigo.
 
 ### `/petshop-workflow`
 
@@ -40,7 +60,7 @@ Checklist de UI/UX antes de fechar sessão visual. Referencia `references/design
 
 **Invoque quando:** terminar alteração de interface; antes de marcar checkbox do plano.
 
-## Skills WordPress (`.agents/skills/`)
+## Skills WordPress
 
 Instaladas de [WordPress/agent-skills](https://github.com/WordPress/agent-skills):
 
@@ -62,10 +82,17 @@ Padrões de 60+ componentes UI (modal, toast, form, nav). **Adaptar** aos tokens
 
 ## Fluxos recomendados
 
+### Criar ticket (local + ClickUp)
+
+1. `/write-kanban-tickets` + `.cursor/CLICKUP_USAGE_RULE.md`
+2. Enriquecer `Plans/{numero}-{slug}.md` (escopo, aceite, fora de escopo)
+3. Criar **uma** tarefa na lista Autelie; reutilizar se o plano já existir
+4. Gravar ID/URL ClickUp no plano
+
 ### Implementar feature do plano
 
 1. Ler `Plans/STATUS.md` + plano da branch
-2. `/petshop-workflow` (ou deixar o agente carregar pela descrição)
+2. `/implement-feature-ticket` e `/petshop-workflow`
 3. Codar no escopo (plugin vs tema)
 4. Validar com scripts do plano
 5. Se UI: `/ecommerce-design-review`
@@ -92,8 +119,8 @@ Padrões de 60+ componentes UI (modal, toast, form, nav). **Adaptar** aos tokens
 ## Comandos úteis
 
 ```powershell
-# Desenvolvimento
-docker compose up --watch
+# Desenvolvimento (imagens + sync contínuo)
+docker compose up --watch --build
 
 # WP-CLI
 docker compose --profile tools run --rm --no-deps cli wp plugin list
@@ -128,4 +155,4 @@ Skills com campo `paths` só aparecem quando arquivos correspondentes estão em 
 
 ## Arquivos de lock
 
-`skills-lock.json` registra versões instaladas via `npx skills add` — commitar junto com `.agents/` e `.cursor/skills/`.
+`skills-lock.json` registra versões instaladas via `npx skills add` — commitar junto com `.agents/skills/`.

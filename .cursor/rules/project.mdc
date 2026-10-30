@@ -10,9 +10,13 @@ Este repositório contém um e-commerce baseado em WordPress e WooCommerce.
 Antes de implementar uma funcionalidade:
 
 1. leia o plano correspondente em `Plans/`;
-2. identifique o escopo, os critérios de aceite e o que está fora do escopo;
+2. identifique o escopo real, os critérios de aceite e o que está fora do escopo;
+   quando o plano falar em padrão, global, todos, cada ou equivalente, trate
+   exemplos/tabelas como cobertura mínima, não como limite silencioso do escopo;
 3. altere somente os arquivos necessários;
-4. execute as validações previstas;
+4. execute validações proporcionais: baseline mínimo, gates focados durante a
+   iteração e uma validação final obrigatória; não repetir gate completo sem
+   mudança material que justifique;
 5. atualize os checkboxes do plano quando a tarefa realmente estiver concluída.
 
 # Arquitetura
@@ -81,3 +85,14 @@ Antes de declarar uma implementação concluída:
 - verificar o fluxo funcional afetado;
 - listar arquivos alterados;
 - registrar limitações ou decisões pendentes no plano.
+
+Durante a implementação, não desperdiçar ciclo com validação redundante:
+
+- usar `npm run validate:changed` ou gate específico para ajustes de plugin,
+  tema, scripts e documentação;
+- reservar `npm run validate` completo para fechamento ou para confirmar a
+  correção de falha encontrada nele;
+- em Docker, sincronizar arquivos alterados quando isso prova o comportamento;
+  rebuild/recreate completo só é obrigatório no fechamento ou quando mudarem
+  Dockerfile, lockfile, dependências, build outputs ou código que só existe na
+  imagem.

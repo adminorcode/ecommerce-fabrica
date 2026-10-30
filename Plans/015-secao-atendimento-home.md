@@ -1,6 +1,6 @@
 # Plano 015 - Secao de atendimento da Home
 
-**Status:** Pendente
+**Status:** Concluido
 
 **Data:** 2026-08-05
 
@@ -91,45 +91,45 @@ Nao usar o verde oficial do WhatsApp como fundo principal da secao. A identidade
 | Tema | `wp-content/themes/petshop-theme/assets/css/editor-storefront.css` | Paridade do padrao no canvas Gutenberg. |
 | Plugin | `wp-content/plugins/petshop-core/includes/class-storefront-experience.php` | Migracao versionada e segura do markup legado, sem sobrescrever conteudo. |
 | Documentacao | `docs/guia-edicao-home.md` | Instrucao passo a passo, tamanho utilizado, imagem sugerida, alt, CTA para WhatsApp e fallback sem URL. |
-| Documentacao | `docs/guia-identidade-visual-autelle.md` | Registrar a secao de atendimento como variante de banner editorial. |
+| Documentacao | `docs/guia-identidade-visual-autelie.md` | Registrar a secao de atendimento como variante de banner editorial. |
 | Validacao | `scripts/validate-015-*.php`, `scripts/validate-015-*-browser.mjs` | Estrutura Gutenberg, persistencia, CTA WhatsApp, contraste, mobile e regressao. |
 
 ## 7. Sessoes de implementacao
 
 ### Sessao 01 - Padrao Gutenberg e migracao segura
 
-- [ ] Criar markup versionado com grupo externo, copy, botao e duas fontes de midia, usando apenas blocos nativos.
-- [ ] Provisionar CTA inicial `Falar pelo WhatsApp` apontando para `https://wa.me/...` quando houver URL global valida.
-- [ ] Provisionar o padrao somente onde houver assinatura inequivoca do banner legado.
-- [ ] Preservar a secao existente em conteudo customizado e documentar conversao manual.
-- [ ] Validar que todos os campos sao identificaveis no canvas e no painel lateral do Gutenberg.
+- [x] Criar markup versionado com grupo externo, copy, botao e duas fontes de midia, usando apenas blocos nativos.
+- [x] Provisionar CTA inicial `Falar pelo WhatsApp` apontando para `https://wa.me/...` quando houver URL global valida.
+- [x] Provisionar o padrao somente onde houver assinatura inequivoca do banner legado.
+- [x] Preservar a secao existente em conteudo customizado e documentar conversao manual.
+- [x] Validar que todos os campos sao identificaveis no canvas e no painel lateral do Gutenberg.
 
 **Gate verificavel**
 
-- [ ] Nao ha shortcode, texto comercial ou URL de atendimento fixos no codigo.
-- [ ] O melhor caminho de atendimento esta documentado e implementado como link de WhatsApp editavel no botao Gutenberg.
-- [ ] Em Home nova/legada reconhecida, titulo, copy, CTA, imagens e alt sao editaveis em **Paginas -> Home**.
-- [ ] Reprovisionamento nao altera uma secao editada pelo cliente.
+- [x] Nao ha shortcode, texto comercial ou URL de atendimento fixos no codigo.
+- [x] O melhor caminho de atendimento esta documentado e implementado como link de WhatsApp editavel no botao Gutenberg.
+- [x] Em Home nova/legada reconhecida, titulo, copy, CTA, imagens e alt sao editaveis em **Paginas -> Home**.
+- [x] Reprovisionamento nao altera uma secao editada pelo cliente.
 
 ### Sessao 02 - Storefront, acessibilidade e midia
 
-- [ ] Aplicar grid desktop e pilha mobile segundo a secao 4.
-- [ ] Garantir contraste AA, foco visivel, um unico link/botao e alvo minimo de toque de 44 px.
-- [ ] Renderizar a fonte desktop 1920 x 640 px e a fonte mobile 1080 x 1350 px sem imagem quebrada, overflow ou corte de assunto.
-- [ ] Ocultar com seguranca elementos opcionais vazios; nao deixar botao sem URL ou secao visualmente incompleta.
+- [x] Aplicar grid desktop e pilha mobile segundo a secao 4.
+- [x] Garantir contraste AA, foco visivel, um unico link/botao e alvo minimo de toque de 44 px.
+- [x] Renderizar a fonte desktop 1920 x 640 px e a fonte mobile 1080 x 1350 px sem imagem quebrada, overflow ou corte de assunto.
+- [x] Ocultar com seguranca elementos opcionais vazios; sem WhatsApp valido, manter CTA funcional para a pagina de atendimento.
 
 **Gate verificavel**
 
-- [ ] A CTA anuncia destino compreensivel e abre apenas URL valida, preferencialmente `https://wa.me/...`.
-- [ ] A foto nao contem texto essencial e o conteudo permanece legivel sem ela.
-- [ ] A ordem de leitura e eyebrow, titulo, texto, beneficio, CTA e midia; nao ha duplicacao para leitor de tela.
+- [x] A CTA anuncia destino compreensivel e abre apenas URL valida, preferencialmente `https://wa.me/...`.
+- [x] A foto nao contem texto essencial e o conteudo permanece legivel sem ela.
+- [x] A ordem de leitura e eyebrow, titulo, texto, beneficio, CTA e midia; nao ha duplicacao para leitor de tela.
 
 ### Sessao 03 - Documentacao, persistencia e regressao
 
-- [ ] Atualizar os guias de edicao e identidade visual com dimensoes, area segura, imagem sugerida, formato e instrucoes claras de substituicao.
-- [ ] Executar os gates do plano e validar Home em 390, 768, 1024 e 1440 px.
-- [ ] Testar URL WhatsApp valida, URL ausente, troca de copy, imagens e alt, alem de migracao de banner legado e conteudo ja personalizado.
-- [ ] Verificar logs PHP/console e ausencia de regressao em hero, campanhas e footer.
+- [x] Atualizar os guias de edicao e identidade visual com dimensoes, area segura, imagem sugerida, formato e instrucoes claras de substituicao.
+- [x] Executar os gates do plano e validar Home em 390, 768, 1024 e 1440 px.
+- [x] Testar URL WhatsApp valida, URL ausente, troca de copy, imagens e alt, alem de migracao de banner legado e conteudo ja personalizado.
+- [x] Verificar logs PHP/console e ausencia de regressao em hero, campanhas e footer.
 
 ## 8. Riscos e mitigacao
 

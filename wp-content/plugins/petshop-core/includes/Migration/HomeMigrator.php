@@ -13,7 +13,7 @@ defined('ABSPATH') || exit;
 
 final class HomeMigrator
 {
-    public const CURRENT_SCHEMA = 25;
+    public const CURRENT_SCHEMA = 26;
 
     use ManagedHomeMigration;
     use HomeHeroContent;
@@ -33,6 +33,11 @@ final class HomeMigrator
     public static function needsProductGridShortcodeRepair(string $content, string $shopUrl): bool
     {
         return self::hasLegacyProductGridShortcodeBlocks(parse_blocks($content), $shopUrl);
+    }
+
+    public static function needsSupportSectionRepair(string $content): bool
+    {
+        return SupportContent::needsSupportSectionMigration($content);
     }
 
     public static function legacyHeroMarkup(string $shopUrl, int $heroId): string
@@ -87,6 +92,7 @@ final class HomeMigrator
             23 => static fn (string $content): string => self::applyHomeSchemaTwentyThree($content),
             24 => static fn (string $content, string $shopUrl, string $supportUrl, int $heroId): string => self::applyHomeSchemaTwentyFour($content, $shopUrl, $heroId),
             25 => static fn (string $content, string $shopUrl): string => self::applyHomeSchemaTwentyFive($content, $shopUrl),
+            26 => static fn (string $content, string $shopUrl, string $supportUrl): string => self::applyHomeSchemaTwentySix($content, $supportUrl),
         ];
     }
 
@@ -106,7 +112,8 @@ final class HomeMigrator
                 continue;
             }
             $requiresRepair = ($schema === 17 && !str_contains($content, '[petshop_product_showcase'))
-                || ($schema === 25 && self::needsProductGridShortcodeRepair($content, $shopUrl));
+                || ($schema === 25 && self::needsProductGridShortcodeRepair($content, $shopUrl))
+                || ($schema === 26 && self::needsSupportSectionRepair($content));
             if ($currentSchema >= $schema && !$requiresRepair) {
                 continue;
             }
@@ -145,6 +152,20 @@ final class HomeMigrator
     private static function applyHomeSchemaTwentyFour(string $content, string $shopUrl, int $heroId): string
     {
         return SupportContent::applyHomeSchemaTwentyFour($content, $shopUrl, $heroId);
+    }
+
+    private static function applyHomeSchemaTwentySix(string $content, string $supportUrl): string
+    {
+        $images = StorefrontProvisioner::supportSectionAttachments();
+        $cta = SupportContent::resolveSupportCta($supportUrl);
+
+        return SupportContent::applyHomeSchemaTwentySix(
+            $content,
+            $images['desktop'],
+            $images['mobile'],
+            $cta['url'],
+            $cta['label']
+        );
     }
 
     private static function showcaseSectionGutenbergMarkup(string $className, string $headingId, string $title, string $ctaLabel, string $ctaUrl, string $intro, string $gridShortcode): string

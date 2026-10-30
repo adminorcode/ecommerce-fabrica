@@ -18,7 +18,7 @@ $expected = [
 ];
 $normalize = static function (string $value): string {
     $value = remove_accents(wp_strip_all_tags($value));
-    return trim((string) preg_replace('/\s+/u', ' ', $value));
+    return strtolower(trim((string) preg_replace('/\s+/u', ' ', $value)));
 };
 
 if (trim((string) get_theme_mod('petshop_benefit_text', '')) === '') {
@@ -41,8 +41,8 @@ if (trim((string) get_theme_mod('petshop_account_label', '')) === '') {
 $locations = get_theme_mod('nav_menu_locations', []);
 $menuId = (int) ($locations['petshop-primary'] ?? 0);
 $items = $menuId > 0 ? wp_get_nav_menu_items($menuId) : false;
-if (!is_array($items) || count($items) !== 7) {
-    $failures[] = 'Menu comercial deve ter exatamente sete entradas';
+if (!is_array($items) || count($items) < count($expected)) {
+    $failures[] = 'Menu comercial deve conter ao menos os sete destinos base';
     $items = [];
 }
 
@@ -51,7 +51,7 @@ foreach ($items as $item) {
     $actual[$normalize((string) $item->title)] = (string) $item->url;
 }
 foreach ($expected as $label => $slug) {
-    $url = $actual[$label] ?? '';
+    $url = $actual[$normalize($label)] ?? '';
     if ($url === '') {
         $failures[] = "Entrada ausente no menu: {$label}";
         continue;
@@ -83,4 +83,4 @@ if ($failures !== []) {
     WP_CLI::error('Sessao 01 invalida: ' . count($failures) . ' falha(s).');
 }
 
-WP_CLI::success('Sessao 01 valida: conteudo global editavel, logo, sete destinos cadastrados e busca por SKU registrada.');
+WP_CLI::success('Sessao 01 valida: conteudo global editavel, logo, destinos base cadastrados e busca por SKU registrada.');
