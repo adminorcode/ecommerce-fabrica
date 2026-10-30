@@ -96,7 +96,7 @@ trait WishlistStorage
             return false;
         }
 
-        if (is_shop() || is_product_category() || is_product_tag() || is_search() || is_front_page()) {
+        if (is_shop() || is_product_category() || is_product_tag() || is_product() || is_search() || is_front_page()) {
             return true;
         }
 

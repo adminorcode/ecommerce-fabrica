@@ -255,7 +255,7 @@ const buyButton = new Element('button', {
     productId: '77',
     productType: 'variable',
   },
-  textContent: 'Comprar agora',
+  textContent: 'Comprar',
 });
 buyButton.setAttribute('data-petshop-buy-now', '1');
 buyButton.setAttribute('data-product-id', '77');

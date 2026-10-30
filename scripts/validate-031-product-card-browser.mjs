@@ -144,7 +144,7 @@ const verifySurface = async (page, label, targetUrl) => {
   record(metrics.chips.length >= 2, `${label}: chips ausentes`);
   record(metrics.selected.some((chip) => chip.attribute === 'size' && chip.value === 'small'), `${label}: chip inicial de size nao ficou em small`);
   record(metrics.selected.some((chip) => chip.attribute === 'color' && chip.value === 'red'), `${label}: chip inicial de color nao ficou em red`);
-  record(metrics.buttonText === 'Comprar agora', `${label}: CTA inesperado (${metrics.buttonText})`);
+  record(metrics.buttonText === 'Comprar', `${label}: CTA inesperado (${metrics.buttonText})`);
   record(!metrics.hasSeeOptions, `${label}: Ver opções apareceu no card`);
   record(metrics.initialVariationId > 0, `${label}: data-initial-variation-id ausente`);
   record(metrics.initialVariation?.attributes?.size === '', `${label}: fixture inicial nao é wildcard/any`);

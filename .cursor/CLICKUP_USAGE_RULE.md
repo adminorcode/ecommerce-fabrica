@@ -25,7 +25,7 @@ Fonte canônica da lista deste repositório. Não versionar tokens nem credencia
 8. Sempre incluir o caminho local: `Plano local: Plans/{numero}-{slug}.md`.
 9. Não depender de links externos para o mínimo necessário; o ticket ClickUp deve ser acionável sozinho.
 10. Não preencher assignee, tag, prioridade, due date ou campo customizado sem pedido explícito.
-11. Status inicial: `Open`. Só mudar status quando o usuário pedir ou o fluxo (`pr-to-clickup`, `merge-and-close-ticket`) exigir.
+11. Status inicial: `Open`. `implement-feature-ticket` move a tarefa existente de `Open` para `in progress` ao começar ou retomar a implementação. Sem tarefa, esse fluxo não cria card. `review` e `Closed` só mudam quando o usuário pedir ou o fluxo correspondente (`pr-to-clickup`, `merge-and-close-ticket`) exigir.
 12. Após criar, gravar no plano local o ID, a URL e o status do ticket ClickUp.
 
 ## Relação com o repositório

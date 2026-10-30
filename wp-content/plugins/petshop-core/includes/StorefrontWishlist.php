@@ -27,6 +27,7 @@ final class StorefrontWishlist
             [self::class, 'appendToolbarButton'],
             20
         );
+        add_action('blocksy:woocommerce:product-view:start', [self::class, 'renderSingleProductButton']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueueAssets']);
         add_action('wp_login', [self::class, 'mergeIdsForUser'], 10, 2);
         add_shortcode('petshop_wishlist', [self::class, 'renderShortcode']);
@@ -155,6 +156,23 @@ final class StorefrontWishlist
         $components[] = self::renderToggleButton($product);
 
         return $components;
+    }
+
+    public static function renderSingleProductButton(): void
+    {
+        if (!function_exists('is_product') || !is_product()) {
+            return;
+        }
+
+        global $product;
+
+        if (!$product instanceof \WC_Product) {
+            return;
+        }
+
+        echo '<div class="petshop-wishlist-single">';
+        echo self::renderToggleButton($product); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '</div>';
     }
 
     public static function enqueueAssets(): void
