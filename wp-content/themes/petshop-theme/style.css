@@ -251,6 +251,10 @@ a:hover { color: var(--color-brand-orange-dark); }
 .woocommerce ul.products.columns-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .woocommerce ul.products.columns-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
+.woocommerce ul.products li.product-category {
+  display: none;
+}
+
 .woocommerce ul.products li.product,
 .wc-block-grid__product {
   position: relative;

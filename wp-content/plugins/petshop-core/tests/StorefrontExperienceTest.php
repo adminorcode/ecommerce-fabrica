@@ -35,6 +35,24 @@ final class StorefrontExperienceTest extends TestCase
         yield 'empty values' => [', ,', []];
     }
 
+    public function testProductLoopDoesNotInjectSubcategoryCards(): void
+    {
+        $GLOBALS['petshop_test_filters']['woocommerce_product_loop_start'] = [[
+            'callback' => 'woocommerce_maybe_show_product_subcategories',
+            'priority' => 10,
+            'accepted_args' => 1,
+        ]];
+
+        CatalogFilter::hideSubcategoryCardsInProductLoop();
+
+        $callbacks = array_map(
+            static fn (array $filter): mixed => $filter['callback'] ?? null,
+            $GLOBALS['petshop_test_filters']['woocommerce_product_loop_start']
+        );
+
+        self::assertNotContains('woocommerce_maybe_show_product_subcategories', $callbacks);
+    }
+
     public function testCatalogFilterAddsSelectedCategoriesToMainProductArchive(): void
     {
         $_GET['petshop_categories'] = 'conjuntos,gravatas';
