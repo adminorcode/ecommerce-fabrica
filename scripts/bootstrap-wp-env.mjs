@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const WORDPRESS_VERSION = '7.0.2';
-const WOOCOMMERCE_VERSION = '10.9.4';
+const WOOCOMMERCE_VERSION = '11.1.2';
 const WORDPRESS_URL = `https://wordpress.org/wordpress-${ WORDPRESS_VERSION }.zip`;
 const WOOCOMMERCE_URL =
     `https://downloads.wordpress.org/plugin/woocommerce.${ WOOCOMMERCE_VERSION }.zip`;
