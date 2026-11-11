@@ -24,7 +24,7 @@ Quando todas as condicoes abaixo forem verdadeiras, usar o caminho rapido:
 - branch de origem local corresponde ao remoto ou sera publicada pela primeira vez sem rejeicao;
 - branch-base local corresponde a `<remote>/<destino>` depois de `fetch`/`pull --ff-only`;
 - `git merge-base --is-ancestor <destino> <origem>` confirma fast-forward;
-- o commit de origem ja passou nas validacoes obrigatorias nesta sessao ou existe evidencia recente e aplicavel de CI/gate verde para esse mesmo hash.
+- o commit de origem ja passou nas validacoes obrigatorias nesta sessao ou existe evidencia recente e aplicavel de gate verde local (`run-gates` / `npm run validate`) para esse mesmo hash. O repositorio nao usa GitHub Actions.
 
 Sequencia objetiva do caminho rapido:
 

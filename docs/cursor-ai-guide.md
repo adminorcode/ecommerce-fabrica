@@ -94,7 +94,7 @@ Padrões de 60+ componentes UI (modal, toast, form, nav). **Adaptar** aos tokens
 1. Ler `Plans/STATUS.md` + plano da branch
 2. `/implement-feature-ticket` e `/petshop-workflow`
 3. Codar no escopo (plugin vs tema)
-4. Validar com scripts do plano
+4. Validar com scripts do plano (`npm run validate` / `Plans/008-TESTING.md` — sem GitHub Actions)
 5. Se UI: `/ecommerce-design-review`
 6. Atualizar checkboxes e `STATUS.md` só com evidência
 

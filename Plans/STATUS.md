@@ -10,7 +10,7 @@
 | [004-identidade-visual-e-navegabilidade.md](./004-identidade-visual-e-navegabilidade.md) | Abandonado | Implementação e 004b preservadas; a11y manual pendente não será continuada neste plano |
 | [004b-correcao-vitrine-e-catalogo.md](./004b-correcao-vitrine-e-catalogo.md) | Concluído | Catálogo demonstrável, hero full-bleed editável, densidade comercial e persistência validados |
 | [005-refinamento-comercial-do-storefront.md](./005-refinamento-comercial-do-storefront.md) | Abandonado | Sessões 01–02 e entregas posteriores preservadas; sessões pendentes não serão continuadas neste plano |
-| [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, run-gates, CI workflow; gates PHP validados em runtime |
+| [006-infraestrutura-ci-e-documentacao.md](./006-infraestrutura-ci-e-documentacao.md) | Concluído | Docker/docs unificados, `run-gates` local (sem GitHub Actions); gates PHP validados em runtime |
 | [007-refatoracao-petshop-core.md](./007-refatoracao-petshop-core.md) | Concluído | PSR-4, modularização, migrador versionado, Customizer/defaults, lifecycle/CLI e matriz PHP/browser validados |
 | [009-design-system-acessibilidade-e-checkout.md](./009-design-system-acessibilidade-e-checkout.md) | Concluído | Tokens, cart/checkout, a11y técnica; NVDA/VoiceOver manual pendente |
 | [010-layout-secoes-produto-home.md](./010-layout-secoes-produto-home.md) | Concluído | Vitrines da Home: cards compactos, cabeçalho “Ver todos”, badges reais, schema 17 |
@@ -46,14 +46,14 @@
 | [039-quantidade-carrinho-apos-frete.md](./039-quantidade-carrinho-apos-frete.md) | Concluído | Quantidade imediata; frete recalcula 1 s após o último `+`, um único `update-item`. ClickUp [86e31yvgj](https://app.clickup.com/t/86e31yvgj) |
 | [040-card-mobile-comprar.md](./040-card-mobile-comprar.md) | Pendente | Mobile: legenda da variação some e o padding do card diminui. CTA do card vira “Comprar” com ícone de carrinho no mobile e no desktop. ClickUp ainda não criado |
 | [041-integridade-frete-carrinho-checkout.md](./041-integridade-frete-carrinho-checkout.md) | Em andamento | Integração oficial, ViaCEP, preferência PDP, preview isolado e migração implementados; PHP/58 unitários aprovados em checkpoints. Fechamento bloqueado: totais de frete do pacote pesado divergem do GET independente mesmo após correção de sincronização; gate amplo final também atingiu timeout no visitante desktop. Continuação corrigiu preferência em HTTP; 027/031, PDP com erros/timeout, Gutenberg, billing obrigatório e comércio nativo isolado aprovados. CEP reposicionado acima do total, estilos anteriores restaurados e alternativas nativas de entrega mantidas; checkout reorganizado conforme referência aprovada, consulta de sessão e campos únicos; validação nos §§11–15; seleção acelerada e coordenação de quantidade/CEP com uma requisição física, descarte de respostas antigas e retornos de intenção; gates finais de concorrência e entrega aprovados em desktop/mobile, visitante/autenticado. Ação de desempenho e UX implementada no §16: coalescência por produto, estimativas identificadas, total oficial por linha e pendências por região; validação ampliada de estoque/rede em andamento. Matriz T01–T20 ainda parcial; staging/pedido pendentes; ledger no plano. |
-| [042-repaginacao-login.md](./042-repaginacao-login.md) | Em validação | Login inspirado na referência: card, benefícios Gutenberg, fundo com pets e preservação dos fluxos WooCommerce. Header mobile e Escape do dropdown corrigidos e aprovados nos gates browser; CI instala Compose compatível. Fechamento aguardando os gates gerais e o CI do PR #16. ClickUp [86e3p1dqh](https://app.clickup.com/t/86e3p1dqh) — Open. |
+| [042-repaginacao-login.md](./042-repaginacao-login.md) | Em validação | Login inspirado na referência: card, benefícios Gutenberg, fundo com pets e preservação dos fluxos WooCommerce. Header mobile e Escape do dropdown corrigidos e aprovados nos gates browser. Fechamento aguardando gates gerais locais (`run-gates`); GitHub Actions retirados em 2026-11-11. ClickUp [86e3p1dqh](https://app.clickup.com/t/86e3p1dqh) — Open. |
 | [043-desconto-meio-pagamento.md](./043-desconto-meio-pagamento.md) | Concluído | Desconto por meio no item, vitrine, checkout e Playwright. Mergeado em master ([PR #18](https://github.com/adminorcode/ecommerce-fabrica/pull/18)). ClickUp [86e3p30ww](https://app.clickup.com/t/86e3p30ww) |
 | [044-produtos-sem-envio-fora-do-catalogo.md](./044-produtos-sem-envio-fora-do-catalogo.md) | Pendente | Produto sem peso ou sem dimensão de envio sai do catálogo e não pode ser comprado. ClickUp [86e31z0xw](https://app.clickup.com/t/86e31z0xw) |
 
 ## Ordem recomendada de execução
 
 ```
-006 (infra/CI/docs)
+006 (infra/gates locais/docs)
   ├── 007 (refatoração plugin — com rede de segurança)
   └── 009 (design system / a11y / checkout CSS)
 
@@ -150,4 +150,4 @@ Plano 043 derivado do pedido do lojista (2026-10-12): porcentagem de desconto po
 
 Plano 044 derivado da tarefa ClickUp 86e31z0xw (2026-10-12): produto sem peso ou sem uma das dimensões de envio sai do catálogo e não pode ser comprado. O campo editorial Medidas não entra nessa regra.
 
-**Última atualização:** 2026-10-30 (Plano 043 concluído e mergeado. Plano 044 aberto. Plano 042: header/mobile e Escape corrigidos, fechamento aguarda gates gerais e CI. Plano 041 em andamento, aceite integral pendente)
+**Última atualização:** 2026-11-11 (GitHub Actions retirados; validação canônica em `Plans/008-TESTING.md`. Plano 042: fechamento aguarda gates gerais locais. Plano 041 em andamento, aceite integral pendente)

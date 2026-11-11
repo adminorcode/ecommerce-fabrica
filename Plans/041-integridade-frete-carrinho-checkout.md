@@ -692,14 +692,20 @@ Evidências em `.local/evidence/041-continuacao/`, por sessão e execução; res
 
 ### 17.9 Sessão G — CI e manutenção
 
-- [ ] Tornar os testes browser determinísticos críticos automáticos em PR: quantidade/CEP, falha/retry, seleção, endereço e convergência financeira com taxas isoladas. Manter staging/transportadora/pagamento como gates de integração separados, sem depender de credenciais em PR de forks.
-- [ ] Preservar gates PHP e PHPUnit; executar o workflow em branch/PR de teste quando houver autorização de publicação da branch. Validar localmente os comandos antes disso.
+**Escopo atual (2026-11-11):** o repositório não usa GitHub Actions. Esta sessão cobre
+comandos reproduzíveis locais (`run-gates`, `npm run validate`, gates 041 documentados),
+evidências em `.local/evidence/` e matriz de reteste após atualização de WooCommerce ou
+transportadoras. Automação remota em PR e branch protection ficam fora do escopo até decisão
+explícita de reintroduzir CI.
+
+- [ ] Documentar no fechamento do 041 os gates browser determinísticos críticos a executar localmente antes de merge: quantidade/CEP, falha/retry, seleção, endereço e convergência financeira com taxas isoladas. Manter staging/transportadora/pagamento como gates de integração separados, sem depender de credenciais em PR de forks.
+- [ ] Preservar gates PHP e PHPUnit; executar `bash scripts/run-gates.sh` e a suíte 041 aplicável na branch antes de merge autorizado.
 - [ ] Separar seleção de ensaios para ADIADA-44KG sem apagar/desabilitar seu caso original. O relatório da suíte deve expor teste adiado e resultado integral; a suíte completa que falhar nesse caso não recebe rótulo de aprovada.
-- [ ] Publicar evidências sanitizadas de falha no CI com retenção definida; testar redação/cleanup antes de habilitar upload de novos artefatos.
-- [ ] Documentar nomes dos checks a exigir para integração e verificar proteção de branch no remoto. Aplicar exigência quando houver acesso/autorização de administração; enquanto isso, registrar pendência operacional, sem alegar bloqueio automático já ativo.
+- [ ] Publicar evidências sanitizadas de falha em `.local/evidence/` com retenção definida no handoff; não versionar dumps sensíveis.
+- [ ] Registrar no plano que não há checks obrigatórios no GitHub; merge exige evidência local anexada ao ticket/PR quando o fluxo do time exigir.
 - [ ] Documentar matriz obrigatória após atualização de WooCommerce e transportadoras: temporização de endereço, campos adicionais, seleção/cache e retorno de pagamento. Retestar contratos vinculados à versão 10.9.4, sem editar fornecedor.
 
-**Gate:** comandos reproduzíveis e workflow automático configurado; execução remota e proteção têm evidência própria ou pendência explícita. Nenhum teste com fornecedor simulado é apresentado como integração real.
+**Gate:** comandos reproduzíveis documentados e executados localmente com evidência; nenhum teste com fornecedor simulado é apresentado como integração real.
 
 ### 17.10 Sessão H — pacote, recuperação e fechamento
 
@@ -722,7 +728,7 @@ Ordem: baseline → A → B → C → D → E → F → G → H. Ausência de st
 - [ ] D aprovada, com controles testados e nenhum achado crítico/alto aplicável aberto.
 - [ ] E aprovada em staging, com pedido/pagamento/estoque/e-mail e acesso do cliente comprovados.
 - [ ] F aprovada, incluindo leitores de tela, persistência editorial e métricas reproduzíveis.
-- [ ] G implementada e verificada; execução remota e exigência dos checks não confundidas com configuração local de YAML.
+- [ ] G implementada e verificada; matriz local documentada, sem confundir evidência de `run-gates`/validate com CI remoto inexistente.
 - [ ] H aprovada com revisão final, pacote instalado, backup restaurado, rollback ensaiado e monitoramento demonstrado.
 - [ ] Cada item não executado tem motivo/pré-requisito explícito e permanece aberto; ADIADA-44KG é o único adiamento funcional aceito por esta solicitação.
 - [ ] Relatório final distingue conclusão do §17, conclusão integral do 041 e autorização de publicação. Nenhum desses estados é inferido do outro.
@@ -738,7 +744,7 @@ Ordem: baseline → A → B → C → D → E → F → G → H. Ausência de st
 | D — segurança | Revisão estática no §18; testes negativos da sessão não executados | Inventário, testes negativos e achados/resoluções |
 | E — pedido/pagamento | Não executado; depende de staging | Pedidos sandbox, notificações, estoque e caixa de e-mail |
 | F — experiência/conteúdo | Não executado | Teclado/leitores, edição persistente e métricas |
-| G — CI/manutenção | Não executado | Workflow, execução/checks e política de atualização |
+| G — CI/manutenção | Não executado | Matriz local, evidências e política de reteste pós-atualização (sem GitHub Actions) |
 | H — fechamento/operação | Não executado | Revisão, suíte final, pacote, restauração e alertas |
 | ADIADA-44KG | Adiado por solicitação do usuário | Diagnóstico anterior preservado; sem aprovação implícita |
 

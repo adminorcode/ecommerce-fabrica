@@ -69,6 +69,8 @@ npm run test
 | `test` | profile `test` / PHPUnit |
 | `wp` | WP-CLI via serviço `cli` |
 
+Validação: não há GitHub Actions; matriz completa em [Plans/008-TESTING.md](./Plans/008-TESTING.md) e [scripts/README.md](./scripts/README.md).
+
 Scripts legados `env:*` (`wp-env`) estão deprecados — use Docker Compose.
 
 ## Organização

@@ -197,7 +197,7 @@ Merge, fechamento e deploy não foram executados.
 Pedido de merge e fechamento recebido em 2026-10-11. Além das pendências de
 header/menu, o check `php-gates` do PR falhou antes de executar testes: o Docker
 Compose do runner rejeita `services.wordpress.develop.watch.0.initial_sync`.
-[Log do CI](https://github.com/adminorcode/ecommerce-fabrica/actions/runs/38187357515).
+[Log do CI (histórico — GitHub Actions retirados em 2026-11-11)](https://github.com/adminorcode/ecommerce-fabrica/actions/runs/38187357515).
 A skill merge-and-close-ticket impede fechar o ticket com gates obrigatórios
 pendentes. O PR foi preparado para revisão; integração e fechamento aguardam a
 resolução das pendências. Comentário confirmado no ticket; evidência

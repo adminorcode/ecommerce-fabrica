@@ -121,7 +121,8 @@ Se uma verificação falhar: diagnosticar, corrigir, repetir. Parar e pedir deci
 
 ## Scripts de validação
 
-Consulte `scripts/README.md`. Padrão Docker para eval PHP:
+Não há GitHub Actions: gates rodam localmente via `run-gates` / `npm run validate`
+(`Plans/008-TESTING.md`). Consulte `scripts/README.md`. Padrão Docker para eval PHP:
 
 ```powershell
 docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html/scripts/<script>.php
