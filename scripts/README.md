@@ -135,9 +135,8 @@ O seed preserva SKUs existentes. Produtos criados recebem `_petshop_placeholder_
 
 ## CI
 
-Pull requests executam `bash scripts/run-gates.sh` e PHPUnit via `.github/workflows/validate.yml`. A auditoria editorial não bloqueia esses testes: execute `npm run validate -- --content-audit --skip-provision` para verificar o cadastro atual sem reprovisioná-lo.
-O workflow manual `.github/workflows/browser-gates.yml` executa os gates Playwright
-no contêiner e publica evidências quando falhar.
+Não há GitHub Actions neste repositório. Localmente, execute `bash scripts/run-gates.sh` (inclui PHPUnit) ou `npm run validate` conforme a matriz em `Plans/008-TESTING.md`. A auditoria editorial não bloqueia os gates de engenharia: use `npm run validate -- --content-audit --skip-provision` para verificar o cadastro atual sem reprovisioná-lo.
+Para gates Playwright no contêiner, use `npm run validate -- --browser`; evidências de falha ficam em `.local/evidence/`.
 
 ## Legado
 
