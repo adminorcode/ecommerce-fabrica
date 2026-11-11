@@ -46,8 +46,7 @@ final class CategoryGrid
         ob_start();
         echo '<ul class="petshop-category-grid" aria-label="' . esc_attr__('Categorias de produtos', 'petshop-core') . '">';
         foreach ($visibleTerms as $term) {
-            $icon = CategoryIcons::resolveForTerm($term);
-            $iconUrl = CategoryIcons::url($icon);
+            $display = CategoryIcons::resolveDisplayForTerm($term);
             $termLink = get_term_link($term);
             if (is_wp_error($termLink)) {
                 continue;
@@ -63,7 +62,13 @@ final class CategoryGrid
             }
             echo '>';
             echo '<span class="petshop-category-card__well">';
-            echo '<span class="petshop-category-card__icon" style="--petshop-category-icon: url(\'' . esc_url($iconUrl) . '\')" aria-hidden="true"></span>';
+            if ($display['source'] === 'attachment' && $display['url'] !== '') {
+                echo '<span class="petshop-category-card__icon petshop-category-card__icon--media" aria-hidden="true">';
+                echo '<img src="' . esc_url($display['url']) . '" alt="" width="40" height="40" loading="lazy" decoding="async">';
+                echo '</span>';
+            } else {
+                echo '<span class="petshop-category-card__icon" style="--petshop-category-icon: url(\'' . esc_url($display['url']) . '\')" aria-hidden="true"></span>';
+            }
             echo '</span>';
             echo '<span class="petshop-category-card__label">' . esc_html($term->name) . '</span>';
             echo '</a>';

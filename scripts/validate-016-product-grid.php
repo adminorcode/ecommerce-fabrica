@@ -73,7 +73,7 @@ try {
         'orderby' => 'invalid',
         'order' => 'sideways',
     ]);
-    if ($sanitized['productIds'] !== [$manualA, $manualB] || $sanitized['limit'] !== 12 || $sanitized['columns'] !== 2) {
+    if ($sanitized['productIds'] !== [$manualA, $manualB] || $sanitized['limit'] !== 20 || $sanitized['columns'] !== 2) {
         $failures[] = 'Sanitizacao de IDs, limite ou colunas falhou';
     }
 

@@ -1,4 +1,4 @@
-$requiredVersion = [version]'2.32.2'
+$requiredVersion = [version]'5.3.1'
 $versionOutput = docker compose version --short 2>$null
 
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($versionOutput)) {

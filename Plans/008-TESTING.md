@@ -21,7 +21,7 @@
 
 ## CI
 
-`validate.yml` executa PHPUnit em todo push para `master` e em pull requests. `browser-gates.yml` é manual (`workflow_dispatch`) para a validação de release/storefront; ele sobe a stack, executa `run-gates --browser` e anexa `.local/evidence` caso falhe.
+Não há GitHub Actions no repositório. Validação ocorre localmente ou no ambiente de deploy com os comandos da tabela acima (`run-gates.sh`, `npm run validate`, variantes `--browser` / `--pdp` / `--cart`).
 
 ## Diagnóstico
 

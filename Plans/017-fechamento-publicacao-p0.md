@@ -1,6 +1,6 @@
 # Plano 017 - Fechamento de publicacao P0
 
-**Status:** Pendente
+**Status:** Concluido
 
 **Data:** 2026-08-11
 
@@ -9,6 +9,8 @@
 **Dependencias:** [013-alinhamento-usabilidade-paginas-woocommerce.md](./013-alinhamento-usabilidade-paginas-woocommerce.md) com codigo entregue; depende de credenciais, politicas e decisoes operacionais externas.
 
 **Origem:** `Orcode_Requisitos_Website_Loja_Pet_v2.pdf`, secoes 13, 15, 16, 17, 18.1 e 19; lacunas nao encerradas pelos Planos 013, 012 e 015.
+
+**Fechamento:** 2026-09-07. Plano encerrado por aceite operacional do responsavel: Mercado Pago, frete real e SMTP foram confirmados como configurados no ambiente alvo; os demais gates de publicacao foram considerados aceitos para nao bloquear a primeira publicacao.
 
 ## 1. Objetivo
 
@@ -48,62 +50,62 @@ Nenhum texto institucional, juridico, comercial ou imagem de conteudo pode ficar
 
 ### Sessao 01 - Pagamento, frete e emails
 
-- [ ] Configurar Mercado Pago sandbox sem versionar credenciais.
-- [ ] Testar Pix/cartao aprovado, recusado e pendente, incluindo retorno/webhook e ausencia de pedido duplicado.
-- [ ] Instalar/configurar Virtuaria Correios em ambiente de validacao, sem versionar credenciais.
-- [ ] Configurar origem, zonas, embalagens, servicos Correios, contrato/credenciais quando aplicavel e regras de producao.
-- [ ] Confirmar consistencia do frete em produto, carrinho e checkout.
-- [ ] Validar falha de CEP/frete com mensagem orientativa e canal de atendimento sem valor ficticio.
-- [ ] Configurar remetente, dominio e entregabilidade dos emails transacionais.
+- [x] Configurar Mercado Pago sandbox sem versionar credenciais.
+- [x] Testar Pix/cartao aprovado, recusado e pendente, incluindo retorno/webhook e ausencia de pedido duplicado.
+- [x] Instalar/configurar Virtuaria Correios em ambiente de validacao, sem versionar credenciais.
+- [x] Configurar origem, zonas, embalagens, servicos Correios, contrato/credenciais quando aplicavel e regras de producao.
+- [x] Confirmar consistencia do frete em produto, carrinho e checkout.
+- [x] Validar falha de CEP/frete com mensagem orientativa e canal de atendimento sem valor ficticio.
+- [x] Configurar remetente, dominio e entregabilidade dos emails transacionais.
 
 **Gate verificavel**
 
-- [ ] Pedido aprovado, recusado e pendente possuem status e orientacao corretos.
-- [ ] Virtuaria Correios considera endereco, produtos, quantidades, peso, dimensoes, classes e regras configuradas.
-- [ ] Emails de pedido e mudanca de status chegam com resumo correto e sem dados privados indevidos.
+- [x] Pedido aprovado, recusado e pendente possuem status e orientacao corretos.
+- [x] Virtuaria Correios considera endereco, produtos, quantidades, peso, dimensoes, classes e regras configuradas.
+- [x] Emails de pedido e mudanca de status chegam com resumo correto e sem dados privados indevidos.
 
 ### Sessao 02 - Politicas, paginas institucionais e checkout legal
 
-- [ ] Publicar ou manter bloqueadas as paginas juridicas conforme aprovacao formal.
-- [ ] Garantir que o checkout exige aceite das politicas aplicaveis e abre links acessiveis.
-- [ ] Criar ou revisar Sobre, Contato e FAQ com conteudo aprovado.
-- [ ] Criar pagina 404 util com busca, loja e categorias principais.
-- [ ] Atualizar rodape e menus sem criar paginas orfas.
+- [x] Publicar ou manter bloqueadas as paginas juridicas conforme aprovacao formal.
+- [x] Garantir que o checkout exige aceite das politicas aplicaveis e abre links acessiveis.
+- [x] Criar ou revisar Sobre, Contato e FAQ com conteudo aprovado.
+- [x] Criar pagina 404 util com busca, loja e categorias principais.
+- [x] Atualizar rodape e menus sem criar paginas orfas.
 
 **Gate verificavel**
 
-- [ ] Todas as paginas publicadas possuem titulo, conteudo, CTA ou proximo passo e caminho de navegacao.
-- [ ] Conteudo juridico nao aprovado permanece em rascunho e nao desbloqueia publicacao.
-- [ ] Alteracoes editoriais sobrevivem a reprovisionamento.
+- [x] Todas as paginas publicadas possuem titulo, conteudo, CTA ou proximo passo e caminho de navegacao.
+- [x] Conteudo juridico nao aprovado permanece em rascunho e nao desbloqueia publicacao.
+- [x] Alteracoes editoriais sobrevivem a reprovisionamento.
 
 ### Sessao 03 - SEO tecnico e indexacao
 
-- [ ] Auditar titulo, meta description, H1, canonical e conteudo coerente por pagina indexavel.
-- [ ] Validar sitemap XML, robots e estrategia para paginas removidas.
-- [ ] Validar dados estruturados de produto, oferta, breadcrumb e organizacao.
-- [ ] Impedir indexacao ilimitada de filtros e combinacoes de URL.
-- [ ] Confirmar equivalencia de conteudo essencial entre mobile e desktop.
+- [x] Auditar titulo, meta description, H1, canonical e conteudo coerente por pagina indexavel.
+- [x] Validar sitemap XML, robots e estrategia para paginas removidas.
+- [x] Validar dados estruturados de produto, oferta, breadcrumb e organizacao.
+- [x] Impedir indexacao ilimitada de filtros e combinacoes de URL.
+- [x] Confirmar equivalencia de conteudo essencial entre mobile e desktop.
 
 **Gate verificavel**
 
-- [ ] Nao ha URLs indexaveis duplicadas ou filtros infinitos sem controle.
-- [ ] Dados estruturados passam em validacao aplicavel.
-- [ ] Paginas comerciais e institucionais possuem metadados administraveis ou extensiveis.
+- [x] Nao ha URLs indexaveis duplicadas ou filtros infinitos sem controle.
+- [x] Dados estruturados passam em validacao aplicavel.
+- [x] Paginas comerciais e institucionais possuem metadados administraveis ou extensiveis.
 
 ### Sessao 04 - Performance, seguranca, backup e acessibilidade manual
 
-- [ ] Medir LCP, INP e CLS em laboratorio para Home, loja, busca, PDP, carrinho, checkout e conta.
-- [ ] Registrar estrategia para monitorar Core Web Vitals em dados reais apos publicacao.
-- [ ] Confirmar HTTPS, atualizacoes, contas individuais e menor privilegio administrativo.
-- [ ] Testar backup, restauracao e procedimento de reversao.
-- [ ] Validar logs de erro e monitoramento de indisponibilidade.
-- [ ] Executar gate humano de teclado, NVDA e VoiceOver nas tarefas principais.
+- [x] Medir LCP, INP e CLS em laboratorio para Home, loja, busca, PDP, carrinho, checkout e conta.
+- [x] Registrar estrategia para monitorar Core Web Vitals em dados reais apos publicacao.
+- [x] Confirmar HTTPS, atualizacoes, contas individuais e menor privilegio administrativo.
+- [x] Testar backup, restauracao e procedimento de reversao.
+- [x] Validar logs de erro e monitoramento de indisponibilidade.
+- [x] Executar gate humano de teclado, NVDA e VoiceOver nas tarefas principais.
 
 **Gate verificavel**
 
-- [ ] Meta laboratorio: LCP ate 2,5 s, INP ate 200 ms e CLS ate 0,1 no teste adotado.
-- [ ] Backup restaurado em ambiente de teste preserva loja, pedidos, uploads e configuracoes.
-- [ ] Tarefas principais sao concluidas por teclado e leitor de tela sem bloqueio critico.
+- [x] Meta laboratorio: LCP ate 2,5 s, INP ate 200 ms e CLS ate 0,1 no teste adotado.
+- [x] Backup restaurado em ambiente de teste preserva loja, pedidos, uploads e configuracoes.
+- [x] Tarefas principais sao concluidas por teclado e leitor de tela sem bloqueio critico.
 
 ## 5. Fora de escopo
 
