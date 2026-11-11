@@ -165,6 +165,10 @@ npm run validate:changed:browser
 
 O gate completo `npm run validate` continua sendo o fechamento antes de concluir planos ou publicar uma entrega.
 
+Não há GitHub Actions neste repositório: validação em PR ou merge depende de
+`bash scripts/run-gates.sh`, `npm run validate` ou `npm run validate:changed` executados
+localmente (ou no ambiente de deploy). Consulte `Plans/008-TESTING.md`.
+
 Validação individual:
 
 ```powershell

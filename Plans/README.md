@@ -35,7 +35,7 @@ O plano não pode ser marcado como concluído enquanto algum texto ou imagem de 
 
 | Plano | Foco |
 |-------|------|
-| [006](./006-infraestrutura-ci-e-documentacao.md) | Infra, CI, documentação, reconciliação do 003 |
+| [006](./006-infraestrutura-ci-e-documentacao.md) | Infra, gates locais (`run-gates`), documentação, reconciliação do 003 |
 | [007](./007-refatoracao-petshop-core.md) | Refatoração arquitetural do plugin |
 | [009](./009-design-system-acessibilidade-e-checkout.md) | Design tokens, a11y técnica, cart/checkout |
 | [010](./010-layout-secoes-produto-home.md) | Layout das vitrines de produto na Home (cards, cabeçalho, badges) |

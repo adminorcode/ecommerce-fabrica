@@ -143,3 +143,18 @@ Registrar saída dos comandos e link do workflow CI na conclusão do plano.
 - log verde do `run-gates` e do workflow CI;
 - tabela de checkboxes atualizados no Plano 003;
 - `Plans/STATUS.md` atualizado.
+
+## 11. Atualização — retirada do GitHub Actions (2026-11-11)
+
+Os workflows `.github/workflows/validate.yml` e `.github/workflows/browser-gates.yml` foram
+removidos do repositório. A entrega do Plano 006 permanece válida para Docker, montagem de
+`scripts/`, orquestrador `run-gates` e documentação unificada.
+
+**Validação atual (canônica):**
+
+- local: `bash scripts/run-gates.sh`, `npm run validate`, variantes documentadas em
+  `Plans/008-TESTING.md`;
+- sem automação em PR/push no GitHub.
+
+As seções §2, Etapa 4 e checkboxes que citam GitHub Actions descrevem o escopo
+histórico de 2026-07-31, não o estado atual do repositório.

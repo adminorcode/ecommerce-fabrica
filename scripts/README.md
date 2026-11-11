@@ -20,7 +20,7 @@ docker compose --profile tools run --rm --no-deps cli wp eval-file /var/www/html
 ## Orquestrador (smoke PHP)
 
 ```powershell
-# Bash (Git Bash / Linux / CI)
+# Bash (Git Bash / Linux / execução local)
 bash scripts/run-gates.sh
 
 # PowerShell
